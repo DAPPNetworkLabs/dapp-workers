@@ -1,0 +1,107 @@
+version: "3"
+services:
+  ethprod:
+    image: ethereum/client-go:latest
+    profiles:
+      - prod
+    ports:
+      - "8545"
+      - "8546"
+      - "8547"
+      - "30303"
+    labels:
+      kompose.service.type: LoadBalancer
+  eth:
+    image: trufflesuite/ganache-cli:latest
+    ports:
+      - "8545"
+    command:
+      - --defaultBalanceEther
+      - "1000000"
+      - --account_keys_path
+      - /keys/keys
+      - -l 
+      - "10000000"
+      - -m
+      - cruel rebel frown short month love belt weather sense hood cage pact
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s      
+    volumes:
+       - keys:/keys
+  runner:
+    image: runner
+    profiles:
+      - images
+    build: images/runner
+  rust-compiler:
+    image: rust-compiler
+    profiles:
+      - images
+    build: images/compiler/rust
+    labels:
+      kompose.service.type: LoadBalancer
+  wasienv-compiler:
+    profiles:
+      - images    
+    build: images/compiler/wasienv
+    image: wasienv-compiler
+  orchestrator:
+    image: orchestrator
+    build: services/orchestrator
+    environment:
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - ETH_ADDR=ws://eth:8545
+      - COMPOSE_PROFILES
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - "eth"
+    links:
+        - eth
+  faucet:
+    image: faucet
+    build: services/faucet
+    ports:
+      - 8010:8080
+    environment:      
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - PORT=8080
+      - ETH_ADDR=ws://eth:8545
+    profiles:
+      - debug
+    depends_on:
+      - "eth"
+    links:
+        - eth
+  db:
+    image: postgres
+    profiles:
+      - donotstart    
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+       - pg-data:/var/lib/postgresql/data/pgdata
+  rabbitmq:
+    profiles:
+      - donotstart    
+    image: rabbitmq
+    ports:
+      - 5672:5672
+      - 8080:15672
+    volumes:
+      - rabbit-data:/var/lib/rabbitmq
+volumes:
+  keys:
+    external: false
+  pg-data:
+    external: false
+  rabbit-data:
+    external: false    
