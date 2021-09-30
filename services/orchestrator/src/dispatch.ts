@@ -1,48 +1,10 @@
 var Docker = require('dockerode');
 const Stream = require('stream')
 
-export function sum(a: number, b: number): number {
-    return a + b;
-}
-function runExec(container) {
 
-    var options = {
-      Cmd: ['bash', '-c', 'echo test $VAR'],
-      Env: ['VAR=ttslkfjsdalkfj'],
-      AttachStdout: true,
-      AttachStderr: true
-    };
-  
-    container.exec(options, function(err, exec) {
-      if (err) return;
-      exec.start(function(err, stream) {
-        if (err) return;
-  
-        container.modem.demuxStream(stream, process.stdout, process.stderr);
-  
-        exec.inspect(function(err, data) {
-          if (err) return;
-          console.log(data);
-        });
-      });
-    });
-  }
-  
-
-export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
+  export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
     console.log("running ", dockerImage,ipfsInput, args);
     var docker = new Docker();
-    // job types (according to dockers)
-    // compilers
-    //   solidity compiler
-    //   wasienv
-    //   rust
-    //   go
-    // runner:
-    //  wasm
-    //  evm
-    //  contract call
-    // history to ipfs
     
     const writableStream = new Stream.Writable()
     let output = "";
@@ -58,6 +20,9 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
     }
 
     // await docker.pull(dockerImage);
+    
+
+  
     const data = await docker.run(dockerImage,  [ipfsInput, ...args],  [writableStream, writableStream2],{Tty:false,
         AttachStdout: true,
         AttachStderr: true
@@ -76,8 +41,93 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
         console.log("error",error);    
         // throw error()
     }
-    console.log("output",output);
+    // console.log("output",output);
     const lines = output.split("\n")
     const outputfs = lines[lines.length-2];
     return {stdOut:output,stderr: error, outputFS:outputfs,statusCode:data[0].StatusCode}
 }
+
+
+
+
+export async function dispatchService(dockerImage, ipfsInput, args): Promise<any> {
+  var docker = new Docker();
+  // job types (according to dockers)
+  // compilers
+  //   solidity compiler
+  //   wasienv
+  //   rust
+  //   go
+  // runner:
+  //  wasm
+  //  evm
+  //  contract call
+  // history to ipfs
+  console.log("running service", dockerImage,ipfsInput, args);
+
+  const writableStream = new Stream.Writable()
+  let output = "";
+  writableStream._write = (chunk, encoding, next) => {
+      output += chunk.toString();
+      next()
+  }    
+  const writableStream2 = new Stream.Writable()
+  let error = "";
+  writableStream2._write = (chunk, encoding, next) => {
+      error += chunk.toString();
+      next()
+  }
+
+  // await docker.pull(dockerImage);
+  // const container = await docker.createContainer({Image:dockerImage, 
+  //   Cmd: [ipfsInput, ...args],
+  //   // Tty: true,
+  //   HostConfig: {
+  //       ExposedPorts: {
+  //         [`${port.toString()}/tcp`]: {
+            
+  //         }
+  //       },
+  //       PortBindings: {
+  //         ["8080/tcp"]: [{
+  //          "HostPort": port.toString()
+  //         }],
+  //       },
+  //       AutoRemove: true}
+  //     });
+    const data = docker.run(dockerImage,  [ipfsInput, ...args],  [process.stdout, process.stderr],{Tty:false,
+      AttachStdout: true,
+      AttachStderr: true,
+      ExposedPorts: {
+        "8080": {
+          
+        }
+      },
+      NetworkSettings:{
+        Ports: {
+          "8080": [{
+            HostIP: "0.0.0.0",
+           HostPort: "0"
+          }],
+        },
+      },
+      HostConfig : { 
+
+        PortBindings: {
+          "8080": [{
+            HostIP: "0.0.0.0",
+           HostPort: "0"
+          }],
+        },
+        AutoRemove: true}
+      }
+        );
+
+  // console.log("container",container);
+  // await container.start();
+  var container = data[1];
+  // console.log("stdOut:",output, error,port);
+  // todo: expose ports
+  return { port:0}
+}
+

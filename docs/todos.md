@@ -1,3 +1,6 @@
+callbacks
+
+
 deploy docker images
 public to github
 CI
@@ -15,7 +18,7 @@ leftovers:
     job failures
     inconsistency
     stdout/stderr
-    input/output dirs in dockers
+    input/output dirs in dockers (/tmp1)
     verify hash of image
     gas and dapp handling:
         pricing

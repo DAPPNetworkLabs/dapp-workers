@@ -1,5 +1,13 @@
 version: "3"
 services:
+  ipfs0:
+    container_name: ipfs0
+    image: ipfs/go-ipfs:latest
+    ports:
+      - "4001:4001" 
+      - "8080:8080"
+    volumes:
+      - ipfs-data:/data/ipfs
   ethprod:
     image: ethereum/client-go:latest
     profiles:
@@ -49,6 +57,11 @@ services:
       - images    
     build: images/compiler/wasienv
     image: wasienv-compiler
+  wasi-service:
+    profiles:
+      - images    
+    build: images/wasi-service
+    image: wasi-service    
   orchestrator:
     image: orchestrator
     build: services/orchestrator
@@ -104,4 +117,6 @@ volumes:
   pg-data:
     external: false
   rabbit-data:
+    external: false    
+  ipfs-data:
     external: false    

@@ -1,5 +1,5 @@
 {
-  "name": "orchestrator",
+  "name": "wasi-service",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -62,14 +62,20 @@
     "uglifyjs-folder": "^2.0.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.3.2",
+    "@apidevtools/swagger-express-middleware": "^4.0.2",
+    "@wasmer/io-devices": "^0.12.0",
+    "@wasmer/wasi": "^0.12.0",
+    "@wasmer/wasm-transformer": "^0.12.0",
+    "@wasmer/wasmfs": "^0.12.0",
     "bip39": "^3.0.4",
-    "docker-client": "^1.38.1",
-    "dockerode": "^3.3.1",
-    "ethereumjs-wallet": "^1.0.1",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
     "ganache": "^6.4.5",
-    "portfinder": "^1.0.28",
-    "solc": "^0.8.7-fixed",
+    "js-yaml": "^3.14.0",
+    "swagger": "^0.7.5",
+    "swagger-client": "^3.16.1",
     "web3": "^1.5.2"
   }
 }

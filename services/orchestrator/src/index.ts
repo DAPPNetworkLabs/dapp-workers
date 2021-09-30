@@ -1,8 +1,15 @@
-import { dispatch } from './dispatch';
+import { dispatch, dispatchService } from './dispatch';
+const fs = require('fs');
+const path = require('path');
+
 import { getAccount } from './getAccount';
-import { compile } from './compile';
+import { compile, contractWrapper } from './compile';
 import { deploy } from './deploy';
 import { web3,provider } from './web3global';
+import { runJob, runService, pendingJobs } from './jobClient';
+import { postTrx } from './postTrx';
+import { callTrx } from './callTrx';
+
 const Web3 = require('web3');
 
 provider.on('error', e => console.log('WS Error', e));
@@ -26,26 +33,41 @@ provider.on('end', socketError);
 provider.on('close', socketError);
 
 
-let address = process.env.ADDRESS;
+export let address = process.env.ADDRESS;
 const fromBlock = 0; // load and save to file
 let theContract;
-let abi;
+export let abi;
+let dspAccount;
+let ownerAccount;
+async function approveImage(image){
+    await postTrx("approveDockerForDSP",dspAccount,image);
+}
+
+async function setImage(alias,image = null, jobType = "job"){
+    if(image == null){
+        image= alias;
+    }
+    await postTrx("setDockerImage",ownerAccount,alias,image,"hash", jobType);
+}
 const run = async()=>{    
     let init = false;
     const contractFile = await compile();
     let bytecode = contractFile.evm.bytecode.object;
     abi = contractFile.abi;
-
+    
     /// deploy contract if needed
+    dspAccount = getAccount();    
     if(!address){
+        ownerAccount = dspAccount;
         if(process.env.COMPOSE_PROFILES != "debug"){
             throw new Error("can only deploy when COMPOSE_PROFILES=debug")
         }
-        address =await deploy(bytecode,abi); 
+        address =await deploy(bytecode,abi,ownerAccount); 
         init = true;
+        
     }
-    const account_dsp = getAccount();
-
+    else
+        contractWrapper.address = address;
     
     theContract = new web3.eth.Contract(
         abi,
@@ -55,84 +77,196 @@ const run = async()=>{
     );
     subscribe(theContract);
     if(init){
+        await setImage("wasmrunner","runner");
+        await setImage("rust-compiler");
+        await setImage("wasi-service", "wasi-service","service");
         
-        await postTrx("setDockerImage",account_dsp,"wasmrunner","runner","hash");
-        await postTrx("setDockerImage",account_dsp,"rust-compiler","rust-compiler","hash");
-        
-        // todo: check if already registered
-        await postTrx("regDSP",account_dsp);
-        await postTrx("approveDockerForDSP",account_dsp,"wasmrunner");
-        await postTrx("approveDockerForDSP",account_dsp,"rust-compiler");
 
 
-        await testConsumer(account_dsp.address);
+    }
+    // todo: check if already registered        
+    await postTrx("regDSP",dspAccount, "http://test.com");
+    await approveImage("wasmrunner");
+    await approveImage("rust-compiler");
+    await approveImage("wasi-service");
+
+    if(init){
+        await testConsumer(dspAccount.address);
     }
 }
 
 run() ;
-async function testConsumer( address: any) {
-    const account2 = getAccount("m/44'/60'/0'/0/1");        
-    await postTrx("setQuorum", account2, account2.address, [address]);    
-    // await postTrx("runJob", account2, account2.address, "rust-compiler", "QmUm1JD5os8p6zu6gQBPr7Rov2VD6QzMeRBH5j4ojFBzi6", []);
-    await postTrx("runJob", account2, account2.address, "wasmrunner", "QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx", ["/target/wasm32-wasi/release/test"]);
+function loadfsRoot(fsrootName){
+    return fs.readFileSync(path.resolve('.', `fsroots/${fsrootName}.ipfs`)).toString().trim();
+}
+async function testConsumer(address: any) {
+    const account2 = getAccount("m/44'/60'/0'/0/1");
+
+    await postTrx("setQuorum", account2, account2.address, [address]);
+    const jobCompileResult = await runJob("rust-compiler", loadfsRoot("pngWriterTest"), []);
+    const serviceCompileResult = await runJob("rust-compiler", loadfsRoot("serviceTest"), []);
+
+    const jobResult = await runJob("wasmrunner", jobCompileResult.outputFS, ["target/wasm32-wasi/release/test"]);
+    console.log("jobResult",jobResult);
+    // swagger wasi service
+    
+    // console.log("serviceCompileResult",serviceCompileResult);
+    // const srvcfs = "QmYhAAxgWmjv6EaApGGJvsqEsmfFfHVQRQ9e7ifbAvqpEF";
+    const srvcfs = serviceCompileResult.outputFS ;
+    const serviceResult = await runService("wasi-service", srvcfs, ["target/wasm32-wasi/release/test"]);
+    console.log("serviceCompileResult", serviceResult);
 }
 
+
 async function getDockerImage(imageName, dspAddress){    
-    const account2 = getAccount("m/44'/60'/0'/0/0");        
-    const image = await callTrx("getDockerImage", account2, imageName);
-    const isApproved = await callTrx("isImageApprovedForDSP", {address:dspAddress}, imageName);
+    const dspAccount = getAccount("m/44'/60'/0'/0/0");        
+    const image = await callTrx("getDockerImage", dspAccount, imageName);
+    const isApproved = await callTrx("isImageApprovedForDSP", {address:dspAddress}, imageName);    
     if(!isApproved)
         throw new Error("not approved");
     // todo: verify hash
-    console.log("res",image,isApproved)
     return image;
     
 }
+async function getConsumerDAPPGas(consumer){
+    // todo: get remaining on chain
+    // todo: get pending in this process
+    return 0;
+}
+async function isPending(jobID){
+    // todo: check on chain
+    return true;
+}
+async function getDAPPPriceInEth(){
+    // todo: fetch from dex
+    return 0.005;
+}
+
+async function EthGAS2DAPPs(gas){
+    const price = await getDAPPPriceInEth();
+    return gas * (1/price);
+
+}
+
+async function getGasPrice(){
+    return 33;
+}
+
+async function getGasForCallback(type){
+    // todo: fill real numbers
+    if(type = "service"){
+        return 100;
+    }
+    if(type = "job"){
+        return 100;    
+    }
+    
+}
+
+async function DAPPsFor(minutes){
+    return minutes * 100;
+
+}
+
+// todo: subscribe to Kill
+
 function subscribe(theContract: any) {
-    theContract.events["Job"]({
+    theContract.events["Run"]({
         fromBlock: fromBlock || 0
     }, async function (error, result) {
         if (error) {
             console.log(error);
             return;
         }
-        // console.log("Job event", result);
-        // run dispatcher
         const returnValues = result.returnValues;
         let fidx = 0;
         const consumer = returnValues[fidx++];
-        const jobType = returnValues[fidx++];
+        const jobImage = returnValues[fidx++];
         const inputFS = returnValues[fidx++];
         const args = returnValues[fidx++];
         const jobID = returnValues[fidx++];
+        const jobType = returnValues[fidx++];
 
-        // todo: check if user has enough dapp gas
-
-        // todo: check if already processed (in case not caught up with events)
+        const dappGasRemaining = await getConsumerDAPPGas(consumer);
         
-        // todo: verify docker image approved
+
+        // check if already processed (in case not caught up with events)
+         if(!await isPending(jobID)){
+             return;
+         }
         // todo: resolve image from registry
-        const account_dsp = getAccount();
-        const dockerImage = await getDockerImage(jobType, account_dsp.address);
-
-        const dispatchResult = await dispatch(dockerImage, inputFS, args);
-        const { outputFS } = dispatchResult;
-        // todo: kill docker if running too long and fail.
-        // todo: handle fail.
-        const dapps = 0;
-        // todo: check if user has enough dapp gas
+        const account_dsp = dspAccount;
+        const dockerImage = await getDockerImage(jobImage, account_dsp.address);
+        const gasPrice = await getGasPrice();
+        const gasForCallback = await getGasForCallback(jobType);
+        let dapps = (await EthGAS2DAPPs(gasForCallback * gasPrice));
         
-        // post results
-        const rcpt = await postTrx("jobCallback", account_dsp, jobID,  outputFS, dapps);
-        console.log(`posted results`,consumer,jobType);
+        switch(jobType){
+            case "service":
+                // run service
+                
+                dapps += (await DAPPsFor(24 * 60));
+                // todo: check if user has enough dapp gas for one hour of service before starting
+                if(dappGasRemaining < dapps){
+                    // todo: fail
+                    const rcpterr = await postTrx("serviceError", account_dsp, jobID, "", dapps.toFixed());
+                }
+                let serviceResults;
+                try{
+                    serviceResults = await dispatchService(dockerImage, inputFS, args);
+                }
+                catch(e){
+                    // todo: handle failure. 
+                    const rcpterr = await postTrx("serviceError", account_dsp, jobID, "", dapps.toFixed());
+                    break;
+                }
+                // post results
+                let servicercpt = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port, dapps.toFixed());
+                setInterval(async ()=>{
+                    let servicercpt2 = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port, await DAPPsFor(24 * 60) + await EthGAS2DAPPs(gasForCallback * gasPrice));
+                    console.log(`posting alive`,consumer,jobImage);    
+                    // todo: kill if not enough gas
+                },1000 * 60 * 60 * 24)
+                // todo: set a timer to periodically post serviceCallback
+                console.log(`posted service results`,consumer,jobImage, serviceResults.port);
+                break;
+            case "job":
+                // run dispatcher
+                const start = Date.now();
+                let dispatchResult
+                try{
+                    dispatchResult  = await dispatch(dockerImage, inputFS, args);
+                }
+                catch(e){
+                    // todo: handle failure. 
+                    const rcpterr = await postTrx("jobError", account_dsp, jobID,  "", dapps.toFixed());
+                    break;
+                }
+                // todo: kill docker if running too long and fail with not enough gas
+
+                // measure time
+                const millis = Date.now() - start;
+                dapps += (await DAPPsFor((millis / (1000 * 60))) + 1 );
+                // post results
+                const { outputFS } = dispatchResult;
+
+                const rcpt = await postTrx("jobCallback", account_dsp, jobID,  outputFS, dapps.toFixed());
+                console.log(`posted results`,consumer,jobImage);        
+                break;
+            default:
+                // todo: callback error                
+                break;
+        }
+
     });
     theContract.events["JobDone"]({
         fromBlock: fromBlock || 0
     }, async function (error, result) {
         if (error) {
-            console.log(error);
+            console.log("event error",error);
             return;
         }
+
         // run dispatcher
         const returnValues = result.returnValues;
         let fidx = 0;        
@@ -143,71 +277,12 @@ function subscribe(theContract: any) {
             inconsistent:returnValues[fidx++],
             jobID:returnValues[fidx++],
         }
-        console.log(`got final results`,obj);
+        if(pendingJobs[obj.jobID]){
+            await pendingJobs[obj.jobID](obj);
+            delete pendingJobs[obj.jobID];
+        }
+        // console.log(`got final results`,obj);
     });
     
 }
 
-async function postTrx(method, account_from,...args) {
-    const theContract2 = new web3.eth.Contract(
-        abi,
-        address,
-        {
-            from:account_from.address
-        }
-    );
-    const nexusTx = theContract2.methods[method](...args);
-    
-    const createTransaction = await web3.eth.accounts.signTransaction({
-        from: account_from.address,
-        to:address,
-        data: await nexusTx.encodeABI(),
-        gas: await nexusTx.estimateGas(),
-    }, account_from.privateKey);
-    const createReceipt = await web3.eth.sendSignedTransaction(createTransaction.rawTransaction);
-    return createReceipt;
-}
-
-
-// move to client lib
-const pendingJobs = {}
-async function postTrxAndWait(method, account_from,...args) {
-    const theContract2 = new web3.eth.Contract(
-        abi,
-        address,
-        {
-            from:account_from.address
-        }
-    );
-    const nexusTx = theContract2.methods[method](...args);
-    
-    const createTransaction = await web3.eth.accounts.signTransaction({
-        from: account_from.address,
-        to:address,
-        data: await nexusTx.encodeABI(),
-        gas: await nexusTx.estimateGas(),
-    }, account_from.privateKey);
-    const createReceipt = await web3.eth.sendSignedTransaction(createTransaction.rawTransaction);
-    
-    // todo: get jobid and save in pendingJobs
-    return new Promise(function(resolve){
-
-        return createReceipt;
-    });
-    
-}
-
-
-async function callTrx(method, account_from,...args) {
-    const theContract2 = new web3.eth.Contract(
-        abi,
-        address,
-        {
-            from:account_from.address
-        }
-    );
-    const result = await theContract2.methods[method](...args).call({from:account_from.address,
-        to:address});
-    
-    return result;
-}

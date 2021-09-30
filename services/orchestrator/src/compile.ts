@@ -1,6 +1,7 @@
 const solc = require('solc');
 const fs = require('fs');
 const path = require('path');
+export let contractWrapper = {abi:null, contractFile:null,address:null};
 export function readFileCallback(sourcePath) {
     // if (options.basePath)
       sourcePath = path.resolve('.',sourcePath);
@@ -30,11 +31,15 @@ export const compile = async () => {
             },
         },
     };
+    
     const callbacks = { 'import': readFileCallback };
     const tempFile = JSON.parse(solc.compile(JSON.stringify(input), callbacks));
     if (tempFile.errors) {
         console.log(tempFile.errors);
         // throw new Error("compilation failed");
     }
-    return await tempFile.contracts['Nexus.sol']['Nexus'];
+    let contractFile = await tempFile.contracts['Nexus.sol']['Nexus']
+    contractWrapper.abi = contractFile.abi;
+    contractWrapper.contractFile = contractFile;
+    return contractFile;
 };
