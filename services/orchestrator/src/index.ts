@@ -16,7 +16,7 @@ provider.on('error', e => console.log('WS Error', e));
 function socketError(e){
     console.log('WS closed');
     console.log('Attempting to reconnect...');
-    let provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR);
+    const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR);
 
     provider.on('connect', function () {
         console.log('WSS Reconnected');
@@ -52,7 +52,7 @@ async function setImage(alias,image = null, jobType = "job"){
 const run = async()=>{    
     let init = false;
     const contractFile = await compile();
-    let bytecode = contractFile.evm.bytecode.object;
+    const bytecode = contractFile.evm.bytecode.object;
     abi = contractFile.abi;
     
     /// deploy contract if needed
@@ -93,6 +93,7 @@ const run = async()=>{
     if(init){
         await testConsumer(dspAccount.address);
     }
+    console.log(`Deployed to: ${address}`);
 }
 
 run() ;
@@ -221,9 +222,9 @@ function subscribe(theContract: any) {
                     break;
                 }
                 // post results
-                let servicercpt = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port, dapps.toFixed());
+                const servicercpt = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port, dapps.toFixed());
                 setInterval(async ()=>{
-                    let servicercpt2 = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port, await DAPPsFor(24 * 60) + await EthGAS2DAPPs(gasForCallback * gasPrice));
+                    const servicercpt2 = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port, await DAPPsFor(24 * 60) + await EthGAS2DAPPs(gasForCallback * gasPrice));
                     console.log(`posting alive`,consumer,jobImage);    
                     // todo: kill if not enough gas
                 },1000 * 60 * 60 * 24)
