@@ -1,5 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.7.0 <0.9.0;
+// import "@openzeppelin/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 import "../node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -271,6 +273,8 @@ contract Nexus is Ownable {
         jd.dataHash[uint256(founds)] = dataHash;
         return inconsistent;
     }
+
+    // callback to chain
     function jobCallback(uint256 jobID, string memory outputFS, uint256 dapps) public {
         
         bytes32 dataHash = keccak256(abi.encodePacked(outputFS));
@@ -309,6 +313,8 @@ contract Nexus is Ownable {
 
 
     }
+    
+    // event listen to from client
     function serviceCallback(uint256 jobID, uint256 port, uint256 dapps) public {        
         // TODO: apply usage in dapps
         
