@@ -22,7 +22,7 @@ services:
   eth:
     image: trufflesuite/ganache-cli:latest
     ports:
-      - "8545"
+      - "8545:8545"
     command:
       - --defaultBalanceEther
       - "1000000"
