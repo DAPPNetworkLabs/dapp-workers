@@ -5,12 +5,19 @@ import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import lib from '../../lib/index';
 
+const ethereum = window.ethereum;
+
 class Home extends Component {
     constructor(props) {
         super(props);
         this.state = {
             account: null
         }
+    }
+
+    componentDidMount() {
+        const accounts = ethereum.request({ method: 'eth_requestAccounts' });
+        this.setState({ account: accounts[0] });
     }
   
     render() {
