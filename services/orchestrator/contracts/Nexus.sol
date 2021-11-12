@@ -21,11 +21,13 @@ contract Nexus is Ownable {
         address indexed dsp,
         uint256 amount
     );
+
     event ClaimedGas(
         address indexed consumer,
         address indexed dsp,
         uint256 amount
     );
+
     event JobResult(
         address indexed consumer, 
         address indexed dsp,
@@ -55,6 +57,7 @@ contract Nexus is Ownable {
         address indexed dsp,
         uint256 amount
     );
+
     event Run(
         address indexed consumer,
         string imageName,
@@ -69,14 +72,25 @@ contract Nexus is Ownable {
         uint256 id
     );
 
-
     event DSPStatusChanged(
         address indexed dsp,
         bool active,
         string endpoint
     );
+    
+    event DockerSet(
+        address owner,
+        string imageName,
+        string image,
+        string imageHash,
+        string imageType
+    );
 
-
+    event DockerApprovalChanged(
+        address indexed dsp,
+        string image,
+        bool approved
+    );
 
     struct PerConsumerDSPEntry {
         uint256 amount;
@@ -94,7 +108,6 @@ contract Nexus is Ownable {
         address[] dsps;
         bool callback;
         // Process[] runningProcesses;
-
     }
 
     struct JobData {
@@ -118,29 +131,14 @@ contract Nexus is Ownable {
         string imageType;
     }
 
-    
-    event DockerSet(
-        address owner,
-        string imageName,
-        string image,
-        string imageHash,
-        string imageType
-    );
-
-    event DockerApprovalChanged(
-        address indexed dsp,
-        string image,
-        bool approved
-    );
-
     mapping(address => RegisteredDSP) public registeredDSPs;
     mapping(address => mapping(address => PerConsumerDSPEntry)) public dspData;
     mapping(address => Consumer) public consumerData;
-    mapping(uint256 => JobData) public jobs;    
-    mapping(uint256 => ServiceData) public services;    
-    uint256 public lastJobID;
-    
+    mapping(uint256 => JobData) public jobs;
+    mapping(uint256 => ServiceData) public services;
+    mapping(string => DockerImage) internal dockerImages;
 
+    uint256 public lastJobID;
 
     constructor (
         // string memory manifest,
@@ -148,18 +146,31 @@ contract Nexus is Ownable {
         ) {
         // token = IERC20(_tokenContract);
     }
+    
+    /**
+     * @dev convert address type to string
+     */
     function toString(address account) public pure returns(string memory) {
         return toString(abi.encodePacked(account));
     }
-
+    
+    /**
+     * @dev converts uint256 to string
+     */
     function toString(uint256 value) public pure returns(string memory) {
         return toString(abi.encodePacked(value));
     }
-
+    
+    /**
+     * @dev converts bytes32 value to string
+     */
     function toString(bytes32 value) public pure returns(string memory) {
         return toString(abi.encodePacked(value));
     }
-
+    
+    /**
+     * @dev converts bytes value to string
+     */
     function toString(bytes memory data) public pure returns(string memory) {
         bytes memory alphabet = "0123456789abcdef";
 
@@ -172,26 +183,44 @@ contract Nexus is Ownable {
         }
         return string(str);
     }
-    function setQuorum(address consumer, address[] calldata dsps) public {        
+    
+    /**
+     * @dev sets quorum of dsp addresses, requires all dsps be active
+     */
+    function setQuorum(address consumer, address[] calldata dsps) public {    
         if(consumerData[msg.sender].owner != address(0)){
             require(consumerData[msg.sender].owner == msg.sender, "not owner");
         }
-        else
+        else {
             require(consumer == msg.sender,  toString(msg.sender));
+        }
         
-        for (uint i=0; i<dsps.length; i++) {   
+        for (uint i=0; i<dsps.length; i++) {
             require(registeredDSPs[dsps[i]].active, "dsp not active");
-        }       
-        consumerData[consumer].dsps = dsps;     
-    }
+        }
 
+        consumerData[consumer].dsps = dsps;
+    }
+    
+    /**
+     * @dev create consumer data entry
+     */
     function setConsumerPermissions(address owner) public {
-        
         consumerData[msg.sender].owner = owner;
     }
+    
+    /**
+     * @dev set whether to call callback or not
+     * @thought shouldn't it not be a blanket bool for all job callbacks
+     * but instead configurable per job?
+     */
     function setConsumerCallback(bool enabled) public {
         consumerData[msg.sender].callback = enabled;
     }
+    
+    /**
+     * @dev transfer DAPP to contract to process jobs
+     */
     // holds snapshots
     function buyGasFor(
         uint256 _amount,
@@ -208,32 +237,41 @@ contract Nexus is Ownable {
         dspData[_consumer][_dsp].amount += _amount;
         emit BoughtGas(_consumer, _dsp, _amount);
     }
+    
+    /**
+     * @dev return DAPP
+     */
     function sellGas(
         uint256 _amountToSell,
         address _dsp
     ) public {
-        address _consumer = msg.sender;                 
+        address _consumer = msg.sender;
         // decrease reserve for user->dsp
-        if(_amountToSell > dspData[_consumer][_dsp].amount){
-            // throw
-        }
+        require(!(_amountToSell > dspData[_consumer][_dsp].amount),"overdrawn balance");
         dspData[_consumer][_dsp].amount -= _amountToSell;
         token.safeTransferFrom(address(this),_consumer, _amountToSell);
         emit SoldGas(_consumer, _dsp, _amountToSell);
     }
+    
+    /**
+     * @dev user DAPP gas, vroom
+     */
     function useGas(
         address _consumer,
         uint256 _amountToUse,
         address _dsp
     ) internal {
-        
         require(_amountToUse <= dspData[_consumer][_dsp].amount, "not enough gas");
 
         dspData[_consumer][_dsp].amount -= _amountToUse;        
         dspData[_consumer][_dsp].claimable += _amountToUse;
         emit UsedGas(_consumer, _dsp, _amountToUse);
     }
-
+    
+    /**
+     * @dev allows dsp to claim for consumer
+     * @thought perhaps there is a claim all
+     */
     function claimFor(
         address _consumer,
         address _dsp
@@ -245,8 +283,10 @@ contract Nexus is Ownable {
         token.safeTransferFrom(address(this), _dsp, claimableAmount);
         emit ClaimedGas(_consumer, _dsp, claimableAmount);
     }
-
-
+    
+    /**
+     * @dev ensures returned data hash is universally accepted
+     */
     function submitResEntry(uint256 jobID,bytes32 dataHash) private returns (bool) {
         JobData storage jd = jobs[jobID];
         // address _consumer = jd.owner;
@@ -273,8 +313,10 @@ contract Nexus is Ownable {
         jd.dataHash[uint256(founds)] = dataHash;
         return inconsistent;
     }
-
-    // callback to chain
+    
+    /**
+     * @dev determines data hash consistency and performs optional callback
+     */
     function jobCallback(uint256 jobID, string memory outputFS, uint256 dapps) public {
         
         bytes32 dataHash = keccak256(abi.encodePacked(outputFS));
@@ -304,18 +346,20 @@ contract Nexus is Ownable {
         emit JobResult(_consumer, _dsp, outputFS, dapps, jobID);
         // calc gas usage and deduct from quota as DAPPs (using Bancor) or as eth
         // todo: compensate for gas
+        // thought: would it be best to compensate in each trx adding 
+        // thought: cost or to allow the DSP to perform daily all at once
         // token.safeTransferFrom(address(this), _dsp, claimableAmount);
         if(jd.dsps.length != jd.resultsCount){
             return;          
         }
         emit JobDone(_consumer, outputFS,inconsistent, jobID);
-
-
-
     }
     
+    /**
+     * @dev 
+     */
     // event listen to from client
-    function serviceCallback(uint256 jobID, uint256 port, uint256 dapps) public {        
+    function serviceCallback(uint256 jobID, uint256 port, uint256 dapps) public {
         // TODO: apply usage in dapps
         
 
@@ -326,22 +370,36 @@ contract Nexus is Ownable {
         sd.ports[msg.sender] = port;
         emit ServiceRunning(_consumer, msg.sender, jobID, port);
     }
+    
+    /**
+     * @dev handle job error
+     */
     function jobError(uint256 jobID, string calldata  stdErr, string calldata outputFS) public {
 
     }
-
+    
+    /**
+     * @dev handle service error
+     */
     function serviceError(uint256 jobID, string calldata  stdErr, string calldata outputFS) public {
 
     }
+    
+    /**
+     * @dev compare strings by hash
+     */
     function compareStrings(string memory a, string memory b) internal view returns (bool) {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
     }
+    
+    /**
+     * @dev run job or service
+     */
     function run(address consumer, string calldata imageName, string calldata inputFS, string[] calldata args) public {
         // address _consumer = msg.sender;    
         if(consumerData[consumer].owner != address(0)){
             require(consumerData[consumer].owner == msg.sender);
-        }
-        else{
+        } else {
             require(consumer == msg.sender);
         }
         lastJobID = lastJobID + 1;
@@ -351,13 +409,16 @@ contract Nexus is Ownable {
             jd.owner = consumer;
         } else if(compareStrings(dockerImages[imageName].imageType, "service")){
             ServiceData storage sd = services[lastJobID];
-            sd.dsps = consumerData[consumer].dsps;     
+            sd.dsps = consumerData[consumer].dsps;
             sd.owner = consumer;
-        }        
+        }
 
         emit Run(consumer, imageName,inputFS,args, lastJobID, dockerImages[imageName].imageType);
     }
-   
+    
+    /**
+     * @dev active and set endpoint for dsp
+     */
     function regDSP(string memory endpoint) public {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].active = true;
@@ -367,14 +428,19 @@ contract Nexus is Ownable {
         emit DSPStatusChanged(_dsp, true, endpoint);
     }
     
+    /**
+     * @dev deprecate dsp
+     */
     function deprecateDSP() public {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].active = false;
+        registeredDSPs[_dsp].endpoint = "";
         emit DSPStatusChanged(_dsp, false,"");
     }
     
-    mapping(string => DockerImage) internal dockerImages;
-
+    /**
+     * @dev set docker image
+     */
     function setDockerImage(string memory imageName, string memory imageAddress, string memory imageHash, string memory imageType) public onlyOwner {
         address owner = msg.sender;        
         dockerImages[imageName].image = imageAddress;
@@ -384,31 +450,53 @@ contract Nexus is Ownable {
         
         emit DockerSet(owner,imageName,imageAddress,imageHash,imageType);
     }
+    
+    /**
+     * @dev returns docker image
+     */
     function getDockerImage(string memory imageName) public view returns (string memory) {
         return dockerImages[imageName].image;
     }
+    
+    /**
+     * @dev returns approval status of image for dsp
+     * @thought, why not enable someone else to call dsp
+     */
     function isImageApprovedForDSP(string memory imageName) public view returns (bool) {
         address _dsp = msg.sender;
         return registeredDSPs[_dsp].approvedImages[imageName];
     }
- 
+    
+    /**
+     * @dev approve docker image for dsp
+     */
     function approveDockerForDSP(string memory imageName) public {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].approvedImages[imageName] = true;        
         emit DockerApprovalChanged(_dsp,imageName,true);
     }
+    
+    /**
+     * @dev unapprove docker image for dsp
+     */
     function unapproveDockerForDSP(string memory imageName) public  {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].approvedImages[imageName] = false;
         emit DockerApprovalChanged(_dsp,imageName,false);
     }
-
+    
+    /**
+     * @dev returns port for dsp and job id
+     */
     function getPortForDSP(uint256 jobID, address dsp) public view returns (uint256) {        
         ServiceData storage sd = services[jobID];
         return sd.ports[dsp];
     }
+    
+    /**
+     * @dev returns dsp endpoint
+     */
     function getDSPEndpoint(address dsp) public view returns (string memory) {
-        
         return registeredDSPs[dsp].endpoint;
     }
 }
