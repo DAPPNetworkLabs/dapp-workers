@@ -5,6 +5,11 @@ const login = async (thisObject) => {
     thisObject.setState({ account: accounts[0] });
 }
 
+const logout = async (thisObject) => {
+    thisObject.setState({ account: null });
+}
+
 export default { 
-    login
+    login,
+    logout
 }

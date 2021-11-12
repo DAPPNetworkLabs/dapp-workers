@@ -10,6 +10,8 @@ const header = (props) => {
         <div><img className={classes.logo} src={Logo} alt="LiquidApps Logo"/></div>
         <Button 
             login={props.login}
+            logout={props.logout}
+            account={props.account}
         ></Button>
     </div>
   );

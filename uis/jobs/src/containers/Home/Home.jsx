@@ -25,6 +25,8 @@ class Home extends Component {
             <div>
                 <Header
                     login={()=>lib.metamask.login(this)}
+                    logout={()=>lib.metamask.logout(this)}
+                    account={this.state.account}
                 />
                 <Footer/>
             </div>
