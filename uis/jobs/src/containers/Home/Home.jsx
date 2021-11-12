@@ -1,11 +1,11 @@
 
 import React, { Component } from 'react';
 import classes from './Home.module.scss';
-import Header from 'components/Header/Header';
-import Footer from 'components/Footer/Footer';
+import Header from '../../components/Header/Header';
+import Footer from '../../components/Footer/Footer';
 
 import Web3 from 'web3';
-import NexusJSON from '../../abi/Nexus.json'
+import NexusJSON from '../../abi/Nexus.json';
 
 const fetchJobs = async () => {
   const web3 = new Web3('http://localhost:8545');
@@ -23,13 +23,13 @@ class Home extends Component {
     }
   
     render() {
-      fetchJobs()
-      return (
-        <div>
-          <Header/>
-          <Footer/>
-        </div>
-      );
+        fetchJobs();
+        return (
+            <div>
+                <Header/>
+                <Footer/>
+            </div>
+        );
     }
   }
   
