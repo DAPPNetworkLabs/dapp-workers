@@ -211,7 +211,7 @@ contract Nexus is Ownable {
     
     /**
      * @dev set whether to call callback or not
-     * @thought shouldn't it not be a blanket bool for all job callbacks
+     * - thought shouldn't it not be a blanket bool for all job callbacks
      * but instead configurable per job?
      */
     function setConsumerCallback(bool enabled) public {
@@ -270,7 +270,7 @@ contract Nexus is Ownable {
     
     /**
      * @dev allows dsp to claim for consumer
-     * @thought perhaps there is a claim all
+     * - thought perhaps there is a claim all
      */
     function claimFor(
         address _consumer,
@@ -460,7 +460,7 @@ contract Nexus is Ownable {
     
     /**
      * @dev returns approval status of image for dsp
-     * @thought, why not enable someone else to call dsp
+     * - thought, why not enable someone else to call dsp
      */
     function isImageApprovedForDSP(string memory imageName) public view returns (bool) {
         address _dsp = msg.sender;

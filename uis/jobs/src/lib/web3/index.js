@@ -3,7 +3,7 @@ import NexusJSON from '../../abi/Nexus.json';
 
 const jobs = [];
 
-const fetchJobs = async () => {
+const fetchJobs = async (thisObject) => {
     const web3 = new Web3('http://localhost:8545');
     const contractAddress = "0x94D387F50569200aDACFd903345D077ef6ABcE11";
     const contract = new web3.eth.Contract(NexusJSON.abi,contractAddress);
@@ -14,6 +14,7 @@ const fetchJobs = async () => {
         jobs.push(job);
     }
     console.log(jobs);
+    thisObject.setState({jobs: JSON.stringify(jobs)});
 }
 
 export default { 
