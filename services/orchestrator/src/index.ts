@@ -229,7 +229,7 @@ function subscribe(theContract: any) {
                     // todo: kill if not enough gas
                 },1000 * 60 * 60 * 24)
                 // todo: set a timer to periodically post serviceCallback
-                console.log(`posted service results`,consumer,jobImage, serviceResults.port);
+                console.log(`posted service results`,consumer,jobImage, serviceResults.port,dapps.toFixed());
                 break;
             case "job":
                 // run dispatcher
