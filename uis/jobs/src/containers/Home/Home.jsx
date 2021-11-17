@@ -8,6 +8,7 @@ import PostJobOrService from '../../components/Home/PostJobOrService/PostJobOrSe
 import RunJob from '../../components/Home/RunJob/RunJob';
 import RunService from '../../components/Home/RunService/RunService';
 import SetDockerImage from '../../components/Home/SetDockerImage/SetDockerImage';
+import ApproveDocker from '../../components/Home/ApproveDocker/ApproveDocker';
 import Footer from '../../components/Footer/Footer';
 import lib from '../../lib/index';
 
@@ -41,6 +42,9 @@ class Home extends Component {
                 imageAddress: '',
                 imageHash: '',
                 imageType: ''
+            },
+            approveDocker: {
+                imageName: ''
             }
         }
         this.handleChange = this.handleChange.bind(this);
@@ -92,6 +96,10 @@ class Home extends Component {
                 />
                 <SetDockerImage
                     setDockerImage={()=>lib.web3.setDockerImage(this.state.setDockerImage)}
+                    onChange={this.handleChange}
+                />
+                <ApproveDocker
+                    approveDocker={()=>lib.web3.approveDocker(this.state.approveDocker)}
                     onChange={this.handleChange}
                 />
                 <Footer/>

@@ -54,7 +54,7 @@ const postJobOrService = async (form) => {
 const runJob = async (form) => {
     const abi = returnAbi("jobCallback");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        form.jobID,
+        form.jobId,
         form.outputFS,
         form.dapps
     ]);
@@ -73,7 +73,7 @@ const runJob = async (form) => {
 const runService = async (form) => {
     const abi = returnAbi("serviceCallback");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        form.serviceJobID,
+        form.jobId,
         form.port,
         form.serviceDapps
     ]);
@@ -88,10 +88,23 @@ const runService = async (form) => {
 const setDockerImage = async (form) => {
     const abi = returnAbi("setDockerImage");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        form.setDockerImageName,
+        form.imageName,
         form.imageAddress,
         form.imageHash,
         form.imageType
+    ]);
+
+    const txHash = await runTrx(data);
+    // await contract.events.DockerSet({}, function(error, event){
+    //     console.log(error);
+    //     console.log(event);
+    // });
+}
+
+const approveDockerImage = async (form) => {
+    const abi = returnAbi("approveDockerForDSP");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        form.imageName
     ]);
 
     const txHash = await runTrx(data);
@@ -124,5 +137,6 @@ export default {
     postJobOrService,
     runJob,
     runService,
-    setDockerImage
+    setDockerImage,
+    approveDockerImage
 }
