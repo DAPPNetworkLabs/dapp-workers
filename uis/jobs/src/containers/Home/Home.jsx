@@ -9,6 +9,7 @@ import RunJob from '../../components/Home/RunJob/RunJob';
 import RunService from '../../components/Home/RunService/RunService';
 import SetDockerImage from '../../components/Home/SetDockerImage/SetDockerImage';
 import ApproveDocker from '../../components/Home/ApproveDocker/ApproveDocker';
+import DspInfo from '../../components/Home/DspInfo/DspInfo';
 import Footer from '../../components/Footer/Footer';
 import lib from '../../lib/index';
 
@@ -45,6 +46,9 @@ class Home extends Component {
             },
             approveDocker: {
                 imageName: ''
+            },
+            registeredDSPs: {
+                dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             }
         }
         this.handleChange = this.handleChange.bind(this);
@@ -99,7 +103,11 @@ class Home extends Component {
                     onChange={this.handleChange}
                 />
                 <ApproveDocker
-                    approveDocker={()=>lib.web3.approveDocker(this.state.approveDocker)}
+                    approveDocker={()=>lib.web3.approveDockerImage(this.state.approveDocker)}
+                    onChange={this.handleChange}
+                />
+                <DspInfo
+                    fetchDspInfo={()=>lib.web3.fetchDspInfo(this.state.registeredDSPs.dsp)}
                     onChange={this.handleChange}
                 />
                 <Footer/>

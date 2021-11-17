@@ -26,6 +26,11 @@ const fetchJobs = async (thisObject) => {
     thisObject.setState({jobs: JSON.stringify(jobs)});
 }
 
+const fetchDspInfo = async (dsp) => {
+    console.log(await contract.methods.registeredDSPs(dsp).call());
+    // return await contract.methods.registeredDSPs(dsp).call();
+}
+
 const fetchServices = async (thisObject) => {
     for(let i=0; i < await fetchLastJob(); i++) {
         const job = await contract.methods.services(i).call();
@@ -134,6 +139,7 @@ const runTrx = async (data) => {
 export default { 
     fetchJobs,
     fetchServices,
+    fetchDspInfo,
     postJobOrService,
     runJob,
     runService,
