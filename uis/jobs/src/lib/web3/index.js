@@ -37,12 +37,56 @@ const fetchDspInfo = async (dsp) => {
     // return await contract.methods.registeredDSPs(dsp).call();
 }
 
+const fetchDspData = async (dsp) => {
+    console.log(await contract.methods.dspData(dsp).call());
+    // return await contract.methods.dspData(dsp).call();
+}
+
+const fetchConsumerData = async (consumer) => {
+    console.log(await contract.methods.consumerData(consumer).call());
+    // return await contract.methods.consumerData(consumer).call();
+}
+
+const fetchDockerImage = async (image) => {
+    console.log(await contract.methods.dockerImages(image).call());
+    // return await contract.methods.dockerImages(image).call();
+}
+
 const fetchServices = async (thisObject) => {
     for(let i=0; i < await fetchLastJob(); i++) {
         const job = await contract.methods.services(i).call();
         services.push(job);
     }
     thisObject.setState({services: JSON.stringify(services)});
+}
+
+const fetchJobImage = async (thisObject) => {
+    const imageName = await contract.methods.getDockerImage(
+        thisObject.state.getDockerImage.imageName
+    ).call();
+    thisObject.setState({image: imageName});
+}
+
+const fetchIsImageApprovedForDSP = async (thisObject) => {
+    const approvedImage = await contract.methods.isImageApprovedForDSP(
+        thisObject.state.isImageApprovedForDSP.imageName
+    ).call();
+    thisObject.setState({approvedImage});
+}
+
+const fetchPortForDSP = async (thisObject) => {
+    const port = await contract.methods.getPortForDSP(
+        thisObject.state.getPortForDSP.jobID,
+        thisObject.state.getPortForDSP.dsp
+    ).call();
+    thisObject.setState({port});
+}
+
+const fetchEndpointForDSP = async (thisObject) => {
+    const endpoint = await contract.methods.getDSPEndpoint(
+        thisObject.state.getDSPEndpoint.dsp
+    ).call();
+    thisObject.setState({endpoint});
 }
 
 const postJobOrService = async (thisObject) => {
@@ -90,30 +134,97 @@ const setDockerImage = async (thisObject) => {
 const approveDockerImage = async (thisObject) => {
     const abi = returnAbi("approveDockerForDSP");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.imageName
+        thisObject.state.approveDocker.imageName
     ]);
     await runTrx(data,["DockerApprovalChanged"],thisObject);
 }
 
-    /*
+const unapproveDockerImage = async (thisObject) => {
+    const abi = returnAbi("unapproveDockerForDSP");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.unapproveDockerForDSP.imageName
+    ]);
+    await runTrx(data,["DockerApprovalChanged"],thisObject);
+}
 
-        getDSPEndpoint
-        getPortForDSP
-        unapproveDockerForDSP
-        isImageApprovedForDSP
-        getDockerImage
-        deprecateDSP
-        regDSP
-        claimFor
-        sellGas
-        buyGasFor
-        setConsumerCallback
-        setConsumerPermissions
-        setQuorum
-        jobError
-        serviceError
+const deprecateDSP = async (thisObject) => {
+    const abi = returnAbi("deprecateDSP");
+    const data = web3.eth.abi.encodeFunctionCall(abi, []);
+    await runTrx(data,["DSPStatusChanged"],thisObject);
+}
 
-    */
+const regDSP = async (thisObject) => {
+    const abi = returnAbi("regDSP");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.regDSP.endpoint
+    ]);
+    await runTrx(data,["DSPStatusChanged"],thisObject);
+}
+
+const claimFor = async (thisObject) => {
+    const abi = returnAbi("claimFor");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.claimFor._consumer,
+        thisObject.state.claimFor._dsp
+    ]);
+    await runTrx(data,["ClaimedGas"],thisObject);
+}
+
+const sellGas = async (thisObject) => {
+    const abi = returnAbi("sellGas");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.sellGas._amountToSell,
+        thisObject.state.sellGas._dsp
+    ]);
+    await runTrx(data,["SoldGas"],thisObject);
+}
+
+const buyGasFor = async (thisObject) => {
+    const abi = returnAbi("buyGasFor");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.buyGasFor._amount,
+        thisObject.state.buyGasFor._consumer,
+        thisObject.state.buyGasFor._dsp
+    ]);
+    await runTrx(data,["BoughtGas"],thisObject);
+}
+
+const setConsumerCallback = async (thisObject) => {
+    const abi = returnAbi("setConsumerCallback");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.setConsumerCallback.enabled
+    ]);
+    await runTrx(data,[],thisObject);
+}
+
+const setConsumerPermissions = async (thisObject) => {
+    const abi = returnAbi("setConsumerPermissions");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.setConsumerPermissions.owner
+    ]);
+    await runTrx(data,[],thisObject);
+}
+
+const setQuorum = async (thisObject) => {
+    const abi = returnAbi("setQuorum");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.setQuorum.consumer,
+        thisObject.state.setQuorum.dsps
+    ]);
+    await runTrx(data,[],thisObject);
+}
+
+const jobError = async (thisObject) => {
+    const abi = returnAbi("jobError");
+    const data = web3.eth.abi.encodeFunctionCall(abi, []);
+    await runTrx(data,[],thisObject);
+}
+
+const serviceError = async (thisObject) => {
+    const abi = returnAbi("serviceError");
+    const data = web3.eth.abi.encodeFunctionCall(abi, []);
+    await runTrx(data,[],thisObject);
+}
 
 const runTrx = async (data,events,thisObject) => {
     const trxInfo = {
@@ -151,10 +262,28 @@ const runTrx = async (data,events,thisObject) => {
 export default { 
     fetchJobs,
     fetchServices,
+    fetchJobImage,
+    fetchIsImageApprovedForDSP,
+    fetchPortForDSP,
+    fetchEndpointForDSP,
     fetchDspInfo,
+    fetchDspData,
+    fetchConsumerData,
+    fetchDockerImage,
     postJobOrService,
     runJob,
     runService,
     setDockerImage,
-    approveDockerImage
+    approveDockerImage,
+    unapproveDockerImage,
+    deprecateDSP,
+    regDSP,
+    claimFor,
+    sellGas,
+    buyGasFor,
+    setConsumerCallback,
+    setConsumerPermissions,
+    setQuorum,
+    jobError,
+    serviceError
 }

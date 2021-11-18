@@ -25,6 +25,12 @@ class Home extends Component {
             services: [],
             connectInfo: null,
             disconnectInfo: null,
+            trxInfo: null,
+            events: [],
+            image:null,
+            port:null,
+            endpoint:null,
+            approvedImage:null,
             run: {
                 consumer: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
                 imageName: 'rust-compiler',
@@ -53,8 +59,58 @@ class Home extends Component {
             registeredDSPs: {
                 dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
-            trxInfo: null,
-            events: []
+            getDockerImage: {
+                imageName:''
+            },
+            isImageApprovedForDSP: {
+                imageName:''
+            },
+            getPortForDSP: {
+                jobID:'',
+                dsp:''
+            },
+            getDSPEndpoint: {
+                dsp:''
+            },
+            unapproveDockerForDSP: {
+                imageName:''
+            },
+            regDSP: {
+                endpoint:''
+            },
+            claimFor: {
+                _consumer:'',
+                _dsp:''
+            },
+            sellGas: {
+                _amountToSell:'',
+                _dsp:''
+            },
+            buyGasFor: {
+                _amount:'',
+                _consumer:'',
+                _dsp:''
+            },
+            setConsumerCallback: {
+                enabled:null
+            },
+            setConsumerPermissions: {
+                owner:''
+            },
+            setQuorum: {
+                consumer:'',
+                dsps:[]
+            },
+            jobError: {
+                jobID:'',
+                stdErr:'',
+                outputFS:''
+            },
+            serviceError: {
+                jobID:'',
+                stdErr:'',
+                outputFS:''
+            }
         }
         this.handleChange = this.handleChange.bind(this);
     }
@@ -120,6 +176,26 @@ class Home extends Component {
                     fetchDspInfo={()=>lib.web3.fetchDspInfo(this.state.registeredDSPs.dsp)}
                     onChange={this.handleChange}
                 />
+                {/* 
+                    dspData
+                    consumerData
+                    dockerImages
+                    getDSPEndpoint
+                    getPortForDSP
+                    unapproveDockerForDSP
+                    isImageApprovedForDSP
+                    getDockerImage
+                    deprecateDSP
+                    regDSP
+                    claimFor
+                    sellGas
+                    buyGasFor
+                    setConsumerCallback
+                    setConsumerPermissions
+                    setQuorum
+                    jobError
+                    serviceError 
+                */}
                 <Footer/>
             </div>
         );
