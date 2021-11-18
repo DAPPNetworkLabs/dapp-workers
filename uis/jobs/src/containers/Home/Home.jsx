@@ -20,8 +20,11 @@ class Home extends Component {
         super(props);
         this.state = {
             account: null,
+            chainId: null,
             jobs: [],
             services: [],
+            connectInfo: null,
+            disconnectInfo: null,
             run: {
                 consumer: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
                 imageName: 'rust-compiler',
@@ -58,7 +61,12 @@ class Home extends Component {
         const accounts = ethereum.request({ method: 'eth_requestAccounts' });
         lib.web3.fetchJobs(this);
         lib.web3.fetchServices(this);
+        lib.metamask.runHandlers(this);
         this.setState({ account: accounts[0] });
+    }
+
+    componentWillUnmount() {
+        lib.metamask.rmHandlers();
     }
 
     handleChange(event, func) {
