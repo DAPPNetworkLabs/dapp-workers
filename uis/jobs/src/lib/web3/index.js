@@ -3,9 +3,8 @@ import NexusJSON from '../../abi/Nexus.json';
 
 const jobs = [];
 const services = [];
-// const provider = new Web3.providers.WebsocketProvider('ws://localhost:8545');
-// const web3 = new Web3(provider);
-const web3 = new Web3('http://localhost:8545');
+const provider = new Web3.providers.WebsocketProvider('ws://localhost:8545');
+const web3 = new Web3(provider);
 const contractAddress = "0x94D387F50569200aDACFd903345D077ef6ABcE11";
 const contract = new web3.eth.Contract(NexusJSON.abi,contractAddress);
 const ethereum = window.ethereum;
@@ -50,10 +49,10 @@ const postJobOrService = async (form) => {
     ]);
 
     const txHash = await runTrx(data);
-    // await contract.events.Run({}, function(error, event){
-    //     console.log(error);
-    //     console.log(event);
-    // });
+    await contract.events.Run({}, function(error, event){
+        console.log(error);
+        console.log(event);
+    });
 }
 
 const runJob = async (form) => {
@@ -65,14 +64,14 @@ const runJob = async (form) => {
     ]);
 
     const txHash = await runTrx(data);
-    // await contract.events.JobResult({}, function(error, event){
-    //     console.log(error);
-    //     console.log(event);
-    // });
-    // await contract.events.JobDone({}, function(error, event){
-    //     console.log(error);
-    //     console.log(event);
-    // });
+    await contract.events.JobResult({}, function(error, event){
+        console.log(error);
+        console.log(event);
+    });
+    await contract.events.JobDone({}, function(error, event){
+        console.log(error);
+        console.log(event);
+    });
 }
 
 const runService = async (form) => {
@@ -84,10 +83,10 @@ const runService = async (form) => {
     ]);
 
     const txHash = await runTrx(data);
-    // await contract.events.ServiceRunning({}, function(error, event){
-    //     console.log(error);
-    //     console.log(event);
-    // });
+    await contract.events.ServiceRunning({}, function(error, event){
+        console.log(error);
+        console.log(event);
+    });
 }
 
 const setDockerImage = async (form) => {
@@ -100,10 +99,10 @@ const setDockerImage = async (form) => {
     ]);
 
     const txHash = await runTrx(data);
-    // await contract.events.DockerSet({}, function(error, event){
-    //     console.log(error);
-    //     console.log(event);
-    // });
+    await contract.events.DockerSet({}, function(error, event){
+        console.log(error);
+        console.log(event);
+    });
 }
 
 const approveDockerImage = async (form) => {
@@ -113,10 +112,10 @@ const approveDockerImage = async (form) => {
     ]);
 
     const txHash = await runTrx(data);
-    // await contract.events.DockerSet({}, function(error, event){
-    //     console.log(error);
-    //     console.log(event);
-    // });
+    await contract.events.DockerSet({}, function(error, event){
+        console.log(error);
+        console.log(event);
+    });
 }
 
 const runTrx = async (data) => {
