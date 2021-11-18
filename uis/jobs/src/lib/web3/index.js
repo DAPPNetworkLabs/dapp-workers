@@ -32,26 +32,6 @@ const fetchJobs = async (thisObject) => {
     thisObject.setState({jobs: JSON.stringify(jobs)});
 }
 
-const fetchDspInfo = async (dsp) => {
-    console.log(await contract.methods.registeredDSPs(dsp).call());
-    // return await contract.methods.registeredDSPs(dsp).call();
-}
-
-const fetchDspData = async (dsp) => {
-    console.log(await contract.methods.dspData(dsp).call());
-    // return await contract.methods.dspData(dsp).call();
-}
-
-const fetchConsumerData = async (consumer) => {
-    console.log(await contract.methods.consumerData(consumer).call());
-    // return await contract.methods.consumerData(consumer).call();
-}
-
-const fetchDockerImage = async (image) => {
-    console.log(await contract.methods.dockerImages(image).call());
-    // return await contract.methods.dockerImages(image).call();
-}
-
 const fetchServices = async (thisObject) => {
     for(let i=0; i < await fetchLastJob(); i++) {
         const job = await contract.methods.services(i).call();
@@ -87,6 +67,36 @@ const fetchEndpointForDSP = async (thisObject) => {
         thisObject.state.getDSPEndpoint.dsp
     ).call();
     thisObject.setState({endpoint});
+}
+
+const fetchDspInfo = async (thisObject) => {
+    const dspInfo = await contract.methods.registeredDSPs(
+        thisObject.state.registeredDSPs.dsp
+    ).call()
+    thisObject.setState({dspInfo});
+}
+
+const fetchDspData = async (thisObject) => {
+    const dspData = await contract.methods.dspData(
+        thisObject.state.dspData.account,
+        thisObject.state.dspData.dsp
+    ).call();
+    thisObject.setState({dspData});
+}
+
+const fetchConsumerData = async (thisObject) => {
+    const consumerData = await contract.methods.consumerData(
+        thisObject.state.consumerDataForm.consumer
+    ).call();
+    console.log(consumerData)
+    thisObject.setState({consumerData});
+}
+
+const fetchDockerImage = async (thisObject) => {
+    const dockerImage = await contract.methods.dockerImages(
+        thisObject.state.dockerImages.imageName
+    ).call();
+    thisObject.setState({dockerImage});
 }
 
 const postJobOrService = async (thisObject) => {
@@ -216,13 +226,21 @@ const setQuorum = async (thisObject) => {
 
 const jobError = async (thisObject) => {
     const abi = returnAbi("jobError");
-    const data = web3.eth.abi.encodeFunctionCall(abi, []);
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.jobError.jobID,
+        thisObject.state.jobError.stdErr,
+        thisObject.state.jobError.outputFS
+    ]);
     await runTrx(data,[],thisObject);
 }
 
 const serviceError = async (thisObject) => {
     const abi = returnAbi("serviceError");
-    const data = web3.eth.abi.encodeFunctionCall(abi, []);
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.jobError.jobID,
+        thisObject.state.jobError.stdErr,
+        thisObject.state.jobError.outputFS
+    ]);
     await runTrx(data,[],thisObject);
 }
 
