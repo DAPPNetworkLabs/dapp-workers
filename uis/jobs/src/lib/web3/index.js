@@ -13,6 +13,13 @@ const returnAbi = (func) => {
     return NexusJSON.abi.find(el => el.name == func && el.type == "function");
 }
 
+const fetchContractEvent = async (event) => {
+    await contract.events[event]({}, function(error, event){
+        if(error) alert(error);
+        if(event) return event;
+    });
+}
+
 const fetchLastJob = async () => {
     return await contract.methods.lastJobID().call();
 }
@@ -48,11 +55,7 @@ const postJobOrService = async (form) => {
         form.args
     ]);
 
-    const txHash = await runTrx(data);
-    await contract.events.Run({}, function(error, event){
-        console.log(error);
-        console.log(event);
-    });
+    const trxData = await runTrx(data,["Run"]);
 }
 
 const runJob = async (form) => {
@@ -63,15 +66,7 @@ const runJob = async (form) => {
         form.dapps
     ]);
 
-    const txHash = await runTrx(data);
-    await contract.events.JobResult({}, function(error, event){
-        console.log(error);
-        console.log(event);
-    });
-    await contract.events.JobDone({}, function(error, event){
-        console.log(error);
-        console.log(event);
-    });
+    const trxData = await runTrx(data,["JobResult","JobDone"]);
 }
 
 const runService = async (form) => {
@@ -82,11 +77,7 @@ const runService = async (form) => {
         form.serviceDapps
     ]);
 
-    const txHash = await runTrx(data);
-    await contract.events.ServiceRunning({}, function(error, event){
-        console.log(error);
-        console.log(event);
-    });
+    const trxData = await runTrx(data,["ServiceRunning"]);
 }
 
 const setDockerImage = async (form) => {
@@ -98,11 +89,7 @@ const setDockerImage = async (form) => {
         form.imageType
     ]);
 
-    const txHash = await runTrx(data);
-    await contract.events.DockerSet({}, function(error, event){
-        console.log(error);
-        console.log(event);
-    });
+    const trxData = await runTrx(data,["DockerSet"]);
 }
 
 const approveDockerImage = async (form) => {
@@ -111,14 +98,14 @@ const approveDockerImage = async (form) => {
         form.imageName
     ]);
 
-    const txHash = await runTrx(data);
-    await contract.events.DockerSet({}, function(error, event){
-        console.log(error);
-        console.log(event);
-    });
+    const trxData = await runTrx(data,["DockerApprovalChanged"]);
 }
 
-const runTrx = async (data) => {
+const runTrx = async (data,events) => {
+    const trxInfo = {
+        trxHash: null,
+        events: []
+    };
     const transactionParameters = {
         nonce: '0x00',
         gasPrice: '2000000000',
@@ -129,10 +116,16 @@ const runTrx = async (data) => {
         data,
         chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
     };
-    return await ethereum.request({
+    trxInfo.trxHash = await ethereum.request({
         method: 'eth_sendTransaction',
         params: [transactionParameters],
     });
+    if(events.length) {
+        for(const event of events) {
+            trxInfo.events.push({event, response: await fetchContractEvent(event)});
+        }
+    }
+    return trxInfo;
 }
 
 export default { 
