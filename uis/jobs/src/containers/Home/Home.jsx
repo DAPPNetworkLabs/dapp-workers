@@ -52,7 +52,9 @@ class Home extends Component {
             },
             registeredDSPs: {
                 dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
-            }
+            },
+            trxInfo: null,
+            events: []
         }
         this.handleChange = this.handleChange.bind(this);
     }
@@ -95,23 +97,23 @@ class Home extends Component {
                     services={this.state.services}
                 />
                 <PostJobOrService
-                    postJobOrService={()=>lib.web3.postJobOrService(this.state.run)}
+                    postJobOrService={()=>lib.web3.postJobOrService(this)}
                     onChange={this.handleChange}
                 />
                 <RunJob
-                    runJob={()=>lib.web3.runJob(this.state.runJob)}
+                    runJob={()=>lib.web3.runJob(this)}
                     onChange={this.handleChange}
                 />
                 <RunService
-                    runService={()=>lib.web3.runService(this.state.runService)}
+                    runService={()=>lib.web3.runService(this)}
                     onChange={this.handleChange}
                 />
                 <SetDockerImage
-                    setDockerImage={()=>lib.web3.setDockerImage(this.state.setDockerImage)}
+                    setDockerImage={()=>lib.web3.setDockerImage(this)}
                     onChange={this.handleChange}
                 />
                 <ApproveDocker
-                    approveDocker={()=>lib.web3.approveDockerImage(this.state.approveDocker)}
+                    approveDocker={()=>lib.web3.approveDockerImage(this)}
                     onChange={this.handleChange}
                 />
                 <DspInfo

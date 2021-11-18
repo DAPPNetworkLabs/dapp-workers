@@ -13,10 +13,10 @@ const returnAbi = (func) => {
     return NexusJSON.abi.find(el => el.name == func && el.type == "function");
 }
 
-const fetchContractEvent = async (event) => {
-    await contract.events[event]({}, function(error, event){
-        if(error) alert(error);
-        if(event) return event;
+const subscribeContractEvent = (eventName,thisObject) => {
+    contract.once(eventName, function(error, event){
+        console.log({ eventName, event, error });
+        thisObject.setState({events: [...thisObject.state.events, { eventName, event, error }]});
     });
 }
 
@@ -42,69 +42,83 @@ const fetchServices = async (thisObject) => {
         const job = await contract.methods.services(i).call();
         services.push(job);
     }
-    console.log(`services: ${services}`);
     thisObject.setState({services: JSON.stringify(services)});
 }
 
-const postJobOrService = async (form) => {
+const postJobOrService = async (thisObject) => {
     const abi = returnAbi("run");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        form.consumer,
-        form.imageName,
-        form.inputFS,
-        form.args
+        thisObject.state.run.consumer,
+        thisObject.state.run.imageName,
+        thisObject.state.run.inputFS,
+        thisObject.state.run.args
     ]);
-
-    const trxData = await runTrx(data,["Run"]);
+    await runTrx(data,["Run"],thisObject);
 }
 
-const runJob = async (form) => {
+const runJob = async (thisObject) => {
     const abi = returnAbi("jobCallback");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        form.jobId,
-        form.outputFS,
-        form.dapps
+        thisObject.state.runJob.jobId,
+        thisObject.state.runJob.outputFS,
+        thisObject.state.runJob.dapps
     ]);
-
-    const trxData = await runTrx(data,["JobResult","JobDone"]);
+    await runTrx(data,["JobResult","JobDone"],thisObject);
 }
 
-const runService = async (form) => {
+const runService = async (thisObject) => {
     const abi = returnAbi("serviceCallback");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        form.jobId,
-        form.port,
-        form.serviceDapps
+        thisObject.state.runService.jobId,
+        thisObject.state.runService.port,
+        thisObject.state.runService.serviceDapps
     ]);
-
-    const trxData = await runTrx(data,["ServiceRunning"]);
+    await runTrx(data,["ServiceRunning"],thisObject);
 }
 
-const setDockerImage = async (form) => {
+const setDockerImage = async (thisObject) => {
     const abi = returnAbi("setDockerImage");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        form.imageName,
-        form.imageAddress,
-        form.imageHash,
-        form.imageType
+        thisObject.state.setDockerImage.imageName,
+        thisObject.state.setDockerImage.imageAddress,
+        thisObject.state.setDockerImage.imageHash,
+        thisObject.state.setDockerImage.imageType
     ]);
-
-    const trxData = await runTrx(data,["DockerSet"]);
+    await runTrx(data,["DockerSet"],thisObject);
 }
 
-const approveDockerImage = async (form) => {
+const approveDockerImage = async (thisObject) => {
     const abi = returnAbi("approveDockerForDSP");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        form.imageName
+        thisObject.state.imageName
     ]);
-
-    const trxData = await runTrx(data,["DockerApprovalChanged"]);
+    await runTrx(data,["DockerApprovalChanged"],thisObject);
 }
 
-const runTrx = async (data,events) => {
+    /*
+
+        getDSPEndpoint
+        getPortForDSP
+        unapproveDockerForDSP
+        isImageApprovedForDSP
+        getDockerImage
+        deprecateDSP
+        regDSP
+        claimFor
+        sellGas
+        buyGasFor
+        setConsumerCallback
+        setConsumerPermissions
+        setQuorum
+        jobError
+        serviceError
+
+    */
+
+const runTrx = async (data,events,thisObject) => {
     const trxInfo = {
         trxHash: null,
-        events: []
+        error: ''
     };
     const transactionParameters = {
         nonce: '0x00',
@@ -116,16 +130,22 @@ const runTrx = async (data,events) => {
         data,
         chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
     };
-    trxInfo.trxHash = await ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [transactionParameters],
-    });
     if(events.length) {
-        for(const event of events) {
-            trxInfo.events.push({event, response: await fetchContractEvent(event)});
+        for(const name of events) {
+            subscribeContractEvent(name,thisObject);
         }
     }
-    return trxInfo;
+    await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [transactionParameters],
+    })
+    .then((result) => {
+        trxInfo.trxHash = result;
+    })
+    .catch((error) => {
+        trxInfo.error = error;
+    });
+    thisObject.setState({trxInfo});
 }
 
 export default { 
