@@ -47,66 +47,66 @@ class Home extends Component {
                 dapps: 804000
             },
             setDockerImage: {
-                imageName: '',
-                imageAddress: '',
-                imageHash: '',
-                imageType: ''
+                imageName: 'test',
+                imageAddress: 'test',
+                imageHash: 'test',
+                imageType: 'service'
             },
             approveDocker: {
-                imageName: ''
+                imageName: 'test'
             },
             registeredDSPs: {
                 dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
             getDockerImage: {
-                imageName:''
+                imageName:'test'
             },
             isImageApprovedForDSP: {
-                imageName:''
+                imageName:'test'
             },
             getPortForDSP: {
-                jobID:'',
-                dsp:''
+                jobID:'1',
+                dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
             getDSPEndpoint: {
-                dsp:''
+                dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
             unapproveDockerForDSP: {
-                imageName:''
+                imageName:'test'
             },
             regDSP: {
-                endpoint:''
+                endpoint:'http://testing.com'
             },
             claimFor: {
-                _consumer:'',
-                _dsp:''
+                _consumer:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
+                _dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
             sellGas: {
-                _amountToSell:'',
-                _dsp:''
+                _amountToSell:1,
+                _dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
             buyGasFor: {
-                _amount:'',
-                _consumer:'',
-                _dsp:''
+                _amount:1,
+                _consumer:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
+                _dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
             setConsumerCallback: {
                 enabled:null
             },
             setConsumerPermissions: {
-                owner:''
+                owner:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
             setQuorum: {
-                consumer:'',
-                dsps:[]
+                consumer:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
+                dsps:['0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f']
             },
             jobError: {
-                jobID:'',
+                jobID:'1',
                 stdErr:'',
                 outputFS:''
             },
             serviceError: {
-                jobID:'',
+                jobID:'1',
                 stdErr:'',
                 outputFS:''
             },
@@ -118,7 +118,7 @@ class Home extends Component {
                 consumer: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
             dockerImages: {
-                imageName: ''
+                imageName: 'test'
             }
         }
         this.handleChange = this.handleChange.bind(this);
@@ -199,7 +199,7 @@ class Home extends Component {
             ]
         },
         {
-            onClick:()=>lib.web3.fetchDspInfo(this.state.registeredDSPs.dsp),
+            onClick:()=>lib.web3.fetchDspInfo(this),
             buttonText:"Fetch DSP Info",
             event:"registeredDSPs",
             inputs:[
@@ -223,14 +223,14 @@ class Home extends Component {
                 { name:"consumer",placeholder: "address consumer"},
             ]
         },
-        {
-            onClick:()=>lib.web3.fetchDockerImage(this),
-            buttonText:"Fetch Docker Image",
-            event:"dockerImages",
-            inputs:[
-                { name:"imageName",placeholder: "string imageName"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.fetchDockerImage(this),
+        //     buttonText:"Fetch Docker Image",
+        //     event:"dockerImages",
+        //     inputs:[
+        //         { name:"imageName",placeholder: "string imageName"},
+        //     ]
+        // },
         {
             onClick:()=>lib.web3.fetchEndpointForDSP(this),
             buttonText:"Fetch DSP Endpoint",

@@ -78,8 +78,8 @@ const fetchDspInfo = async (thisObject) => {
 
 const fetchDspData = async (thisObject) => {
     const dspData = await contract.methods.dspData(
-        thisObject.state.dspData.account,
-        thisObject.state.dspData.dsp
+        thisObject.state.dspDataForm.account,
+        thisObject.state.dspDataForm.dsp
     ).call();
     thisObject.setState({dspData});
 }
