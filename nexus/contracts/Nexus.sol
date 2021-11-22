@@ -130,6 +130,14 @@ contract Nexus is Ownable {
         string imageType;
     }
 
+    struct runArgs {
+        address consumer;
+        string imageName;
+        string inputFS;
+        bool callback;
+        string[] args;
+    }
+
     mapping(address => RegisteredDSP) public registeredDSPs;
     mapping(address => mapping(address => PerConsumerDSPEntry)) public dspData;
     mapping(address => Consumer) public consumerData;
@@ -286,7 +294,7 @@ contract Nexus is Ownable {
                 break;
             }
         }
-        require(founds > -1, "not found");
+        require(founds > -1, "dsp not found");
 
         require(!jd.done[uint256(founds)], "already done");
         jd.done[uint256(founds)]  = true;
@@ -298,19 +306,17 @@ contract Nexus is Ownable {
     /**
      * @dev determines data hash consistency and performs optional callback
      */
-    function jobCallback(uint256 jobID, string memory outputFS, uint256 dapps) public {
+    function jobCallback(uint256 jobID, string calldata outputFS) public {
+        uint256 gasUsed = gasleft();
         
         bytes32 dataHash = keccak256(abi.encodePacked(outputFS));
 
         JobData storage jd = jobs[jobID];
         address _consumer = jd.owner;
-        // apply usage in dapps
-        // 
         
         bool inconsistent = submitResEntry(jobID, dataHash);
         address _dsp = msg.sender;
 
-        // call callback function if enabled
         if(jd.callback){
             (bool success, bytes memory data) = address(_consumer).call(abi.encodeWithSignature(
                 "_dspcallback(uint256)",
@@ -318,18 +324,17 @@ contract Nexus is Ownable {
             ));
         }
 
-        // todo: add callback gas compensation
-        // useGas(
-        //     _consumer,
-        //     dapps,
-        //     _dsp
-        // );
-        emit JobResult(_consumer, _dsp, outputFS, dapps, jobID);
+        gasUsed = gasUsed - gasleft();
         // calc gas usage and deduct from quota as DAPPs (using Bancor) or as eth
-        // todo: compensate for gas
-        // thought: would it be best to compensate in each trx adding 
-        // thought: cost or to allow the DSP to perform daily all at once
-        // token.safeTransferFrom(address(this), _dsp, claimableAmount);
+        uint dapps = calcGas(gasUsed);
+
+        // todo: add callback gas compensation
+        useGas(
+            _consumer,
+            dapps,
+            _dsp
+        );
+        emit JobResult(_consumer, _dsp, outputFS, dapps, jobID);
         if(jd.dsps.length != jd.resultsCount){
             return;          
         }
@@ -337,18 +342,42 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev 
+     * @dev run service
+     */
+    function calcGas(uint gas) public returns (uint) {
+        return 1;
+    }
+    
+    /**
+     * @dev run service
      */
     // event listen to from client
-    function serviceCallback(uint256 jobID, uint256 port, uint256 dapps) public {
-        // TODO: apply usage in dapps
-        
+    function serviceCallback(uint256 jobID, uint256 port) public {
+        uint256 gasUsed = gasleft();
 
-        // TODO: verify DSP 
-        
         ServiceData storage sd = services[jobID];
+
+        int founds = -1;
+        for (uint256 i=0; i<sd.dsps.length; i++) {
+            if(sd.dsps[i] == msg.sender){
+                founds = int(i);
+                break;
+            }
+        }
+        require(founds > -1, "dsp not found");
+        
         address _consumer = sd.owner;
         sd.ports[msg.sender] = port;
+
+        gasUsed = gasUsed - gasleft();
+        uint dapps = calcGas(gasUsed);
+
+        useGas(
+            _consumer,
+            dapps,
+            msg.sender
+        );
+
         emit ServiceRunning(_consumer, msg.sender, jobID, port);
     }
     
@@ -376,31 +405,39 @@ contract Nexus is Ownable {
     /**
      * @dev run job or service
      */
-    function run(address consumer, string calldata imageName, string calldata inputFS, bool callback, string[] calldata args) public {
-        if(consumerData[consumer].owner != address(0)){
-            require(consumerData[consumer].owner == msg.sender);
+    function run(runArgs calldata args) public {
+        if(consumerData[args.consumer].owner != address(0)){
+            require(consumerData[args.consumer].owner == msg.sender);
         } else {
-            require(consumer == msg.sender);
+            require(args.consumer == msg.sender);
         }
         lastJobID = lastJobID + 1;
-        if(compareStrings(dockerImages[imageName].imageType, "job")){
+        if(compareStrings(dockerImages[args.imageName].imageType, "job")){
             JobData storage jd = jobs[lastJobID];
-            jd.dsps = consumerData[consumer].dsps;
-            jd.callback = callback;
-            jd.owner = consumer;
-        } else if(compareStrings(dockerImages[imageName].imageType, "service")){
+            jd.dsps = consumerData[args.consumer].dsps;
+            jd.callback = args.callback;
+            jd.owner = args.consumer;
+        } else if(compareStrings(dockerImages[args.imageName].imageType, "service")){
             ServiceData storage sd = services[lastJobID];
-            sd.dsps = consumerData[consumer].dsps;
-            sd.owner = consumer;
+            sd.dsps = consumerData[args.consumer].dsps;
+            sd.owner = args.consumer;
         }
 
-        emit Run(consumer, imageName,inputFS,callback,args, lastJobID, dockerImages[imageName].imageType);
+        emit Run(
+            args.consumer,
+            args.imageName,
+            args.inputFS,
+            args.callback,
+            args.args,
+            lastJobID,
+            dockerImages[args.imageName].imageType
+        );
     }
     
     /**
      * @dev active and set endpoint for dsp
      */
-    function regDSP(string memory endpoint) public {
+    function regDSP(string calldata endpoint) public {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].active = true;
         registeredDSPs[_dsp].endpoint = endpoint;
@@ -421,7 +458,7 @@ contract Nexus is Ownable {
     /**
      * @dev set docker image
      */
-    function setDockerImage(string memory imageName, string memory imageAddress, string memory imageHash, string memory imageType) public onlyOwner {
+    function setDockerImage(string calldata imageName, string calldata imageAddress, string calldata imageHash, string calldata imageType) public onlyOwner {
         address owner = msg.sender;        
         dockerImages[imageName].image = imageAddress;
         dockerImages[imageName].owner = owner;
@@ -434,7 +471,7 @@ contract Nexus is Ownable {
     /**
      * @dev returns docker image
      */
-    function getDockerImage(string memory imageName) public view returns (string memory) {
+    function getDockerImage(string calldata imageName) public view returns (string memory) {
         return dockerImages[imageName].image;
     }
     
@@ -442,7 +479,7 @@ contract Nexus is Ownable {
      * @dev returns approval status of image for dsp
      * - thought, why not enable someone else to call dsp
      */
-    function isImageApprovedForDSP(string memory imageName) public view returns (bool) {
+    function isImageApprovedForDSP(string calldata imageName) public view returns (bool) {
         address _dsp = msg.sender;
         return registeredDSPs[_dsp].approvedImages[imageName];
     }
@@ -450,7 +487,7 @@ contract Nexus is Ownable {
     /**
      * @dev approve docker image for dsp
      */
-    function approveDockerForDSP(string memory imageName) public {
+    function approveDockerForDSP(string calldata imageName) public {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].approvedImages[imageName] = true;        
         emit DockerApprovalChanged(_dsp,imageName,true);
@@ -459,7 +496,7 @@ contract Nexus is Ownable {
     /**
      * @dev unapprove docker image for dsp
      */
-    function unapproveDockerForDSP(string memory imageName) public  {
+    function unapproveDockerForDSP(string calldata imageName) public  {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].approvedImages[imageName] = false;
         emit DockerApprovalChanged(_dsp,imageName,false);
