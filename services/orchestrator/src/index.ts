@@ -73,17 +73,13 @@ const run = async()=>{
     theContract = new web3.eth.Contract(
         abi,
         address,
-        {
-        }
+        {}
     );
     subscribe(theContract);
     if(init){
         await setImage("wasmrunner","runner");
         await setImage("rust-compiler");
         await setImage("wasi-service", "wasi-service","service");
-        
-
-
     }
     // todo: check if already registered        
     await postTrx("regDSP",dspAccount, "http://test.com");
@@ -223,7 +219,7 @@ function subscribe(theContract: any) {
                     break;
                 }
                 // post results
-                const servicercpt = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port, dapps.toFixed());
+                const servicercpt = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port);
                 setInterval(async ()=>{
                     const servicercpt2 = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port, await DAPPsFor(24 * 60) + await EthGAS2DAPPs(gasForCallback * gasPrice));
                     console.log(`posting alive`,consumer,jobImage);    
@@ -252,7 +248,8 @@ function subscribe(theContract: any) {
                 // post results
                 const { outputFS } = dispatchResult;
 
-                const rcpt = await postTrx("jobCallback", account_dsp, jobID,  outputFS, dapps.toFixed());
+                const rcpt = await postTrx("jobCallback", account_dsp, jobID,  outputFS);
+                // const rcpt = await postTrx("jobCallback", account_dsp, jobID,  outputFS, dapps.toFixed());
                 console.log(`posted results`,consumer,jobImage);        
                 break;
             default:
