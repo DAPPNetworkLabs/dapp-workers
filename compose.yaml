@@ -73,6 +73,7 @@ services:
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./nexus:/nexus
     depends_on:
       - "eth"
     links:
@@ -121,4 +122,6 @@ volumes:
   rabbit-data:
     external: false    
   ipfs-data:
+    external: false       
+  nexus:
     external: false    

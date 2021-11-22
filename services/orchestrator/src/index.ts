@@ -49,10 +49,11 @@ async function setImage(alias,image = null, jobType = "job"){
     }
     await postTrx("setDockerImage",ownerAccount,alias,image,"hash", jobType);
 }
-const run = async()=>{    
+const run = async()=>{
     let init = false;
     const contractFile = await compile();
-    const bytecode = contractFile.evm.bytecode.object;
+    // const contractFile = require('/nexus/artifacts/contracts/Nexus.sol/Nexus.json');
+    const bytecode = contractFile.bytecode;
     abi = contractFile.abi;
     
     /// deploy contract if needed
