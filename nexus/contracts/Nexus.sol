@@ -2,8 +2,6 @@
 pragma solidity >=0.7.0 <0.9.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-// import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
-// import "../node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract Nexus is Ownable {
     using SafeERC20 for IERC20;    
@@ -62,6 +60,7 @@ contract Nexus is Ownable {
         address indexed consumer,
         string imageName,
         string inputFS,
+        bool callback,
         string[] args,
         uint256 id,
         string imageType
@@ -106,13 +105,13 @@ contract Nexus is Ownable {
     struct Consumer{
         address owner;
         address[] dsps;
-        bool callback;
         // Process[] runningProcesses;
     }
 
     struct JobData {
         address owner;
         address[] dsps;
+        bool callback;
         uint256 resultsCount;
         mapping(uint256 =>bool) done;
         mapping(uint256 =>bytes32) dataHash;
@@ -142,9 +141,9 @@ contract Nexus is Ownable {
 
     constructor (
         // string memory manifest,
-        // address _tokenContract
+        address _tokenContract
         ) {
-        // token = IERC20(_tokenContract);
+        token = IERC20(_tokenContract);
     }
     
     /**
@@ -210,15 +209,6 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev set whether to call callback or not
-     * - thought shouldn't it not be a blanket bool for all job callbacks
-     * but instead configurable per job?
-     */
-    function setConsumerCallback(bool enabled) public {
-        consumerData[msg.sender].callback = enabled;
-    }
-    
-    /**
      * @dev transfer DAPP to contract to process jobs
      */
     // holds snapshots
@@ -227,13 +217,8 @@ contract Nexus is Ownable {
         address _consumer,
         address _dsp
     ) public {
-        if(!registeredDSPs[_dsp].active){
-            // block new buys
-        }
-        
+        require(registeredDSPs[_dsp].active,"dsp inactive");
         token.safeTransferFrom(msg.sender, address(this), _amount);
-        // increase reserve for user->dsp
-        
         dspData[_consumer][_dsp].amount += _amount;
         emit BoughtGas(_consumer, _dsp, _amount);
     }
@@ -246,7 +231,6 @@ contract Nexus is Ownable {
         address _dsp
     ) public {
         address _consumer = msg.sender;
-        // decrease reserve for user->dsp
         require(!(_amountToSell > dspData[_consumer][_dsp].amount),"overdrawn balance");
         dspData[_consumer][_dsp].amount -= _amountToSell;
         token.safeTransferFrom(address(this),_consumer, _amountToSell);
@@ -275,11 +259,9 @@ contract Nexus is Ownable {
     function claimFor(
         address _consumer,
         address _dsp
-    ) public {                
+    ) public {
         uint256 claimableAmount = dspData[_consumer][_dsp].claimable;
-        if(claimableAmount == 0){
-            // throw
-        }
+        require(claimableAmount != 0,"must have positive balance to claim");
         token.safeTransferFrom(address(this), _dsp, claimableAmount);
         emit ClaimedGas(_consumer, _dsp, claimableAmount);
     }
@@ -308,7 +290,6 @@ contract Nexus is Ownable {
 
         require(!jd.done[uint256(founds)], "already done");
         jd.done[uint256(founds)]  = true;
-        // fill in results hash
         jd.resultsCount++;
         jd.dataHash[uint256(founds)] = dataHash;
         return inconsistent;
@@ -330,7 +311,7 @@ contract Nexus is Ownable {
         address _dsp = msg.sender;
 
         // call callback function if enabled
-        if(consumerData[_consumer].callback){
+        if(jd.callback){
             (bool success, bytes memory data) = address(_consumer).call(abi.encodeWithSignature(
                 "_dspcallback(uint256)",
                 jobID
@@ -395,8 +376,7 @@ contract Nexus is Ownable {
     /**
      * @dev run job or service
      */
-    function run(address consumer, string calldata imageName, string calldata inputFS, string[] calldata args) public {
-        // address _consumer = msg.sender;    
+    function run(address consumer, string calldata imageName, string calldata inputFS, bool callback, string[] calldata args) public {
         if(consumerData[consumer].owner != address(0)){
             require(consumerData[consumer].owner == msg.sender);
         } else {
@@ -405,7 +385,8 @@ contract Nexus is Ownable {
         lastJobID = lastJobID + 1;
         if(compareStrings(dockerImages[imageName].imageType, "job")){
             JobData storage jd = jobs[lastJobID];
-            jd.dsps = consumerData[consumer].dsps;     
+            jd.dsps = consumerData[consumer].dsps;
+            jd.callback = callback;
             jd.owner = consumer;
         } else if(compareStrings(dockerImages[imageName].imageType, "service")){
             ServiceData storage sd = services[lastJobID];
@@ -413,7 +394,7 @@ contract Nexus is Ownable {
             sd.owner = consumer;
         }
 
-        emit Run(consumer, imageName,inputFS,args, lastJobID, dockerImages[imageName].imageType);
+        emit Run(consumer, imageName,inputFS,callback,args, lastJobID, dockerImages[imageName].imageType);
     }
     
     /**
@@ -423,7 +404,6 @@ contract Nexus is Ownable {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].active = true;
         registeredDSPs[_dsp].endpoint = endpoint;
-        // todo: version
         
         emit DSPStatusChanged(_dsp, true, endpoint);
     }

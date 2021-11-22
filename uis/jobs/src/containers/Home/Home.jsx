@@ -34,6 +34,7 @@ class Home extends Component {
                 consumer: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
                 imageName: 'rust-compiler',
                 inputFS: 'QmUm1JD5os8p6zu6gQBPr7Rov2VD6QzMeRBH5j4ojFBzi6',
+                callback: true,
                 args: []
             },
             runJob: {
@@ -90,9 +91,9 @@ class Home extends Component {
                 _consumer:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
                 _dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
-            setConsumerCallback: {
-                enabled:null
-            },
+            // setConsumerCallback: {
+            //     enabled:null
+            // },
             setConsumerPermissions: {
                 owner:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
@@ -156,6 +157,7 @@ class Home extends Component {
                 { name:"consumer",placeholder: "address consumer"},
                 { name:"imageName",placeholder: "string imageName"},
                 { name:"inputFS",placeholder: "string inputFS"},
+                { name:"callback",placeholder: "bool callback"},
                 { name:"args",placeholder: "string[] args"}
             ]
         },
@@ -314,14 +316,14 @@ class Home extends Component {
                 { name:"_dsp",placeholder: "address _dsp"},
             ]
         },
-        {
-            onClick:()=>lib.web3.setConsumerCallback(this),
-            buttonText:"Enable/Disable Consumer Callback",
-            event:"setConsumerCallback",
-            inputs:[
-                { name:"enabled",placeholder: "bool enabled"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.setConsumerCallback(this),
+        //     buttonText:"Enable/Disable Consumer Callback",
+        //     event:"setConsumerCallback",
+        //     inputs:[
+        //         { name:"enabled",placeholder: "bool enabled"},
+        //     ]
+        // },
         {
             onClick:()=>lib.web3.setConsumerPermissions(this),
             buttonText:"Set Consumer Owner",

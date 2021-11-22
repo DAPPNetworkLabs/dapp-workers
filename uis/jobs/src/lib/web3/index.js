@@ -105,6 +105,7 @@ const postJobOrService = async (thisObject) => {
         thisObject.state.run.consumer,
         thisObject.state.run.imageName,
         thisObject.state.run.inputFS,
+        thisObject.state.run.callback,
         thisObject.state.run.args
     ]);
     await runTrx(data,["Run"],thisObject);
@@ -199,13 +200,13 @@ const buyGasFor = async (thisObject) => {
     await runTrx(data,["BoughtGas"],thisObject);
 }
 
-const setConsumerCallback = async (thisObject) => {
-    const abi = returnAbi("setConsumerCallback");
-    const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.setConsumerCallback.enabled
-    ]);
-    await runTrx(data,[],thisObject);
-}
+// const setConsumerCallback = async (thisObject) => {
+//     const abi = returnAbi("setConsumerCallback");
+//     const data = web3.eth.abi.encodeFunctionCall(abi, [
+//         thisObject.state.setConsumerCallback.enabled
+//     ]);
+//     await runTrx(data,[],thisObject);
+// }
 
 const setConsumerPermissions = async (thisObject) => {
     const abi = returnAbi("setConsumerPermissions");
@@ -299,7 +300,7 @@ export default {
     claimFor,
     sellGas,
     buyGasFor,
-    setConsumerCallback,
+    // setConsumerCallback,
     setConsumerPermissions,
     setQuorum,
     jobError,

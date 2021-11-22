@@ -9,6 +9,7 @@ describe("Nexus", function() {
   let owner, addr1, addr2, addr3, addr4, addr5, addrs;
 
   before(async function() {
+    console.log(ethers);
     [owner, addr1, addr2, addr3, addr4, addr5, ...addrs] = await ethers.getSigners();
 
   });
