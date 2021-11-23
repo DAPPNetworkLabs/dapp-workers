@@ -11,7 +11,9 @@ export const deploy = async (bytecode,abi,ownerAccount) => {
     // Create Constructor Tx
     const nexusTx = nexus.deploy({
         data: bytecode,
-        arguments: [],
+        arguments: [
+            "0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f"
+        ],
     });
     // Sign Transacation and Send
     const createTransaction = await web3.eth.accounts.signTransaction({

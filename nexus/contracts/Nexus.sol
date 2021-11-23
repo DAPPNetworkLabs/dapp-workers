@@ -113,6 +113,7 @@ contract Nexus is Ownable {
         address[] dsps;
         bool callback;
         uint256 resultsCount;
+        uint dapps;
         mapping(uint256 =>bool) done;
         mapping(uint256 =>bytes32) dataHash;
     }
@@ -120,6 +121,7 @@ contract Nexus is Ownable {
     struct ServiceData {
         address owner;
         address[] dsps;
+        uint dapps;
         mapping(address =>uint256) ports;
     }
 
@@ -135,6 +137,7 @@ contract Nexus is Ownable {
         string imageName;
         string inputFS;
         bool callback;
+        uint dapps;
         string[] args;
     }
 
@@ -417,10 +420,12 @@ contract Nexus is Ownable {
             jd.dsps = consumerData[args.consumer].dsps;
             jd.callback = args.callback;
             jd.owner = args.consumer;
+            jd.dapps = args.dapps;
         } else if(compareStrings(dockerImages[args.imageName].imageType, "service")){
             ServiceData storage sd = services[lastJobID];
             sd.dsps = consumerData[args.consumer].dsps;
             sd.owner = args.consumer;
+            sd.dapps = args.dapps;
         }
 
         emit Run(

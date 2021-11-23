@@ -115,7 +115,6 @@ async function testConsumer(address: any) {
     console.log("serviceCompileResult", serviceResult);
 }
 
-
 async function getDockerImage(imageName, dspAddress){    
     const dspAccount = getAccount("m/44'/60'/0'/0/0");        
     const image = await callTrx("getDockerImage", dspAccount, imageName);
@@ -124,17 +123,19 @@ async function getDockerImage(imageName, dspAddress){
         throw new Error("not approved");
     // todo: verify hash
     return image;
-    
 }
+
 async function getConsumerDAPPGas(consumer){
     // todo: get remaining on chain
     // todo: get pending in this process
     return 0;
 }
+
 async function isPending(jobID){
     // todo: check on chain
     return true;
 }
+
 async function getDAPPPriceInEth(){
     // todo: fetch from dex
     return 0.005;
@@ -158,12 +159,10 @@ async function getGasForCallback(type){
     if(type = "job"){
         return 100;    
     }
-    
 }
 
 async function DAPPsFor(minutes){
     return minutes * 100;
-
 }
 
 // todo: subscribe to Kill
