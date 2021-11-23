@@ -4,36 +4,55 @@ import { postTrx } from "./postTrx";
 export const pendingJobs = {};
 export async function runJob(image, inputFS, args): Promise<any> {
     const account2 = getAccount("m/44'/60'/0'/0/1");
-    const rcpt = await postTrx("run", account2, account2.address, image, inputFS, args);
+    const rcpt = await postTrx("run", account2, {
+        consumer:account2.address, 
+        imageName: image,
+        inputFS, 
+        callback: true, 
+        dapps:"10000",
+        args
+    });
     const log = rcpt.logs[0];
     // console.log("waiting for",log) 
-    var data = web3.eth.abi.decodeLog([
+    const data = web3.eth.abi.decodeLog([
         {
-            type: 'address',
-            name: 'consumer',
-            indexed: true
-        },
-        {
-            type: 'string',
-            name: 'imageName',
-        },
-        {
-            type: 'string',
-            name: 'inputFS',
-        },
-        {
-            type: 'string[]',
-            name: 'args',
-        },
-        {
-            type: 'uint256',
-            name: 'id',
-        },
-        {
-            type: 'string',
-            name: 'imageType',
+          "components": [
+            {
+              "internalType": "address",
+              "name": "consumer",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "imageName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "inputFS",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "callback",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "dapps",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string[]",
+              "name": "args",
+              "type": "string[]"
+            }
+          ],
+          "internalType": "struct Nexus.runArgs",
+          "name": "args",
+          "type": "tuple"
         }
-    ], log.data, log.topics.slice(1));
+      ], log.data, log.topics.slice(1));
     const jobID = data.id;
     console.log("waiting for", jobID);
     return new Promise((done) => {
