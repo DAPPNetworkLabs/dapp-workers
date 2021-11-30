@@ -310,7 +310,6 @@ contract Nexus is Ownable {
      * @dev determines data hash consistency and performs optional callback
      */
     function jobCallback(uint256 jobID, string calldata outputFS) public {
-        uint256 gasUsed = gasleft();
         
         bytes32 dataHash = keccak256(abi.encodePacked(outputFS));
 
@@ -319,15 +318,17 @@ contract Nexus is Ownable {
         
         bool inconsistent = submitResEntry(jobID, dataHash);
         address _dsp = msg.sender;
-
+        
+        uint gasUsed;
         if(jd.callback){
+            gasUsed = gasleft();
             (bool success, bytes memory data) = address(_consumer).call(abi.encodeWithSignature(
                 "_dspcallback(uint256)",
                 jobID
             ));
+            gasUsed = gasUsed - gasleft();
         }
 
-        gasUsed = gasUsed - gasleft();
         // calc gas usage and deduct from quota as DAPPs (using Bancor) or as eth
         uint dapps = calcGas(gasUsed);
 
