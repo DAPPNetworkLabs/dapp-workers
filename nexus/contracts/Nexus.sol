@@ -90,6 +90,21 @@ contract Nexus is Ownable {
         bool approved
     );
 
+    event JobError(
+        address indexed consumer, 
+        string stdErr,
+        string outputFS,
+        uint256 id
+    );
+    
+    event ServiceError(
+        address indexed consumer, 
+        address indexed dsp, 
+        string stdErr,
+        string outputFS,
+        uint256 id
+    );
+
     struct PerConsumerDSPEntry {
         uint256 amount;
         uint256 claimable;
@@ -305,6 +320,20 @@ contract Nexus is Ownable {
     }
     
     /**
+     * @dev validates dsp is authorized for job or service
+     */
+    function validateDsp(adress[] dsps) private pure {
+        int founds = -1;
+        for (uint256 i=0; i<dsps.length; i++) {
+            if(dsps[i] == msg.sender){
+                founds = int(i);
+                break;
+            }
+        }
+        require(founds > -1, "dsp not found");
+    }
+    
+    /**
      * @dev determines data hash consistency and performs optional callback
      */
     function jobCallback(uint256 jobID, string calldata outputFS) public {
@@ -355,24 +384,12 @@ contract Nexus is Ownable {
      */
     // event listen to from client
     function serviceCallback(uint256 jobID, uint256 port) public {
-        uint256 gasUsed = gasleft();
-
         ServiceData storage sd = services[jobID];
 
-        int founds = -1;
-        for (uint256 i=0; i<sd.dsps.length; i++) {
-            if(sd.dsps[i] == msg.sender){
-                founds = int(i);
-                break;
-            }
-        }
-        require(founds > -1, "dsp not found");
+        validateDsp(sd.dsps);
         
         address _consumer = sd.owner;
         sd.ports[msg.sender] = port;
-
-        gasUsed = gasUsed - gasleft();
-        uint dapps = calcGas(gasUsed);
 
         useGas(
             _consumer,
@@ -387,14 +404,29 @@ contract Nexus is Ownable {
      * @dev handle job error
      */
     function jobError(uint256 jobID, string calldata  stdErr, string calldata outputFS) public {
-
+        JobData storage jd = jobs[lastJobID];
+        address _dsp = msg.sender;
+        int founds = -1;
+        bool inconsistent = false;
+        for (uint256 i=0; i<jd.dsps.length; i++) {
+            if(jd.dsps[i] == _dsp){
+                founds = int(i);
+                break;
+            }
+        }
+        require(founds > -1, "dsp not found");
+        require(!jd.done[uint256(founds)], "already done");
+        jd.done[uint256(founds)]  = true;
+        emit JobError(_consumer, stdErr, outputFS, jobID);
     }
     
     /**
      * @dev handle service error
      */
     function serviceError(uint256 jobID, string calldata  stdErr, string calldata outputFS) public {
-
+        ServiceData storage sd = services[lastJobID];
+        validateDsp(sd.dsps);
+        emit ServiceError(_consumer, msg.sender, stdErr, outputFS, jobID);
     }
     
     /**
@@ -462,7 +494,12 @@ contract Nexus is Ownable {
     /**
      * @dev set docker image
      */
-    function setDockerImage(string calldata imageName, string calldata imageAddress, string calldata imageHash, string calldata imageType) public onlyOwner {
+    function setDockerImage(
+        string calldata imageName,
+        string calldata imageAddress,
+        string calldata imageHash,
+        string calldata imageType
+    ) public onlyOwner {
         address owner = msg.sender;        
         dockerImages[imageName].image = imageAddress;
         dockerImages[imageName].owner = owner;
