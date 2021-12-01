@@ -481,10 +481,8 @@ contract Nexus is Ownable {
     
     /**
      * @dev returns approval status of image for dsp
-     * - thought, why not enable someone else to call dsp
      */
-    function isImageApprovedForDSP(string calldata imageName) public view returns (bool) {
-        address _dsp = msg.sender;
+    function isImageApprovedForDSP(address _dsp, string calldata imageName) public view returns (bool) {
         return registeredDSPs[_dsp].approvedImages[imageName];
     }
     
