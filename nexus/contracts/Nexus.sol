@@ -21,7 +21,6 @@ contract Nexus is Ownable {
     );
 
     event ClaimedGas(
-        address indexed consumer,
         address indexed dsp,
         uint256 amount
     );
@@ -100,6 +99,7 @@ contract Nexus is Ownable {
         bool active;
         mapping(string => bool) approvedImages;
         string endpoint;
+        uint claimableDapp;
     }
     
     struct Consumer{
@@ -249,7 +249,7 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev user DAPP gas, vroom
+     * @dev use DAPP gas, vroom
      */
     function useGas(
         address _consumer,
@@ -258,23 +258,21 @@ contract Nexus is Ownable {
     ) internal {
         require(_amountToUse <= dspData[_consumer][_dsp].amount, "not enough gas");
 
-        dspData[_consumer][_dsp].amount -= _amountToUse;        
-        dspData[_consumer][_dsp].claimable += _amountToUse;
+        dspData[_consumer][_dsp].amount -= _amountToUse;
+        registeredDSPs[_dsp].claimableDapp += _amountToUse;
         emit UsedGas(_consumer, _dsp, _amountToUse);
     }
     
     /**
      * @dev allows dsp to claim for consumer
-     * - thought perhaps there is a claim all
      */
-    function claimFor(
-        address _consumer,
+    function claim(
         address _dsp
-    ) public {
-        uint256 claimableAmount = dspData[_consumer][_dsp].claimable;
+    ) external {
+        uint claimableAmount = registeredDSPs[_dsp].claimableDapp;
         require(claimableAmount != 0,"must have positive balance to claim");
         token.safeTransferFrom(address(this), _dsp, claimableAmount);
-        emit ClaimedGas(_consumer, _dsp, claimableAmount);
+        emit ClaimedGas(_dsp, claimableAmount);
     }
     
     /**
