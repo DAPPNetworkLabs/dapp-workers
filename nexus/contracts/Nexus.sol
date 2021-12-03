@@ -457,6 +457,8 @@ contract Nexus is Ownable {
             sd.dsps = consumerData[args.consumer].dsps;
             sd.owner = args.consumer;
             sd.dapps = args.dapps;
+        } else {
+            revert("invalid image type");
         }
 
         emit Run(
