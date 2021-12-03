@@ -6,6 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 contract Nexus is Ownable {
     using SafeERC20 for IERC20;    
     uint256 public gasPerTimeUnit = 100;
+    // uint8 costs more when in non-struct form
+    // https://ethereum.stackexchange.com/questions/3067/why-does-uint8-cost-more-gas-than-uint256
+    uint public dollarPrecision = 2;
     IERC20 public token;
 
     event BoughtGas(
@@ -73,7 +76,8 @@ contract Nexus is Ownable {
     event DSPStatusChanged(
         address indexed dsp,
         bool active,
-        string endpoint
+        string endpoint,
+        uint gasFeeMult
     );
     
     event DockerSet(
@@ -115,6 +119,7 @@ contract Nexus is Ownable {
         mapping(string => bool) approvedImages;
         string endpoint;
         uint claimableDapp;
+        uint gasFeeMult;
     }
     
     struct Consumer{
@@ -140,11 +145,22 @@ contract Nexus is Ownable {
         mapping(address =>uint256) ports;
     }
 
-    struct DockerImage {
+    struct JobDockerImage {
         address owner;
         string image;
         string imageHash;
         string imageType;
+        uint jobFee;
+    }
+
+    struct ServiceDockerImage {
+        address owner;
+        string image;
+        string imageHash;
+        string imageType;
+        uint baseFee;
+        uint storageFee;
+        uint ioFee;
     }
 
     struct runArgs {
@@ -161,7 +177,8 @@ contract Nexus is Ownable {
     mapping(address => Consumer) public consumerData;
     mapping(uint256 => JobData) public jobs;
     mapping(uint256 => ServiceData) public services;
-    mapping(string => DockerImage) internal dockerImages;
+    mapping(string => JobDockerImage) internal jobDockerImages;
+    mapping(string => ServiceDockerImage) internal serviceDockerImages;
 
     uint256 public lastJobID;
 
@@ -473,14 +490,15 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev active and set endpoint for dsp
+     * @dev active and set endpoint and gas fee mult for dsp
      */
-    function regDSP(string calldata endpoint) public {
+    function regDSP(string calldata endpoint, uint gasFeeMult) public {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].active = true;
         registeredDSPs[_dsp].endpoint = endpoint;
+        registeredDSPs[_dsp].gasFeeMult = gasFeeMult;
         
-        emit DSPStatusChanged(_dsp, true, endpoint);
+        emit DSPStatusChanged(_dsp, true, endpoint, gasFeeMult);
     }
     
     /**
@@ -496,17 +514,43 @@ contract Nexus is Ownable {
     /**
      * @dev set docker image
      */
-    function setDockerImage(
+    function setJobDockerImage(
         string calldata imageName,
         string calldata imageAddress,
         string calldata imageHash,
-        string calldata imageType
+        string calldata imageType,
+        uint jobFee
     ) public onlyOwner {
         address owner = msg.sender;        
-        dockerImages[imageName].image = imageAddress;
-        dockerImages[imageName].owner = owner;
-        dockerImages[imageName].imageHash = imageHash;
-        dockerImages[imageName].imageType = imageType;
+        jobDockerImages[imageName].image = imageAddress;
+        jobDockerImages[imageName].owner = owner;
+        jobDockerImages[imageName].imageHash = imageHash;
+        jobDockerImages[imageName].imageType = imageType;
+        jobDockerImages[imageName].jobFee = jobFee;
+        
+        emit DockerSet(owner,imageName,imageAddress,imageHash,imageType);
+    }
+    
+    /**
+     * @dev set docker image
+     */
+    function setServiceDockerImage(
+        string calldata imageName,
+        string calldata imageAddress,
+        string calldata imageHash,
+        string calldata imageType,
+        uint baseFee,
+        uint storageFee,
+        uint ioFee
+    ) public onlyOwner {
+        address owner = msg.sender;
+        serviceDockerImages[imageName].image = imageAddress;
+        serviceDockerImages[imageName].owner = owner;
+        serviceDockerImages[imageName].imageHash = imageHash;
+        serviceDockerImages[imageName].imageType = imageType;
+        serviceDockerImages[imageName].baseFee = baseFee;
+        serviceDockerImages[imageName].storageFee = storageFee;
+        serviceDockerImages[imageName].ioFee = ioFee;
         
         emit DockerSet(owner,imageName,imageAddress,imageHash,imageType);
     }
