@@ -5,27 +5,27 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract Nexus is Ownable {
     using SafeERC20 for IERC20;    
-    uint256 public gasPerTimeUnit = 100;
+    uint public gasPerTimeUnit = 100;
     // uint8 costs more when in non-struct form
-    // https://ethereum.stackexchange.com/questions/3067/why-does-uint8-cost-more-gas-than-uint256
+    // https://ethereum.stackexchange.com/questions/3067/why-does-uint8-cost-more-gas-than-uint
     uint public dollarPrecision = 2;
     IERC20 public token;
 
     event BoughtGas(
         address indexed consumer,
         address indexed dsp,
-        uint256 amount
+        uint amount
     );
 
     event SoldGas(
         address indexed consumer,
         address indexed dsp,
-        uint256 amount
+        uint amount
     );
 
     event ClaimedGas(
         address indexed dsp,
-        uint256 amount
+        uint amount
     );
 
     event JobResult(
@@ -33,8 +33,8 @@ contract Nexus is Ownable {
         address indexed dsp,
         // string stdOut,  
         string outputFS,
-        uint256 dapps,
-        uint256 id
+        uint dapps,
+        uint id
     );
 
     event JobDone(
@@ -42,20 +42,20 @@ contract Nexus is Ownable {
         // string stdOut,  
         string outputFS,
         bool inconsistent,
-        uint256 id
+        uint id
     );
 
     event ServiceRunning(
         address indexed consumer,
         address indexed dsp,
-        uint256 id,
-        uint256 port
+        uint id,
+        uint port
     );
 
     event UsedGas(
         address indexed consumer,
         address indexed dsp,
-        uint256 amount
+        uint amount
     );
 
     event Run(
@@ -64,13 +64,13 @@ contract Nexus is Ownable {
         string inputFS,
         bool callback,
         string[] args,
-        uint256 id,
+        uint id,
         string imageType
     );
 
     event Kill(
         address indexed consumer,
-        uint256 id
+        uint id
     );
 
     event DSPStatusChanged(
@@ -98,7 +98,7 @@ contract Nexus is Ownable {
         address indexed consumer, 
         string stdErr,
         string outputFS,
-        uint256 id
+        uint id
     );
     
     event ServiceError(
@@ -106,12 +106,12 @@ contract Nexus is Ownable {
         address indexed dsp, 
         string stdErr,
         string outputFS,
-        uint256 id
+        uint id
     );
 
     struct PerConsumerDSPEntry {
-        uint256 amount;
-        uint256 claimable;
+        uint amount;
+        uint claimable;
     }
 
     struct RegisteredDSP {
@@ -132,17 +132,17 @@ contract Nexus is Ownable {
         address owner;
         address[] dsps;
         bool callback;
-        uint256 resultsCount;
+        uint resultsCount;
         uint dapps;
-        mapping(uint256 =>bool) done;
-        mapping(uint256 =>bytes32) dataHash;
+        mapping(uint =>bool) done;
+        mapping(uint =>bytes32) dataHash;
     }
     
     struct ServiceData {
         address owner;
         address[] dsps;
         uint dapps;
-        mapping(address =>uint256) ports;
+        mapping(address =>uint) ports;
     }
 
     struct JobDockerImage {
@@ -175,12 +175,12 @@ contract Nexus is Ownable {
     mapping(address => RegisteredDSP) public registeredDSPs;
     mapping(address => mapping(address => PerConsumerDSPEntry)) public dspData;
     mapping(address => Consumer) public consumerData;
-    mapping(uint256 => JobData) public jobs;
-    mapping(uint256 => ServiceData) public services;
+    mapping(uint => JobData) public jobs;
+    mapping(uint => ServiceData) public services;
     mapping(string => JobDockerImage) internal jobDockerImages;
     mapping(string => ServiceDockerImage) internal serviceDockerImages;
 
-    uint256 public lastJobID;
+    uint public lastJobID;
 
     constructor (
         // string memory manifest,
@@ -197,9 +197,9 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev converts uint256 to string
+     * @dev converts uint to string
      */
-    function toString(uint256 value) public pure returns(string memory) {
+    function toString(uint value) public pure returns(string memory) {
         return toString(abi.encodePacked(value));
     }
     
@@ -256,7 +256,7 @@ contract Nexus is Ownable {
      */
     // holds snapshots
     function buyGasFor(
-        uint256 _amount,
+        uint _amount,
         address _consumer,
         address _dsp
     ) public {
@@ -270,7 +270,7 @@ contract Nexus is Ownable {
      * @dev return DAPP
      */
     function sellGas(
-        uint256 _amountToSell,
+        uint _amountToSell,
         address _dsp
     ) public {
         address _consumer = msg.sender;
@@ -285,7 +285,7 @@ contract Nexus is Ownable {
      */
     function useGas(
         address _consumer,
-        uint256 _amountToUse,
+        uint _amountToUse,
         address _dsp
     ) internal {
         require(_amountToUse <= dspData[_consumer][_dsp].amount, "not enough gas");
@@ -310,13 +310,13 @@ contract Nexus is Ownable {
     /**
      * @dev ensures returned data hash is universally accepted
      */
-    function submitResEntry(uint256 jobID,bytes32 dataHash) private returns (bool) {
+    function submitResEntry(uint jobID,bytes32 dataHash) private returns (bool) {
         JobData storage jd = jobs[jobID];
         // address _consumer = jd.owner;
         address _dsp = msg.sender;        
         int founds = -1;
         bool inconsistent = false;
-        for (uint256 i=0; i<jd.dsps.length; i++) {
+        for (uint i=0; i<jd.dsps.length; i++) {
             if(jd.done[i]){
                 if(jd.dataHash[i] != dataHash){
                     inconsistent = true;
@@ -329,19 +329,19 @@ contract Nexus is Ownable {
         }
         require(founds > -1, "dsp not found");
 
-        require(!jd.done[uint256(founds)], "already done");
-        jd.done[uint256(founds)]  = true;
+        require(!jd.done[uint(founds)], "already done");
+        jd.done[uint(founds)]  = true;
         jd.resultsCount++;
-        jd.dataHash[uint256(founds)] = dataHash;
+        jd.dataHash[uint(founds)] = dataHash;
         return inconsistent;
     }
     
     /**
      * @dev validates dsp is authorized for job or service
      */
-    function validateDsp(adress[] dsps) private pure {
+    function validateDsp(address[] storage dsps) private view {
         int founds = -1;
-        for (uint256 i=0; i<dsps.length; i++) {
+        for (uint i=0; i<dsps.length; i++) {
             if(dsps[i] == msg.sender){
                 founds = int(i);
                 break;
@@ -353,7 +353,7 @@ contract Nexus is Ownable {
     /**
      * @dev determines data hash consistency and performs optional callback
      */
-    function jobCallback(uint256 jobID, string calldata outputFS) public {
+    function jobCallback(uint jobID, string calldata outputFS) public {
         
         bytes32 dataHash = keccak256(abi.encodePacked(outputFS));
 
@@ -367,7 +367,7 @@ contract Nexus is Ownable {
         if(jd.callback){
             gasUsed = gasleft();
             (bool success, bytes memory data) = address(_consumer).call(abi.encodeWithSignature(
-                "_dspcallback(uint256)",
+                "_dspcallback(uint)",
                 jobID
             ));
             gasUsed = gasUsed - gasleft();
@@ -400,7 +400,7 @@ contract Nexus is Ownable {
      * @dev run service
      */
     // event listen to from client
-    function serviceCallback(uint256 jobID, uint256 port) public {
+    function serviceCallback(uint jobID, uint port, uint dapps) public {
         ServiceData storage sd = services[jobID];
 
         validateDsp(sd.dsps);
@@ -420,30 +420,30 @@ contract Nexus is Ownable {
     /**
      * @dev handle job error
      */
-    function jobError(uint256 jobID, string calldata  stdErr, string calldata outputFS) public {
+    function jobError(uint jobID, string calldata  stdErr, string calldata outputFS) public {
         JobData storage jd = jobs[lastJobID];
         address _dsp = msg.sender;
         int founds = -1;
         bool inconsistent = false;
-        for (uint256 i=0; i<jd.dsps.length; i++) {
+        for (uint i=0; i<jd.dsps.length; i++) {
             if(jd.dsps[i] == _dsp){
                 founds = int(i);
                 break;
             }
         }
         require(founds > -1, "dsp not found");
-        require(!jd.done[uint256(founds)], "already done");
-        jd.done[uint256(founds)]  = true;
-        emit JobError(_consumer, stdErr, outputFS, jobID);
+        require(!jd.done[uint(founds)], "already done");
+        jd.done[uint(founds)]  = true;
+        emit JobError(jd.owner, stdErr, outputFS, jobID);
     }
     
     /**
      * @dev handle service error
      */
-    function serviceError(uint256 jobID, string calldata  stdErr, string calldata outputFS) public {
+    function serviceError(uint jobID, string calldata  stdErr, string calldata outputFS) public {
         ServiceData storage sd = services[lastJobID];
         validateDsp(sd.dsps);
-        emit ServiceError(_consumer, msg.sender, stdErr, outputFS, jobID);
+        emit ServiceError(sd.owner, msg.sender, stdErr, outputFS, jobID);
     }
     
     /**
@@ -463,17 +463,20 @@ contract Nexus is Ownable {
             require(args.consumer == msg.sender);
         }
         lastJobID = lastJobID + 1;
-        if(compareStrings(dockerImages[args.imageName].imageType, "job")){
+        string memory imageType = "";
+        if(compareStrings(jobDockerImages[args.imageName].imageType, "job")){
             JobData storage jd = jobs[lastJobID];
             jd.dsps = consumerData[args.consumer].dsps;
             jd.callback = args.callback;
             jd.owner = args.consumer;
             jd.dapps = args.dapps;
-        } else if(compareStrings(dockerImages[args.imageName].imageType, "service")){
+            imageType = "job";
+        } else if(compareStrings(serviceDockerImages[args.imageName].imageType, "service")){
             ServiceData storage sd = services[lastJobID];
             sd.dsps = consumerData[args.consumer].dsps;
             sd.owner = args.consumer;
             sd.dapps = args.dapps;
+            imageType = "service";
         } else {
             revert("invalid image type");
         }
@@ -485,7 +488,7 @@ contract Nexus is Ownable {
             args.callback,
             args.args,
             lastJobID,
-            dockerImages[args.imageName].imageType
+            imageType
         );
     }
     
@@ -508,7 +511,7 @@ contract Nexus is Ownable {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].active = false;
         registeredDSPs[_dsp].endpoint = "";
-        emit DSPStatusChanged(_dsp, false,"");
+        emit DSPStatusChanged(_dsp, false,"", 0);
     }
     
     /**
@@ -558,8 +561,14 @@ contract Nexus is Ownable {
     /**
      * @dev returns docker image
      */
-    function getDockerImage(string calldata imageName) public view returns (string memory) {
-        return dockerImages[imageName].image;
+    function getDockerImage(string calldata imageName, string calldata imageType) public view returns (string memory) {
+        if(compareStrings(imageType, "job")){
+            return jobDockerImages[imageName].image;
+        } else if(compareStrings(imageType, "service")) {
+            return serviceDockerImages[imageName].image;
+        } else {
+            revert("invalid iamge type");
+        }
     }
     
     /**
@@ -590,7 +599,7 @@ contract Nexus is Ownable {
     /**
      * @dev returns port for dsp and job id
      */
-    function getPortForDSP(uint256 jobID, address dsp) public view returns (uint256) {        
+    function getPortForDSP(uint jobID, address dsp) public view returns (uint) {        
         ServiceData storage sd = services[jobID];
         return sd.ports[dsp];
     }
