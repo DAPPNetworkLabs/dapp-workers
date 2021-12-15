@@ -133,7 +133,7 @@ contract Nexus is Ownable {
         address[] dsps;
         bool callback;
         uint resultsCount;
-        uint dapps;
+        string imageName;
         mapping(uint =>bool) done;
         mapping(uint =>bytes32) dataHash;
     }
@@ -141,7 +141,7 @@ contract Nexus is Ownable {
     struct ServiceData {
         address owner;
         address[] dsps;
-        uint dapps;
+        string imageName;
         mapping(address =>uint) ports;
     }
 
@@ -149,7 +149,6 @@ contract Nexus is Ownable {
         address owner;
         string image;
         string imageHash;
-        string imageType;
         uint jobFee;
     }
 
@@ -157,7 +156,6 @@ contract Nexus is Ownable {
         address owner;
         string image;
         string imageHash;
-        string imageType;
         uint baseFee;
         uint storageFee;
         uint ioFee;
@@ -166,9 +164,9 @@ contract Nexus is Ownable {
     struct runArgs {
         address consumer;
         string imageName;
+        string imageType;
         string inputFS;
         bool callback;
-        uint dapps;
         string[] args;
     }
 
@@ -374,7 +372,7 @@ contract Nexus is Ownable {
         }
 
         // calc gas usage and deduct from quota as DAPPs (using Bancor) or as eth
-        uint dapps = calcGas(gasUsed);
+        uint dapps = calcGas(gasUsed,"job",jd.imageName);
 
         // todo: add callback gas compensation
         useGas(
@@ -392,21 +390,35 @@ contract Nexus is Ownable {
     /**
      * @dev run service
      */
-    function calcGas(uint gas) public returns (uint) {
-        return 1;
+    function calcGas(uint gas, string memory jobType, string memory imageName) private returns (uint) {
+        uint jobDapps = calcDapps(jobType,imageName);
+        return 1+jobDapps;
+    }
+
+    function calcDapps(string memory jobType, string memory imageName) private returns (uint) {
+        if(compareStrings(jobType, "job")) {
+            return jobDockerImages[imageName].jobFee;
+        } else if(compareStrings(jobType, "service")) {
+            uint baseFee = serviceDockerImages[imageName].baseFee;
+            // base fee per hour * 24 hours * 30 days for monthly rate
+            return baseFee * 24 * 30;
+        }
     }
     
     /**
      * @dev run service
      */
     // event listen to from client
-    function serviceCallback(uint jobID, uint port, uint dapps) public {
+    function serviceCallback(uint jobID, uint port) public {
         ServiceData storage sd = services[jobID];
 
         validateDsp(sd.dsps);
         
         address _consumer = sd.owner;
         sd.ports[msg.sender] = port;
+
+        // add dapps for 1mo of base
+        uint dapps = calcDapps("service",sd.imageName);
 
         useGas(
             _consumer,
@@ -463,20 +475,17 @@ contract Nexus is Ownable {
             require(args.consumer == msg.sender);
         }
         lastJobID = lastJobID + 1;
-        string memory imageType = "";
-        if(compareStrings(jobDockerImages[args.imageName].imageType, "job")){
+        if(compareStrings(args.imageType, "job")){
             JobData storage jd = jobs[lastJobID];
             jd.dsps = consumerData[args.consumer].dsps;
             jd.callback = args.callback;
             jd.owner = args.consumer;
-            jd.dapps = args.dapps;
-            imageType = "job";
-        } else if(compareStrings(serviceDockerImages[args.imageName].imageType, "service")){
+            jd.imageName = args.imageName;
+        } else if(compareStrings(args.imageType, "service")){
             ServiceData storage sd = services[lastJobID];
             sd.dsps = consumerData[args.consumer].dsps;
             sd.owner = args.consumer;
-            sd.dapps = args.dapps;
-            imageType = "service";
+            sd.imageName = args.imageName;
         } else {
             revert("invalid image type");
         }
@@ -488,7 +497,7 @@ contract Nexus is Ownable {
             args.callback,
             args.args,
             lastJobID,
-            imageType
+            args.imageType
         );
     }
     
@@ -521,17 +530,15 @@ contract Nexus is Ownable {
         string calldata imageName,
         string calldata imageAddress,
         string calldata imageHash,
-        string calldata imageType,
         uint jobFee
     ) public onlyOwner {
         address owner = msg.sender;        
         jobDockerImages[imageName].image = imageAddress;
         jobDockerImages[imageName].owner = owner;
         jobDockerImages[imageName].imageHash = imageHash;
-        jobDockerImages[imageName].imageType = imageType;
         jobDockerImages[imageName].jobFee = jobFee;
         
-        emit DockerSet(owner,imageName,imageAddress,imageHash,imageType);
+        emit DockerSet(owner,imageName,imageAddress,imageHash,"job");
     }
     
     /**
@@ -541,7 +548,6 @@ contract Nexus is Ownable {
         string calldata imageName,
         string calldata imageAddress,
         string calldata imageHash,
-        string calldata imageType,
         uint baseFee,
         uint storageFee,
         uint ioFee
@@ -550,12 +556,11 @@ contract Nexus is Ownable {
         serviceDockerImages[imageName].image = imageAddress;
         serviceDockerImages[imageName].owner = owner;
         serviceDockerImages[imageName].imageHash = imageHash;
-        serviceDockerImages[imageName].imageType = imageType;
         serviceDockerImages[imageName].baseFee = baseFee;
         serviceDockerImages[imageName].storageFee = storageFee;
         serviceDockerImages[imageName].ioFee = ioFee;
         
-        emit DockerSet(owner,imageName,imageAddress,imageHash,imageType);
+        emit DockerSet(owner,imageName,imageAddress,imageHash,"service");
     }
     
     /**
