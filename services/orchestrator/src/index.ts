@@ -47,7 +47,13 @@ async function setImage(alias,image = null, jobType = "job"){
     if(image == null){
         image= alias;
     }
-    await postTrx("setDockerImage",ownerAccount,alias,image,"hash", jobType);
+    if(jobType == "job") {
+        // job fee 10, with 2 decimal places $0.10 per hour
+        await postTrx("setJobDockerImage",ownerAccount,alias,image,"hash",10);
+    } else {
+        // base,storage,and io fees 10, with 2 decimal places $0.10 per hour/gb
+        await postTrx("setServiceDockerImage",ownerAccount,alias,image,"hash",10,10,10);
+    }
 }
 const run = async()=>{
     let init = false;
@@ -65,7 +71,6 @@ const run = async()=>{
         }
         address =await deploy(bytecode,abi,ownerAccount); 
         init = true;
-        
     }
     else
         contractWrapper.address = address;
@@ -82,7 +87,8 @@ const run = async()=>{
         await setImage("wasi-service", "wasi-service","service");
     }
     // todo: check if already registered        
-    await postTrx("regDSP",dspAccount, "http://test.com");
+    // gas fee mult 20/100 = 20%
+    await postTrx("regDSP",dspAccount, "http://test.com",20);
     await approveImage("wasmrunner");
     await approveImage("rust-compiler");
     await approveImage("wasi-service");
@@ -115,9 +121,9 @@ async function testConsumer(address: any) {
     console.log("serviceCompileResult", serviceResult);
 }
 
-async function getDockerImage(imageName, dspAddress){    
+async function getDockerImage(imageName, dspAddress, imageType){    
     const dspAccount = getAccount("m/44'/60'/0'/0/0");        
-    const image = await callTrx("getDockerImage", dspAccount, imageName);
+    const image = await callTrx("getDockerImage", dspAccount, imageName, imageType);
     const isApproved = await callTrx("isImageApprovedForDSP", {address:dspAddress}, imageName);    
     if(!isApproved)
         throw new Error("not approved");
@@ -193,7 +199,7 @@ function subscribe(theContract: any) {
          }
         // todo: resolve image from registry
         const account_dsp = dspAccount;
-        const dockerImage = await getDockerImage(jobImage, account_dsp.address);
+        const dockerImage = await getDockerImage(jobImage, account_dsp.address,jobType);
         const gasPrice = await getGasPrice();
         const gasForCallback = await getGasForCallback(jobType);
         let dapps = (await EthGAS2DAPPs(gasForCallback * gasPrice));
