@@ -567,7 +567,7 @@ contract Nexus is Ownable {
         } else if(compareStrings(imageType, "service")) {
             return serviceDockerImages[imageName].image;
         } else {
-            revert("invalid iamge type");
+            revert("invalid image type");
         }
     }
     
