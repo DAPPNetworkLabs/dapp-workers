@@ -107,11 +107,8 @@ async function testConsumer(address: any) {
     const account2 = getAccount("m/44'/60'/0'/0/1");
 
     await postTrx("setQuorum", account2, account2.address, [address]);
-    console.log(`jobCompileResult runJob("rust-compiler",`)
     const jobCompileResult = await runJob("rust-compiler", loadfsRoot("pngWriterTest"), []);
-    console.log(`serviceCompileResult runJob("rust-compiler",`)
     const serviceCompileResult = await runJob("rust-compiler", loadfsRoot("serviceTest"), []);
-    console.log('done')
 
     const jobResult = await runJob("wasmrunner", jobCompileResult.outputFS, ["target/wasm32-wasi/release/test"]);
     console.log("jobResult",jobResult);
@@ -242,13 +239,10 @@ function subscribe(theContract: any) {
                 const start = Date.now();
                 let dispatchResult
                 try{
-                    console.log('running dispatch')
                     dispatchResult  = await dispatch(dockerImage, inputFS, args);
-                    console.log('done running dispatch')
                 }
                 catch(e){
                     // todo: handle failure. 
-                    console.log(`got an error: ${e}`)
                     const rcpterr = await postTrx("jobError", account_dsp, jobID,  "", dapps.toFixed());
                     break;
                 }
@@ -260,8 +254,6 @@ function subscribe(theContract: any) {
                 // post results
                 const { outputFS } = dispatchResult;
 
-                console.log('going for jobCallback')
-                
                 const rcpt = await postTrx("jobCallback", account_dsp, jobID,  outputFS);
                 // const rcpt = await postTrx("jobCallback", account_dsp, jobID,  outputFS, dapps.toFixed());
                 console.log(`posted results`,consumer,jobImage);        
