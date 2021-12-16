@@ -1,10 +1,10 @@
-var Docker = require('dockerode');
+const Docker = require('dockerode');
 const Stream = require('stream')
 
 
   export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
     console.log("running ", dockerImage,ipfsInput, args);
-    var docker = new Docker();
+    const docker = new Docker();
     
     const writableStream = new Stream.Writable()
     let output = "";
@@ -28,7 +28,7 @@ const Stream = require('stream')
         AttachStderr: true
         ,HostConfig: { AutoRemove: false}})        
     // var output = data[0];
-    var container = data[1];
+    const container = data[1];
     // try{
     //     await container.wait();
     // }
@@ -41,17 +41,14 @@ const Stream = require('stream')
         console.log("error",error);    
         // throw error()
     }
-    // console.log("output",output);
+    console.log("output",output);
     const lines = output.split("\n")
     const outputfs = lines[lines.length-2];
     return {stdOut:output,stderr: error, outputFS:outputfs,statusCode:data[0].StatusCode}
 }
 
-
-
-
 export async function dispatchService(dockerImage, ipfsInput, args): Promise<any> {
-  var docker = new Docker();
+  const docker = new Docker();
   // job types (according to dockers)
   // compilers
   //   solidity compiler
@@ -125,9 +122,8 @@ export async function dispatchService(dockerImage, ipfsInput, args): Promise<any
 
   // console.log("container",container);
   // await container.start();
-  var container = data[1];
+  const container = data[1];
   // console.log("stdOut:",output, error,port);
   // todo: expose ports
   return { port:0}
 }
-

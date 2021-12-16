@@ -377,11 +377,11 @@ contract Nexus is Ownable {
         uint dapps = calcGas(gasUsed,"job",jd.imageName);
 
         // todo: add callback gas compensation
-        useGas(
-            _consumer,
-            dapps,
-            _dsp
-        );
+        // useGas(
+        //     _consumer,
+        //     dapps,
+        //     _dsp
+        // );
         emit JobResult(_consumer, _dsp, outputFS, dapps, jobID);
         if(jd.dsps.length != jd.resultsCount){
             return;          
@@ -422,11 +422,11 @@ contract Nexus is Ownable {
         // add dapps for 1mo of base
         uint dapps = calcDapps("service",sd.imageName);
 
-        useGas(
-            _consumer,
-            dapps,
-            msg.sender
-        );
+        // useGas(
+        //     _consumer,
+        //     dapps,
+        //     msg.sender
+        // );
 
         emit ServiceRunning(_consumer, msg.sender, jobID, port);
     }

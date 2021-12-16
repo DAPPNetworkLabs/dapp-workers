@@ -58,7 +58,7 @@ export async function runJob(image, inputFS, args): Promise<any> {
       }
     ], log.data, log.topics.slice(1));
     const jobID = data.id;
-    console.log("waiting for", jobID);
+    // console.log("waiting for", jobID);
     return new Promise((done) => {
         pendingJobs[jobID] = function (jobDoneObj) {
             done(jobDoneObj);
