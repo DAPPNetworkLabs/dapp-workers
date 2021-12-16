@@ -122,9 +122,9 @@ async function testConsumer(address: any) {
 }
 
 async function getDockerImage(imageName, dspAddress, imageType){    
-    const dspAccount = getAccount("m/44'/60'/0'/0/0");        
+    const dspAccount = getAccount("m/44'/60'/0'/0/0");   
     const image = await callTrx("getDockerImage", dspAccount, imageName, imageType);
-    const isApproved = await callTrx("isImageApprovedForDSP", {address:dspAddress}, imageName);    
+    const isApproved = await callTrx("isImageApprovedForDSP", {address:dspAddress}, dspAddress, imageName);    
     if(!isApproved)
         throw new Error("not approved");
     // todo: verify hash
@@ -186,6 +186,7 @@ function subscribe(theContract: any) {
         const consumer = returnValues[fidx++];
         const jobImage = returnValues[fidx++];
         const inputFS = returnValues[fidx++];
+        const callback = returnValues[fidx++];
         const args = returnValues[fidx++];
         const jobID = returnValues[fidx++];
         const jobType = returnValues[fidx++];

@@ -7,52 +7,56 @@ export async function runJob(image, inputFS, args): Promise<any> {
     const rcpt = await postTrx("run", account2, {
         consumer:account2.address, 
         imageName: image,
+        imageType: "job",
         inputFS, 
         callback: true, 
-        dapps:"10000",
         args
     });
     const log = rcpt.logs[0];
-    // console.log("waiting for",log) 
     const data = web3.eth.abi.decodeLog([
-        {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "consumer",
-              "type": "address"
-            },
-            {
-              "internalType": "string",
-              "name": "imageName",
-              "type": "string"
-            },
-            {
-              "internalType": "string",
-              "name": "inputFS",
-              "type": "string"
-            },
-            {
-              "internalType": "bool",
-              "name": "callback",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint256",
-              "name": "dapps",
-              "type": "uint256"
-            },
-            {
-              "internalType": "string[]",
-              "name": "args",
-              "type": "string[]"
-            }
-          ],
-          "internalType": "struct Nexus.runArgs",
-          "name": "args",
-          "type": "tuple"
-        }
-      ], log.data, log.topics.slice(1));
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "consumer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "imageName",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "inputFS",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "callback",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "string[]",
+        "name": "args",
+        "type": "string[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "imageType",
+        "type": "string"
+      }
+    ], log.data, log.topics.slice(1));
     const jobID = data.id;
     console.log("waiting for", jobID);
     return new Promise((done) => {
@@ -63,6 +67,13 @@ export async function runJob(image, inputFS, args): Promise<any> {
 }
 
 export async function runService(image, inputFS, args, wait = true):Promise<any> {
-    const account2 = getAccount("m/44'/60'/0'/0/1");            
-    const jobID = await postTrx("run", account2, account2.address, image,inputFS, args);
+    const account2 = getAccount("m/44'/60'/0'/0/1");
+    const jobID = await postTrx("run", account2,{
+      consumer:account2.address, 
+      imageName: image,
+      imageType: "service",
+      inputFS, 
+      callback: true, 
+      args
+    });
 }
