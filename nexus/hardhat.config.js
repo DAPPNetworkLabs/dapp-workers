@@ -10,4 +10,9 @@ require("@nomiclabs/hardhat-etherscan");
  */
 module.exports = {
   solidity: "0.8.7",
+  networks: {
+    hardhat: {
+      allowUnlimitedContractSize: true
+    }
+  }
 };
