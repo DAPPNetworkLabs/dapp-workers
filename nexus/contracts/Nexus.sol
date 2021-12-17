@@ -12,6 +12,7 @@ contract Nexus is Ownable {
     IERC20 public token;
 
     event BoughtGas(
+        address indexed buyer,
         address indexed consumer,
         address indexed dsp,
         uint amount
@@ -261,7 +262,7 @@ contract Nexus is Ownable {
         require(registeredDSPs[_dsp].active,"dsp inactive");
         token.safeTransferFrom(msg.sender, address(this), _amount);
         dspData[_consumer][_dsp].amount += _amount;
-        emit BoughtGas(_consumer, _dsp, _amount);
+        emit BoughtGas(msg.sender, _consumer, _dsp, _amount);
     }
     
     /**
@@ -375,11 +376,11 @@ contract Nexus is Ownable {
         uint dapps = calcGas(gasUsed,"job",jd.imageName);
 
         // todo: add callback gas compensation
-        // useGas(
-        //     _consumer,
-        //     dapps,
-        //     _dsp
-        // );
+        useGas(
+            _consumer,
+            dapps,
+            _dsp
+        );
         emit JobResult(_consumer, _dsp, outputFS, dapps, jobID);
         if(jd.dsps.length != jd.resultsCount){
             return;          
@@ -420,11 +421,11 @@ contract Nexus is Ownable {
         // add dapps for 1mo of base
         uint dapps = calcDapps("service",sd.imageName);
 
-        // useGas(
-        //     _consumer,
-        //     dapps,
-        //     msg.sender
-        // );
+        useGas(
+            _consumer,
+            dapps,
+            msg.sender
+        );
 
         emit ServiceRunning(_consumer, msg.sender, jobID, port);
     }
@@ -531,7 +532,7 @@ contract Nexus is Ownable {
         string calldata imageAddress,
         string calldata imageHash,
         uint jobFee
-    ) public onlyOwner {
+    ) public {
         address owner = msg.sender;        
         jobDockerImages[imageName].image = imageAddress;
         jobDockerImages[imageName].owner = owner;
@@ -551,7 +552,7 @@ contract Nexus is Ownable {
         uint baseFee,
         uint storageFee,
         uint ioFee
-    ) public onlyOwner {
+    ) public {
         address owner = msg.sender;
         serviceDockerImages[imageName].image = imageAddress;
         serviceDockerImages[imageName].owner = owner;
