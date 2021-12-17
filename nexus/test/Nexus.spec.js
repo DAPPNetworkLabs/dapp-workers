@@ -61,9 +61,9 @@ describe("Nexus", function() {
   });
 
   it("Register job image", async function() {
-    await nexusContract.connect(dsp1).setJobDockerImage("wasm-runner","","",20);
+    await nexusContract.connect(dsp1).setJobDockerImage("wasmrunner","","",20);
 
-    const dockerImage = await nexusContract.jobDockerImages("wasm-runner");
+    const dockerImage = await nexusContract.jobDockerImages("wasmrunner");
 
     expect(dockerImage.image).to.equal("");
     expect(dockerImage.owner).to.equal(dsp1.address);
@@ -84,75 +84,103 @@ describe("Nexus", function() {
     expect(dockerImage.ioFee.toString()).to.equal('10');
   });
 
-  it("Run job", async function() {
-    
+  it.skip("Set quorum", async function() {
+    await nexusContract.setQuorum(addr1.address, [dsp1.address]);
+
+    const consumerData = await nexusContract.consumerData(addr1.address);
+
+    console.log(consumerData);
+
+    expect(consumerData.dsps).to.equal([dsp1.address]);
   });
 
-  it("Run service", async function() {
-    
+  it.skip("Set consumer", async function() {
+    await nexusContract.setConsumerPermissions(addr1.address);
+
+    const consumerData = await nexusContract.consumerData(addr1.address);
+
+    console.log(consumerData);
+
+    expect(consumerData.owner).to.equal(addr1.address);
   });
 
-  it("Run job - error", async function() {
-    
+  it("Queue job", async function() {
+    await nexusContract.run({
+      consumer: addr1.address,
+      imageName: "wasmrunner",
+      imageType: "job",
+      inputFS: "",
+      callback: false,
+      args: ["target/wasm32-wasi/release/test"]
+    });
   });
 
-  it("Run service - error", async function() {
-    
+  it("Queue service", async function() {
+    await nexusContract.run({
+      consumer: addr1.address,
+      imageName: "wasi-service",
+      imageType: "service",
+      inputFS: "",
+      callback: false,
+      args: ["target/wasm32-wasi/release/test"]
+    });
   });
 
-  it("Set consumer permission", async function() {
-    
+  it.skip("Run job", async function() {
+    await nexusContract.connect(dsp1).jobCallback(0,"");
   });
 
-  it("Set quorum", async function() {
-    
+  it.skip("Run service", async function() {
+    await nexusContract.connect(dsp1).serviceCallback(0,8888);
   });
 
-  it("Claim dsp dapp", async function() {
-    
+  it.skip("Run job - error", async function() {
+    await nexusContract.connect(dsp1).jobError(0,"big error","");
   });
 
-  it("Set job docker image", async function() {
-    
+  it.skip("Run service - error", async function() {
+    await nexusContract.connect(dsp1).serviceError(0,"big error","");
   });
 
-  it("Set service docker image", async function() {
-    
-  });
-
-  it("Get job docker image", async function() {
-    
-  });
-
-  it("Get service docker image", async function() {
-    
+  it.skip("Claim dsp dapp", async function() {
+    await nexusContract.connect(dsp1).claim(dsp1.address);
   });
 
   it("Get image approved for dsp", async function() {
+    const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"wasmrunner");
     
+    expect(approved).to.equal(false);
   });
 
   it("Approve image for dsp", async function() {
+    await nexusContract.connect(dsp1).approveDockerForDSP("wasmrunner");
+
+    const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"wasmrunner");
     
+    expect(approved).to.equal(true);
   });
 
   it("Unapprove image for dsp", async function() {
+    await nexusContract.connect(dsp1).unapproveDockerForDSP("wasmrunner");
+
+    const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"wasmrunner");
     
+    expect(approved).to.equal(false);
   });
 
-  it("Get dsp port", async function() {
+  it.skip("Get dsp port", async function() {
+    const port = await nexusContract.getPortForDSP(1,dsp1.address);
+
+    console.log(port);
     
+    expect(port).to.equal(8888);
   });
 
   it("Get dsp endpoint", async function() {
+    const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
+
+    console.log(endpoint);
     
+    expect(endpoint).to.equal("https://dsp.address");
   });
-
-  // it("Create job", async function() {
-    
-  // });
-
-  // it("Create service", async function() {
-    
-  // });
 });
