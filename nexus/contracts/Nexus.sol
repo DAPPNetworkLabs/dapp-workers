@@ -226,11 +226,11 @@ contract Nexus is Ownable {
         }
         return string(str);
     }
-    
+
     /**
      * @dev sets quorum of dsp addresses, requires all dsps be active
      */
-    function setQuorum(address consumer, address[] calldata dsps) public {    
+    function setQuorum(address consumer, address[] calldata dsps) public {
         if(consumerData[msg.sender].owner != address(0)){
             require(consumerData[msg.sender].owner == msg.sender, "not owner");
         }
@@ -393,12 +393,12 @@ contract Nexus is Ownable {
     /**
      * @dev run service
      */
-    function calcGas(uint gas, string memory jobType, string memory imageName) private returns (uint) {
+    function calcGas(uint gas, string memory jobType, string memory imageName) private view returns (uint) {
         uint jobDapps = calcDapps(jobType,imageName);
         return 1+jobDapps;
     }
 
-    function calcDapps(string memory jobType, string memory imageName) private returns (uint) {
+    function calcDapps(string memory jobType, string memory imageName) private view returns (uint) {
         if(compareStrings(jobType, "job")) {
             return jobDockerImages[imageName].jobFee;
         } else if(compareStrings(jobType, "service")) {
@@ -464,7 +464,7 @@ contract Nexus is Ownable {
     /**
      * @dev compare strings by hash
      */
-    function compareStrings(string memory a, string memory b) internal view returns (bool) {
+    function compareStrings(string memory a, string memory b) internal pure returns (bool) {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
     }
     
