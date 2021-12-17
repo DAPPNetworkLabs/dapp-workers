@@ -3,6 +3,8 @@ pragma solidity >=0.7.0 <0.9.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "hardhat/console.sol";
+
 contract Nexus is Ownable {
     using SafeERC20 for IERC20;    
     uint public gasPerTimeUnit = 100;
@@ -176,8 +178,8 @@ contract Nexus is Ownable {
     mapping(address => Consumer) public consumerData;
     mapping(uint => JobData) public jobs;
     mapping(uint => ServiceData) public services;
-    mapping(string => JobDockerImage) internal jobDockerImages;
-    mapping(string => ServiceDockerImage) internal serviceDockerImages;
+    mapping(string => JobDockerImage) public jobDockerImages;
+    mapping(string => ServiceDockerImage) public serviceDockerImages;
 
     uint public lastJobID;
 
@@ -275,7 +277,7 @@ contract Nexus is Ownable {
         address _consumer = msg.sender;
         require(!(_amountToSell > dspData[_consumer][_dsp].amount),"overdrawn balance");
         dspData[_consumer][_dsp].amount -= _amountToSell;
-        token.safeTransferFrom(address(this),_consumer, _amountToSell);
+        token.safeTransfer(_consumer, _amountToSell);
         emit SoldGas(_consumer, _dsp, _amountToSell);
     }
     
@@ -562,19 +564,6 @@ contract Nexus is Ownable {
         serviceDockerImages[imageName].ioFee = ioFee;
         
         emit DockerSet(owner,imageName,imageAddress,imageHash,"service");
-    }
-    
-    /**
-     * @dev returns docker image
-     */
-    function getDockerImage(string calldata imageName, string calldata imageType) public view returns (string memory) {
-        if(compareStrings(imageType, "job")){
-            return jobDockerImages[imageName].image;
-        } else if(compareStrings(imageType, "service")) {
-            return serviceDockerImages[imageName].image;
-        } else {
-            revert("invalid image type");
-        }
     }
     
     /**
