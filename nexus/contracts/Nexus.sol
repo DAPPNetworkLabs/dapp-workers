@@ -411,8 +411,10 @@ contract Nexus is Ownable {
     /**
      * @dev run service
      */
-    // event listen to from client
+    // add check for not conflicting with DSP frontend default ports
     function serviceCallback(uint jobID, uint port) public {
+        require(port != 8888,"dsp portal port overlap");
+
         ServiceData storage sd = services[jobID];
 
         validateDsp(sd.dsps);
