@@ -131,19 +131,21 @@ contract Nexus is Ownable {
         // Process[] runningProcesses;
     }
 
+    // note, may add back dsps to conserve gas versus func call
     struct JobData {
         address owner;
-        address[] dsps;
+        // address[] dsps;
         bool callback;
         uint resultsCount;
         string imageName;
         mapping(uint =>bool) done;
         mapping(uint =>bytes32) dataHash;
     }
-    
+
+    // note, may add back dsps to conserve gas versus func call
     struct ServiceData {
         address owner;
-        address[] dsps;
+        // address[] dsps;
         string imageName;
         mapping(address =>uint) ports;
     }
@@ -253,6 +255,13 @@ contract Nexus is Ownable {
     }
     
     /**
+     * @dev return consumer dsps
+     */
+    function getConsumerDsps(address consumer) public view returns (address[] memory) {
+        return consumerData[consumer].dsps;
+    }
+    
+    /**
      * @dev transfer DAPP to contract to process jobs
      */
     // holds snapshots
@@ -289,7 +298,7 @@ contract Nexus is Ownable {
         uint _amountToUse,
         address _dsp
     ) internal {
-        require(_amountToUse <= dspData[_consumer][_dsp].amount, "not enough gas");
+        require(_amountToUse <= dspData[_consumer][_dsp].amount, "not enough dapp gas");
 
         dspData[_consumer][_dsp].amount -= _amountToUse;
         registeredDSPs[_dsp].claimableDapp += _amountToUse;
@@ -304,26 +313,25 @@ contract Nexus is Ownable {
     ) external {
         uint claimableAmount = registeredDSPs[_dsp].claimableDapp;
         require(claimableAmount != 0,"must have positive balance to claim");
-        token.safeTransferFrom(address(this), _dsp, claimableAmount);
+        token.safeTransfer(_dsp, claimableAmount);
         emit ClaimedGas(_dsp, claimableAmount);
     }
     
     /**
      * @dev ensures returned data hash is universally accepted
      */
-    function submitResEntry(uint jobID,bytes32 dataHash) private returns (bool) {
+    function submitResEntry(uint jobID,bytes32 dataHash, address[] memory dsps) private returns (bool) {
         JobData storage jd = jobs[jobID];
-        // address _consumer = jd.owner;
         address _dsp = msg.sender;        
         int founds = -1;
         bool inconsistent = false;
-        for (uint i=0; i<jd.dsps.length; i++) {
+        for (uint i=0; i<dsps.length; i++) {
             if(jd.done[i]){
                 if(jd.dataHash[i] != dataHash){
                     inconsistent = true;
                 }
             }
-            if(jd.dsps[i] == _dsp){
+            if(dsps[i] == _dsp){
                 founds = int(i);
                 break;
             }
@@ -340,7 +348,7 @@ contract Nexus is Ownable {
     /**
      * @dev validates dsp is authorized for job or service
      */
-    function validateDsp(address[] storage dsps) private view {
+    function validateDsp(address[] memory dsps) private view {
         int founds = -1;
         for (uint i=0; i<dsps.length; i++) {
             if(dsps[i] == msg.sender){
@@ -359,15 +367,15 @@ contract Nexus is Ownable {
         bytes32 dataHash = keccak256(abi.encodePacked(outputFS));
 
         JobData storage jd = jobs[jobID];
-        address _consumer = jd.owner;
+        address[] memory dsps = getConsumerDsps(jd.owner);
         
-        bool inconsistent = submitResEntry(jobID, dataHash);
+        bool inconsistent = submitResEntry(jobID, dataHash, dsps);
         address _dsp = msg.sender;
         
         uint gasUsed;
         if(jd.callback){
             gasUsed = gasleft();
-            (bool success, bytes memory data) = address(_consumer).call(abi.encodeWithSignature(
+            (bool success, bytes memory data) = address(jd.owner).call(abi.encodeWithSignature(
                 "_dspcallback(uint)",
                 jobID
             ));
@@ -379,15 +387,15 @@ contract Nexus is Ownable {
 
         // todo: add callback gas compensation
         useGas(
-            _consumer,
+            jd.owner,
             dapps,
             _dsp
         );
-        emit JobResult(_consumer, _dsp, outputFS, dapps, jobID);
-        if(jd.dsps.length != jd.resultsCount){
+        emit JobResult(jd.owner, _dsp, outputFS, dapps, jobID);
+        if(dsps.length != jd.resultsCount){
             return;          
         }
-        emit JobDone(_consumer, outputFS,inconsistent, jobID);
+        emit JobDone(jd.owner, outputFS,inconsistent, jobID);
     }
     
     /**
@@ -417,7 +425,7 @@ contract Nexus is Ownable {
 
         ServiceData storage sd = services[jobID];
 
-        validateDsp(sd.dsps);
+        validateDsp(getConsumerDsps(sd.owner));
         
         address _consumer = sd.owner;
         sd.ports[msg.sender] = port;
@@ -440,9 +448,10 @@ contract Nexus is Ownable {
     function jobError(uint jobID, string calldata  stdErr, string calldata outputFS) public {
         JobData storage jd = jobs[lastJobID];
         address _dsp = msg.sender;
+        address[] memory dsps = getConsumerDsps(jd.owner);
         int founds = -1;
-        for (uint i=0; i<jd.dsps.length; i++) {
-            if(jd.dsps[i] == _dsp){
+        for (uint i=0; i<dsps.length; i++) {
+            if(dsps[i] == _dsp){
                 founds = int(i);
                 break;
             }
@@ -458,7 +467,7 @@ contract Nexus is Ownable {
      */
     function serviceError(uint jobID, string calldata  stdErr, string calldata outputFS) public {
         ServiceData storage sd = services[lastJobID];
-        validateDsp(sd.dsps);
+        validateDsp(getConsumerDsps(sd.owner));
         emit ServiceError(sd.owner, msg.sender, stdErr, outputFS, jobID);
     }
     
@@ -481,13 +490,11 @@ contract Nexus is Ownable {
         lastJobID = lastJobID + 1;
         if(compareStrings(args.imageType, "job")){
             JobData storage jd = jobs[lastJobID];
-            jd.dsps = consumerData[args.consumer].dsps;
             jd.callback = args.callback;
             jd.owner = args.consumer;
             jd.imageName = args.imageName;
         } else if(compareStrings(args.imageType, "service")){
             ServiceData storage sd = services[lastJobID];
-            sd.dsps = consumerData[args.consumer].dsps;
             sd.owner = args.consumer;
             sd.imageName = args.imageName;
         } else {
