@@ -17,6 +17,8 @@ describe("Nexus", function() {
 
     dappTokenContract = await dappTokenFactory.deploy();
     nexusContract = await nexusTokenFactory.deploy(dappTokenContract.address);
+
+    // start docker compose unit tests
   });
 
   it("Deprecate DSP", async function() {
@@ -135,14 +137,32 @@ describe("Nexus", function() {
   });
 
   it("Run job", async function() {
+    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+
     await nexusContract.connect(dsp1).jobCallback(1,"");
+
+    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    
+    expect(postDspBal).is.above(preDspBal);
+
+    // ensure job ran
   });
 
   it("Run service", async function() {
+    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+
     await nexusContract.connect(dsp1).serviceCallback(2,8001);
+
+    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    
+    expect(postDspBal).is.above(preDspBal);
+
+    // ensure service running
   });
 
   it("Run job - error", async function() {
+    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+
     await nexusContract.run({
       consumer: addr1.address,
       imageName: "wasmrunner",
@@ -152,9 +172,17 @@ describe("Nexus", function() {
       args: ["target/wasm32-wasi/release/test"]
     });
     await nexusContract.connect(dsp1).jobError(3,"big error","");
+
+    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    
+    expect(postDspBal).to.equal(preDspBal);
+
+    // ensure job not completed
   });
 
   it("Run service - error", async function() {
+    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+
     await nexusContract.run({
       consumer: addr1.address,
       imageName: "wasi-service",
@@ -164,10 +192,22 @@ describe("Nexus", function() {
       args: ["target/wasm32-wasi/release/test"]
     });
     await nexusContract.connect(dsp1).serviceError(4,"big error","");
+
+    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    
+    expect(postDspBal).to.equal(preDspBal);
+
+    // ensure service not running
   });
 
   it("Claim dsp dapp", async function() {
+    const preDspBal = await dappTokenContract.balanceOf(dsp1.address);
+
     await nexusContract.connect(dsp1).claim(dsp1.address);
+
+    const postDspBal = await dappTokenContract.balanceOf(dsp1.address);
+    
+    expect(postDspBal).is.above(preDspBal);
   });
 
   it("Get image approved for dsp", async function() {
