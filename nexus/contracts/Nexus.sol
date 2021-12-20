@@ -441,7 +441,6 @@ contract Nexus is Ownable {
         JobData storage jd = jobs[lastJobID];
         address _dsp = msg.sender;
         int founds = -1;
-        bool inconsistent = false;
         for (uint i=0; i<jd.dsps.length; i++) {
             if(jd.dsps[i] == _dsp){
                 founds = int(i);
