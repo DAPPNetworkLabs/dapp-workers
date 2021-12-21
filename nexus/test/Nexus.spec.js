@@ -45,7 +45,7 @@ describe("Nexus", function() {
   });
 
   it("Buy dapp gas", async function() {
-    const dapps = ethers.utils.parseUnits("15000",4);
+    const dapps = ethers.utils.parseUnits("200000",4);
     await dappTokenContract.mint(addr1.address, dapps);
     await dappTokenContract.approve(nexusContract.address, dapps);
     await nexusContract.buyGasFor(dapps, addr1.address, dsp1.address);
@@ -56,7 +56,7 @@ describe("Nexus", function() {
   });
 
   it("Sell dapp gas", async function() {
-    const dapps = ethers.utils.parseUnits("7500",4);
+    const dapps = ethers.utils.parseUnits("100000",4);
 
     await nexusContract.sellGas(dapps, dsp1.address);
 
@@ -66,27 +66,27 @@ describe("Nexus", function() {
   });
 
   it("Register job image", async function() {
-    await nexusContract.connect(dsp1).setJobDockerImage("wasmrunner","","",20);
+    await nexusContract.connect(dsp1).setJobDockerImage("wasmrunner","","",200000);
 
     const dockerImage = await nexusContract.jobDockerImages("wasmrunner");
 
     expect(dockerImage.image).to.equal("");
     expect(dockerImage.owner).to.equal(dsp1.address);
     expect(dockerImage.imageHash).to.equal("");
-    expect(dockerImage.jobFee.toString()).to.equal('20');
+    expect(dockerImage.jobFee.toString()).to.equal('200000');
   });
 
   it("Register service image", async function() {
-    await nexusContract.connect(dsp1).setServiceDockerImage("wasi-service","","",10,10,10);
+    await nexusContract.connect(dsp1).setServiceDockerImage("wasi-service","","",100000,100000,100000);
 
     const dockerImage = await nexusContract.serviceDockerImages("wasi-service");
 
     expect(dockerImage.image).to.equal("");
     expect(dockerImage.owner).to.equal(dsp1.address);
     expect(dockerImage.imageHash).to.equal("");
-    expect(dockerImage.baseFee.toString()).to.equal('10');
-    expect(dockerImage.storageFee.toString()).to.equal('10');
-    expect(dockerImage.ioFee.toString()).to.equal('10');
+    expect(dockerImage.baseFee.toString()).to.equal('100000');
+    expect(dockerImage.storageFee.toString()).to.equal('100000');
+    expect(dockerImage.ioFee.toString()).to.equal('100000');
   });
 
   it("Set consumer", async function() {
@@ -137,6 +137,18 @@ describe("Nexus", function() {
 
     expect(service.owner).to.equal(addr1.address);
     expect(service.imageName).to.equal("wasi-service");
+  });
+
+  it("Min job balance", async function() {
+    const min = await nexusContract.getMinBalance(1,"job");
+    
+    expect(min).is.above(400000000);
+  });
+
+  it("Min service balance", async function() {
+    const min = await nexusContract.getMinBalance(2,"service");
+
+    expect(min).is.above(50000000);
   });
 
   it("Run job", async function() {

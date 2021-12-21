@@ -12,7 +12,7 @@ contract Nexus is Ownable {
     using SafeERC20 for IERC20;
 
     uint public gasPerTimeUnit = 100;
-    uint public dollarPrecision = 2;
+    uint public usdtPrecision = 1e6;
     
     IERC20 public token;
     IBancorNetwork public bancorNetwork;
@@ -23,16 +23,9 @@ contract Nexus is Ownable {
     address bntToken = 0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C;
     address ethBntToken = 0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533;
     address ethToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-    
-    // address[] public dappEthPath = [
-    //     "0x939B462ee3311f8926c047D2B576C389092b1649",
-    //     "0x33A23d447De16a8Ff802c9Fcc917465Df01A3977",
-    //     "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-    //     "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
-    //     "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-    // ];
-    // address[] public dappBntPath = ["0x939b462ee3311f8926c047d2b576c389092b1649","0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c"];
-    // address[] public bntEthPath = ["0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c","0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"];
+
+    address usdtToken = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    address usdtBntToken = 0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306;
 
     uint256 private constant CUSHION = 5_000;
     uint256 private constant JOB_GAS_OVERHEAD = 80_000;
@@ -439,13 +432,7 @@ contract Nexus is Ownable {
     ) private view returns (uint payment) {
         uint jobDapps = calcDapps("job",imageName);
         uint gasWei = getFeedData(); // 99000000000 fast gas price of 1 gas in wei
-        address[] memory table = new address[](5);
-        table[0] = dappToken;
-        table[1] = dappBntToken;
-        table[2] = bntToken;
-        table[3] = ethBntToken;
-        table[4] = ethToken;
-        uint dappEth = bancorNetwork.rateByPath(table,10000); // how much 18,ETH for 1 4,DAPP
+        uint dappEth = getDappEth(); // how much 18,ETH for 1 4,DAPP
         // 99000000000 * 80000 = 7.92E15 ((7.92E15/1e18)*$3,980) = $31.52 for gas for base * 20% fee
         // 5,051.2821 DAPP for $39.40
         gas += JOB_GAS_OVERHEAD;
@@ -461,6 +448,26 @@ contract Nexus is Ownable {
         total += jobDapps;
         // require(total <= LINK_TOTAL_SUPPLY, "payment greater than all LINK");
         return total;
+    }
+
+    function getDappEth() private view returns (uint256) {
+        address[] memory table = new address[](5);
+        table[0] = dappToken;
+        table[1] = dappBntToken;
+        table[2] = bntToken;
+        table[3] = ethBntToken;
+        table[4] = ethToken;
+        return bancorNetwork.rateByPath(table,10000); // how much 18,ETH for 1 4,DAPP
+    }
+
+    function getDappUsd() private view returns (uint256) {
+        address[] memory table = new address[](5);
+        table[0] = usdtToken;
+        table[1] = usdtBntToken;
+        table[2] = bntToken;
+        table[3] = dappBntToken;
+        table[4] = dappToken;
+        return bancorNetwork.rateByPath(table,1000000); // how much 18,ETH for 1 6,USDT
     }
 
     /**
@@ -485,17 +492,40 @@ contract Nexus is Ownable {
 
     function calcDapps(string memory jobType, string memory imageName) private view returns (uint) {
         if(compareStrings(jobType, "job")) {
-            return jobDockerImages[imageName].jobFee;
+            return getDappUsd() * ( jobDockerImages[imageName].jobFee / usdtPrecision );
         } else if(compareStrings(jobType, "service")) {
             uint baseFee = serviceDockerImages[imageName].baseFee;
             // base fee per hour * 24 hours * 30 days for monthly rate
-            return baseFee * 24 * 30;
+            uint dappUsd = getDappUsd();
+            // ((100000 * 24 * 30) / 1e6) * 1249348) = 89,953,056 -> 4 dec adjusted -> 8,995.3056 DAPP ~ $72
+            return ( dappUsd * baseFee * 24 * 30 ) / usdtPrecision;
         }
     }
 
-    function feeToDapps(uint dapps) private view returns (uint) {
-        // take $ cost and convert to dapps at current rate
-        return 1;
+    /**
+    * @notice calculates the minimum balance required for an upkeep to remain eligible
+    */
+    function getMinBalance(uint256 id, string memory jobType) external view returns (uint256 minBalance) {
+        if(compareStrings(jobType, "job")) {
+            return getMaxPaymentForGas(jobs[id].gasLimit,jobs[id].imageName);
+        } 
+        else if(compareStrings(jobType, "service")) {
+            return calcDapps("service",services[id].imageName);
+        }
+    }
+
+    /**
+    * @notice calculates the maximum payment for a given gas limit
+    */
+    function getMaxPaymentForGas(uint256 gasLimit, string memory imageName) public view returns (uint256 maxPayment) {
+        return calculatePaymentAmount(gasLimit, imageName);
+    }
+
+    function adjustGasPrice(uint256 gasWei, bool useTxGasPrice) private view returns (uint256 adjustedPrice) {
+        adjustedPrice = gasWei * 1; // future config
+        if (useTxGasPrice && tx.gasprice < adjustedPrice) {
+            adjustedPrice = tx.gasprice;
+        }
     }
 
     /**
