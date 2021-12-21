@@ -3,6 +3,9 @@ const { expect } = require("chai");
 const { network, ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
 
+const bancorNetwork = "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0";
+const fastGasFeed = "0x169e633a2d1e6c10dd91238ba11c4a708dfef37c";
+
 describe("Nexus", function() {
   this.timeout(100000);
   const web3 = new Web3();
@@ -16,7 +19,7 @@ describe("Nexus", function() {
     const nexusTokenFactory = await ethers.getContractFactory("Nexus", addr1);
 
     dappTokenContract = await dappTokenFactory.deploy();
-    nexusContract = await nexusTokenFactory.deploy(dappTokenContract.address);
+    nexusContract = await nexusTokenFactory.deploy(dappTokenContract.address,bancorNetwork,fastGasFeed);
 
     // start docker compose unit tests
   });
@@ -42,7 +45,7 @@ describe("Nexus", function() {
   });
 
   it("Buy dapp gas", async function() {
-    const dapps = ethers.utils.parseUnits("10000",4);
+    const dapps = ethers.utils.parseUnits("15000",4);
     await dappTokenContract.mint(addr1.address, dapps);
     await dappTokenContract.approve(nexusContract.address, dapps);
     await nexusContract.buyGasFor(dapps, addr1.address, dsp1.address);
@@ -53,7 +56,7 @@ describe("Nexus", function() {
   });
 
   it("Sell dapp gas", async function() {
-    const dapps = ethers.utils.parseUnits("5000",4);
+    const dapps = ethers.utils.parseUnits("7500",4);
 
     await nexusContract.sellGas(dapps, dsp1.address);
 

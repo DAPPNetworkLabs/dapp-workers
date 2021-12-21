@@ -3,15 +3,42 @@ pragma solidity >=0.7.0 <0.9.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "./interfaces/IBancorNetwork.sol";
+import "./interfaces/AggregatorV3Interface.sol";
+
 import "hardhat/console.sol";
 
 contract Nexus is Ownable {
-    using SafeERC20 for IERC20;    
+    using SafeERC20 for IERC20;
+
     uint public gasPerTimeUnit = 100;
-    // uint8 costs more when in non-struct form
-    // https://ethereum.stackexchange.com/questions/3067/why-does-uint8-cost-more-gas-than-uint
     uint public dollarPrecision = 2;
+    
     IERC20 public token;
+    IBancorNetwork public bancorNetwork;
+    AggregatorV3Interface public immutable FAST_GAS_FEED;
+
+    address dappToken = 0x939B462ee3311f8926c047D2B576C389092b1649;
+    address dappBntToken = 0x33A23d447De16a8Ff802c9Fcc917465Df01A3977;
+    address bntToken = 0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C;
+    address ethBntToken = 0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533;
+    address ethToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    
+    // address[] public dappEthPath = [
+    //     "0x939B462ee3311f8926c047D2B576C389092b1649",
+    //     "0x33A23d447De16a8Ff802c9Fcc917465Df01A3977",
+    //     "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+    //     "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
+    //     "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+    // ];
+    // address[] public dappBntPath = ["0x939b462ee3311f8926c047d2b576c389092b1649","0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c"];
+    // address[] public bntEthPath = ["0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c","0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"];
+
+    uint256 private constant CUSHION = 5_000;
+    uint256 private constant JOB_GAS_OVERHEAD = 80_000;
+    uint256 private constant PPB_BASE = 1_000_000_000;
+    uint256 private constant BASE_MULT = 200_000_000;
+    uint256 private constant FLAT_FEE = 0;
 
     event BoughtGas(
         address indexed buyer,
@@ -138,6 +165,7 @@ contract Nexus is Ownable {
         bool callback;
         uint resultsCount;
         string imageName;
+        uint gasLimit;
         mapping(uint =>bool) done;
         mapping(uint =>bytes32) dataHash;
     }
@@ -187,9 +215,13 @@ contract Nexus is Ownable {
 
     constructor (
         // string memory manifest,
-        address _tokenContract
+        address _tokenContract,
+        address _bancorNetwork,
+        address fastGasFeed
         ) {
         token = IERC20(_tokenContract);
+        bancorNetwork = IBancorNetwork(_bancorNetwork);
+        FAST_GAS_FEED = AggregatorV3Interface(fastGasFeed);
     }
     
     /**
@@ -370,12 +402,12 @@ contract Nexus is Ownable {
         address[] memory dsps = getConsumerDsps(jd.owner);
         
         bool inconsistent = submitResEntry(jobID, dataHash, dsps);
-        address _dsp = msg.sender;
+        bool success;
         
         uint gasUsed;
         if(jd.callback){
             gasUsed = gasleft();
-            (bool success, bytes memory data) = address(jd.owner).call(abi.encodeWithSignature(
+            success = callWithExactGas(jd.gasLimit, jd.owner, abi.encodeWithSignature(
                 "_dspcallback(uint)",
                 jobID
             ));
@@ -383,27 +415,72 @@ contract Nexus is Ownable {
         }
 
         // calc gas usage and deduct from quota as DAPPs (using Bancor) or as eth
-        uint dapps = calcGas(gasUsed,"job",jd.imageName);
+        uint dapps = calculatePaymentAmount(gasUsed,jd.imageName);
 
         // todo: add callback gas compensation
         useGas(
             jd.owner,
             dapps,
-            _dsp
+            msg.sender
         );
-        emit JobResult(jd.owner, _dsp, outputFS, dapps, jobID);
+        emit JobResult(jd.owner, msg.sender, outputFS, dapps, jobID);
         if(dsps.length != jd.resultsCount){
-            return;          
+            return;
         }
         emit JobDone(jd.owner, outputFS,inconsistent, jobID);
     }
     
     /**
-     * @dev run service
+     * @dev calculate fee
      */
-    function calcGas(uint gas, string memory jobType, string memory imageName) private view returns (uint) {
-        uint jobDapps = calcDapps(jobType,imageName);
-        return 1+jobDapps;
+    function calculatePaymentAmount(
+        uint gas,
+        string memory imageName
+    ) private view returns (uint payment) {
+        uint jobDapps = calcDapps("job",imageName);
+        uint gasWei = getFeedData(); // 99000000000 fast gas price of 1 gas in wei
+        address[] memory table = new address[](5);
+        table[0] = dappToken;
+        table[1] = dappBntToken;
+        table[2] = bntToken;
+        table[3] = ethBntToken;
+        table[4] = ethToken;
+        uint dappEth = bancorNetwork.rateByPath(table,10000); // how much 18,ETH for 1 4,DAPP
+        // 99000000000 * 80000 = 7.92E15 ((7.92E15/1e18)*$3,980) = $31.52 for gas for base * 20% fee
+        // 5,051.2821 DAPP for $39.40
+        gas += JOB_GAS_OVERHEAD;
+        uint weiForGas = gasWei * gas; 
+        // 7.92E15 * 1e9 = 7.92E24
+        // 7.92E24 * 1,200,000,000 = 9.504E33
+        // 9.504E33 / 1989696218183 = 4.776608566E21
+        // add 0
+        // 4.776608566E21 + 0 = 4.776608566E21
+        uint total = weiForGas * 1e9 * (PPB_BASE + BASE_MULT) / dappEth;
+        // uint total = weiForGas.mul(1e9).mul(PPB_BASE.add(BASE_MULT)).div(dappEth).add(FLAT_FEE.mul(1e12));
+        total /= 1e14;
+        total += jobDapps;
+        // require(total <= LINK_TOTAL_SUPPLY, "payment greater than all LINK");
+        return total;
+    }
+
+    /**
+    * @dev retrieves feed data for fast gas/eth and link/eth prices. if the feed
+    * data is stale it uses the configured fallback price. Once a price is picked
+    * for gas it takes the min of gas price in the transaction or the fast gas
+    * price in order to reduce costs for the upkeep clients.
+    */
+    function getFeedData() private view returns (uint256 gasWei) {
+        uint32 stalenessSeconds = 86400; // can make configurable
+        bool staleFallback = stalenessSeconds > 0;
+        uint256 timestamp;
+        int256 feedValue; // = 99000000000 / 1e9 = 99 gwei
+        (, feedValue, , timestamp, ) = FAST_GAS_FEED.latestRoundData();
+        if ((staleFallback && stalenessSeconds < block.timestamp - timestamp) || feedValue <= 0) {
+            gasWei = 200; // can make configurable
+        } else {
+            gasWei = uint256(feedValue);
+        }
+        return gasWei;
     }
 
     function calcDapps(string memory jobType, string memory imageName) private view returns (uint) {
@@ -414,6 +491,42 @@ contract Nexus is Ownable {
             // base fee per hour * 24 hours * 30 days for monthly rate
             return baseFee * 24 * 30;
         }
+    }
+
+    function feeToDapps(uint dapps) private view returns (uint) {
+        // take $ cost and convert to dapps at current rate
+        return 1;
+    }
+
+    /**
+    * @dev calls target address with exactly gasAmount gas and data as calldata
+    * or reverts if at least gasAmount gas is not available
+    */
+    function callWithExactGas(
+        uint256 gasAmount,
+        address target,
+        bytes memory data
+    ) private returns (bool success) {
+        assembly {
+        let g := gas()
+        // Compute g -= CUSHION and check for underflow
+        if lt(g, CUSHION) {
+            revert(0, 0)
+        }
+        g := sub(g, CUSHION)
+        // if g - g//64 <= gasAmount, revert
+        // (we subtract g//64 because of EIP-150)
+        if iszero(gt(sub(g, div(g, 64)), gasAmount)) {
+            revert(0, 0)
+        }
+        // solidity calls check that a contract actually exists at the destination, so we do the same
+        if iszero(extcodesize(target)) {
+            revert(0, 0)
+        }
+        // call and return whether we succeeded. ignore return data
+        success := call(gasAmount, target, 0, add(data, 0x20), mload(data), 0, 0)
+        }
+        return success;
     }
     
     /**
@@ -493,6 +606,7 @@ contract Nexus is Ownable {
             jd.callback = args.callback;
             jd.owner = args.consumer;
             jd.imageName = args.imageName;
+            jd.gasLimit = 1000000;
         } else if(compareStrings(args.imageType, "service")){
             ServiceData storage sd = services[lastJobID];
             sd.owner = args.consumer;

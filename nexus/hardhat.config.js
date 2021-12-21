@@ -4,14 +4,18 @@ require("hardhat-abi-exporter");
 require("hardhat-gas-reporter");
 require('@openzeppelin/hardhat-upgrades');
 require("@nomiclabs/hardhat-etherscan");
+const config = require("./.config.json");
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: "0.8.7",
+  solidity: "0.8.10",
   networks: {
     hardhat: {
+      forking: {
+        url: `https://eth-mainnet.alchemyapi.io/v2/${config.alchemyKey}`
+      },
       allowUnlimitedContractSize: true
     }
   }

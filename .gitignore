@@ -6,3 +6,4 @@
 **/abi
 **/artifacts
 **/build
+*.config.json
