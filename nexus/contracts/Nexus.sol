@@ -401,8 +401,9 @@ contract Nexus is Ownable {
         if(jd.callback){
             gasUsed = gasleft();
             success = callWithExactGas(jd.gasLimit, jd.owner, abi.encodeWithSignature(
-                "_dspcallback(uint)",
-                jobID
+                "_dspcallback(uint256,string)",
+                jobID,
+                outputFS
             ));
             gasUsed = gasUsed - gasleft();
         }
@@ -429,7 +430,7 @@ contract Nexus is Ownable {
     function calculatePaymentAmount(
         uint gas,
         string memory imageName
-    ) private view returns (uint payment) {
+    ) private view returns (uint total) {
         uint jobDapps = calcDapps("job",imageName);
         uint gasWei = getFeedData(); // 99000000000 fast gas price of 1 gas in wei
         uint dappEth = getDappEth(); // how much 18,ETH for 1 4,DAPP
@@ -626,9 +627,9 @@ contract Nexus is Ownable {
      */
     function run(runArgs calldata args) public {
         if(consumerData[args.consumer].owner != address(0)){
-            require(consumerData[args.consumer].owner == msg.sender);
+            require(consumerData[args.consumer].owner == msg.sender, "consumer not owner");
         } else {
-            require(args.consumer == msg.sender);
+            require(args.consumer == msg.sender, "consumer not sender");
         }
         lastJobID = lastJobID + 1;
         if(compareStrings(args.imageType, "job")){

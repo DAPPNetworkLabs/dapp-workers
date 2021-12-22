@@ -10,16 +10,18 @@ describe("Nexus", function() {
   this.timeout(100000);
   const web3 = new Web3();
   let owner, addr1, addr2, addr3, dsp1, dsp2, addrs;
-  let dappTokenContract, nexusContract;
+  let dappTokenContract, nexusContract, consumerContract;
 
   before(async function() {
     [owner, addr1, addr2, addr3, dsp1, dsp2, ...addrs] = await ethers.getSigners();
 
     const dappTokenFactory = await ethers.getContractFactory("DappToken", addr1);
     const nexusTokenFactory = await ethers.getContractFactory("Nexus", addr1);
+    const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
 
     dappTokenContract = await dappTokenFactory.deploy();
     nexusContract = await nexusTokenFactory.deploy(dappTokenContract.address,bancorNetwork,fastGasFeed);
+    consumerContract = await consumerTokenFactory.deploy(1,nexusContract.address);
 
     // start docker compose unit tests
   });
@@ -123,6 +125,24 @@ describe("Nexus", function() {
     expect(job.imageName).to.equal("wasmrunner");
   });
 
+  it("Queue job with callback", async function() {
+    const dapps = ethers.utils.parseUnits("200000",4);
+    await dappTokenContract.mint(addr2.address, dapps);
+    await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
+    await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, dsp1.address);
+
+    await consumerContract.connect(addr2).setQuorum(consumerContract.address, [dsp1.address]);
+
+    await consumerContract.runJob();
+
+    const job = await nexusContract.jobs(2);
+
+    expect(job.owner).to.equal(consumerContract.address);
+    expect(job.callback).to.equal(true);
+    expect(job.resultsCount.toString()).to.equal('0');
+    expect(job.imageName).to.equal("wasmrunner");
+  });
+
   it("Queue service", async function() {
     await nexusContract.run({
       consumer: addr1.address,
@@ -133,7 +153,7 @@ describe("Nexus", function() {
       args: ["target/wasm32-wasi/release/test"]
     });
 
-    const service = await nexusContract.services(2);
+    const service = await nexusContract.services(3);
 
     expect(service.owner).to.equal(addr1.address);
     expect(service.imageName).to.equal("wasi-service");
@@ -145,8 +165,14 @@ describe("Nexus", function() {
     expect(min).is.above(400000000);
   });
 
+  it("Min job balance with callback", async function() {
+    const min = await nexusContract.getMinBalance(2,"job");
+    
+    expect(min).is.above(400000000);
+  });
+
   it("Min service balance", async function() {
-    const min = await nexusContract.getMinBalance(2,"service");
+    const min = await nexusContract.getMinBalance(3,"service");
 
     expect(min).is.above(50000000);
   });
@@ -163,10 +189,23 @@ describe("Nexus", function() {
     // ensure job ran
   });
 
+  it("Run job with callback", async function() {
+    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+
+    await nexusContract.connect(dsp1).jobCallback(2,"");
+
+    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+
+    const job = await consumerContract.counter();
+    
+    expect(postDspBal).is.above(preDspBal);
+    expect(job.toString()).to.equal('2');
+  });
+
   it("Run service", async function() {
     const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
-    await nexusContract.connect(dsp1).serviceCallback(2,8001);
+    await nexusContract.connect(dsp1).serviceCallback(3,8001);
 
     const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     
@@ -186,7 +225,7 @@ describe("Nexus", function() {
       callback: false,
       args: ["target/wasm32-wasi/release/test"]
     });
-    await nexusContract.connect(dsp1).jobError(3,"big error","");
+    await nexusContract.connect(dsp1).jobError(4,"big error","");
 
     const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     
@@ -206,7 +245,7 @@ describe("Nexus", function() {
       callback: false,
       args: ["target/wasm32-wasi/release/test"]
     });
-    await nexusContract.connect(dsp1).serviceError(4,"big error","");
+    await nexusContract.connect(dsp1).serviceError(5,"big error","");
 
     const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     
@@ -248,7 +287,7 @@ describe("Nexus", function() {
   });
 
   it("Get dsp port", async function() {
-    const port = await nexusContract.getPortForDSP(2,dsp1.address);
+    const port = await nexusContract.getPortForDSP(3,dsp1.address);
 
     expect(port).to.equal(8001);
   });
