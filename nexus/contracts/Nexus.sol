@@ -206,6 +206,10 @@ contract Nexus is Ownable {
 
     uint public lastJobID;
 
+    mapping(uint => address) private dspList;
+
+    uint private totalDsps;
+
     constructor (
         // string memory manifest,
         address _tokenContract,
@@ -284,6 +288,17 @@ contract Nexus is Ownable {
      */
     function getConsumerDsps(address consumer) public view returns (address[] memory) {
         return consumerData[consumer].dsps;
+    }
+    
+    /**
+     * @dev return dsp addresses
+     */
+    function getDspAddresses() public view returns (address[] memory) {
+        address[] memory addresses = new address[](totalDsps);
+        for(uint i=0; i<totalDsps; i++) {
+            addresses[i] = dspList[i];
+        }
+        return addresses;
     }
     
     /**
@@ -661,7 +676,11 @@ contract Nexus is Ownable {
      * @dev active and set endpoint and gas fee mult for dsp
      */
     function regDSP(string calldata endpoint, uint gasFeeMult) public {
+        require(gasFeeMult > 0, "mult must be greater than 0");
         address _dsp = msg.sender;
+        if(registeredDSPs[_dsp].gasFeeMult == 0) {
+            dspList[totalDsps++] = _dsp;
+        }
         registeredDSPs[_dsp].active = true;
         registeredDSPs[_dsp].endpoint = endpoint;
         registeredDSPs[_dsp].gasFeeMult = gasFeeMult;

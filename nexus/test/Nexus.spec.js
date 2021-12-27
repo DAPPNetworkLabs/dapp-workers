@@ -234,6 +234,10 @@ describe("Nexus", function() {
     // ensure job not completed
   });
 
+  it("Run job with callback - error", async function() {
+    
+  });
+
   it("Run service - error", async function() {
     const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
@@ -296,5 +300,24 @@ describe("Nexus", function() {
     const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
 
     expect(endpoint).to.equal("https://dsp.address");
+  });
+
+  it("Get dsp list", async function() {
+    const dsps = await nexusContract.getDspAddresses();
+
+    const expectedResult = [ '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65' ];
+
+    expect(JSON.stringify(dsps)).to.equal(JSON.stringify(expectedResult));
+  });
+
+  it("Get dsp data", async function() {
+    const dsps = await nexusContract.getDspAddresses();
+
+    let dspData = [];
+    for(let i=0; i<dsps.length; i++) {
+      dspData.push(await nexusContract.registeredDSPs(dsps[i]));
+    }
+
+    expect(dspData[0].endpoint).to.equal('https://dsp.address');
   });
 });
