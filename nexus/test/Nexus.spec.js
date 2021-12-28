@@ -57,14 +57,14 @@ describe("Nexus", function() {
   });
 
   it("Register DSP", async function() {
-    await nexusContract.connect(dsp1).regDSP("https://dsp.address", 20);
+    await nexusContract.connect(dsp1).regDSP("https://dsp.address");
 
     const registeredDSPs = await nexusContract.registeredDSPs(dsp1.address);
 
     expect(registeredDSPs.active).to.equal(true);
+    expect(registeredDSPs.registered).to.equal(true);
     expect(registeredDSPs.endpoint).to.equal("https://dsp.address");
     expect(registeredDSPs.claimableDapp.toString()).to.equal('0');
-    expect(registeredDSPs.gasFeeMult.toString()).to.equal('20');
   });
 
   it("Buy dapp gas", async function() {

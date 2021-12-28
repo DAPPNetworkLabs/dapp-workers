@@ -121,8 +121,7 @@ contract Nexus is Ownable {
     event DSPStatusChanged(
         address indexed dsp,
         bool active,
-        string endpoint,
-        uint gasFeeMult
+        string endpoint
     );
     
     event DockerSet(
@@ -168,10 +167,10 @@ contract Nexus is Ownable {
 
     struct RegisteredDSP {
         bool active;
+        bool registered;
         mapping(string => bool) approvedImages;
         string endpoint;
         uint claimableDapp;
-        uint gasFeeMult;
     }
 
     struct JobData {
@@ -934,17 +933,16 @@ contract Nexus is Ownable {
     /**
      * @dev active and set endpoint and gas fee mult for dsp
      */
-    function regDSP(string calldata endpoint, uint gasFeeMult) public {
-        require(gasFeeMult > 0, "mult must be greater than 0");
+    function regDSP(string calldata endpoint) public {
         address _dsp = msg.sender;
-        if(registeredDSPs[_dsp].gasFeeMult == 0) {
+        if(!registeredDSPs[_dsp].registered) {
             dspList[totalDsps++] = _dsp;
         }
         registeredDSPs[_dsp].active = true;
         registeredDSPs[_dsp].endpoint = endpoint;
-        registeredDSPs[_dsp].gasFeeMult = gasFeeMult;
+        registeredDSPs[_dsp].registered = true;
         
-        emit DSPStatusChanged(_dsp, true, endpoint, gasFeeMult);
+        emit DSPStatusChanged(_dsp, true, endpoint);
     }
     
     /**
@@ -954,7 +952,7 @@ contract Nexus is Ownable {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].active = false;
         registeredDSPs[_dsp].endpoint = "";
-        emit DSPStatusChanged(_dsp, false,"", 0);
+        emit DSPStatusChanged(_dsp, false,"");
     }
     
     /**
