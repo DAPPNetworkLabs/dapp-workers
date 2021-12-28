@@ -673,9 +673,9 @@ contract Nexus is Ownable {
     /**
     * @notice calculates the minimum balance required for an upkeep to remain eligible
     */
-    function getMinBalance(uint256 id, string memory jobType, address dsp) public view returns (uint) {
+    function getMinBalance(uint256 id, string memory jobType, address dsp) external view returns (uint) {
         if(compareStrings(jobType, "job")) {
-            return getMaxPaymentForGas(jobs[id].gasLimit,jobs[id].imageName, dsp);
+            return calculatePaymentAmount(jobs[id].gasLimit,jobs[id].imageName, dsp);
         }
         else if(compareStrings(jobType, "service")) {
             return calcServiceDapps(
@@ -695,7 +695,7 @@ contract Nexus is Ownable {
         uint256 gasLimit, 
         string memory imageName, 
         address dsp
-    ) public view returns (uint256 maxPayment) {
+    ) external view returns (uint256 maxPayment) {
         return calculatePaymentAmount(gasLimit, imageName, dsp);
     }
 
@@ -840,8 +840,9 @@ contract Nexus is Ownable {
             require(
                 dspData[args.consumer][args.dsps[i]].amount 
                 >= 
-                getMinBalance(lastJobID,"job",args.dsps[i]
-            ) ,"min balance not met");
+                calculatePaymentAmount(jobs[lastJobID].gasLimit,jobs[lastJobID].imageName, args.dsps[i])
+                ,"min balance not met"
+            );
         }
 
         emit RunJob(

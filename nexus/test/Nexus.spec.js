@@ -192,18 +192,27 @@ describe("Nexus", function() {
 
   it("Min job balance", async function() {
     const min = await nexusContract.getMinBalance(1,"job",dsp1.address);
+
+    // console.log(min.toString());
+    // 76,349.8769 * 0.00730 $/DAPP = $557.35
     
     expect(min).is.above(400000000);
   });
 
   it("Min job balance with callback", async function() {
     const min = await nexusContract.getMinBalance(2,"job",dsp1.address);
+
+    // console.log(min.toString());
+    // 76,349.8769 * 0.00730 $/DAPP = $557.35
     
     expect(min).is.above(400000000);
   });
 
   it("Min service balance", async function() {
     const min = await nexusContract.getMinBalance(3,"service",dsp1.address);
+
+    // console.log(min.toString());
+    // 9,315.0201 * 0.00730 $/DAPP = $68.00
 
     expect(min).is.above(50000000);
   });
