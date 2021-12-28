@@ -119,14 +119,6 @@ describe("Nexus", function() {
     expect(consumerData).to.equal(addr1.address);
   });
 
-  // it("Set dsp quorum", async function() {
-  //   await nexusContract.setQuorum(addr1.address, [dsp1.address]);
-
-  //   const consumerDataDsps = await nexusContract.getConsumerDsps(addr1.address);
-
-  //   expect(JSON.stringify(consumerDataDsps)).to.equal(JSON.stringify([dsp1.address]));
-  // });
-
   it("Queue job", async function() {
     await nexusContract.runJob({
       consumer: addr1.address,
@@ -151,8 +143,6 @@ describe("Nexus", function() {
     await dappTokenContract.mint(addr2.address, dapps);
     await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
     await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, dsp1.address);
-
-    // await consumerContract.connect(addr2).setQuorum(consumerContract.address, [dsp1.address]);
 
     await consumerContract.runJob([dsp1.address]);
 
