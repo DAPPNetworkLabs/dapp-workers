@@ -315,6 +315,31 @@ describe("Nexus", function() {
     expect(postDspStorageLimit).is.above(preDspStorageLimit);
   });
 
+  it("Extend service same month", async function() {
+    const preDspEnDate = (await nexusContract.services(3)).endDate;
+    const preDspIoLimit = (await nexusContract.getDSPDataLimits(3,dsp1.address)).ioMegaBytesLimit;
+    const preDspStorageLimit = (await nexusContract.getDSPDataLimits(3,dsp1.address)).storageMegaBytesLimit;
+
+    const dapps = ethers.utils.parseUnits("200000",4);
+    await dappTokenContract.approve(nexusContract.address, dapps);
+    await nexusContract.extendService(
+      3,
+      "wasi-service",
+      0,
+      1,
+      1,
+      [dsp1.address]
+    );
+
+    const postDspEnDate = (await nexusContract.services(3)).endDate;
+    const postDspIoLimit = (await nexusContract.getDSPDataLimits(3,dsp1.address)).ioMegaBytesLimit;
+    const postDspStorageLimit = (await nexusContract.getDSPDataLimits(3,dsp1.address)).storageMegaBytesLimit;
+    
+    expect(postDspEnDate).to.equal(preDspEnDate);
+    expect(postDspIoLimit).is.above(preDspIoLimit);
+    expect(postDspStorageLimit).is.above(preDspStorageLimit);
+  });
+
   it("Claim dsp dapp", async function() {
     const preDspBal = await dappTokenContract.balanceOf(dsp1.address);
 

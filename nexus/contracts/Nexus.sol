@@ -333,12 +333,16 @@ contract Nexus is Ownable {
 
         require(compareStrings(imageName, sd.imageName),"image missmatch");
 
-        sd.endDate = sd.endDate + ( months * 30 days );
-
         for(uint i=0;i<dsps.length;i++) {
-            uint dapps = calcServiceDapps(imageName, ioMb, storageMb, dsps[i]) * months;
+            bool include_base = months == 0 ? false : true;
             
-            validateMin(ioMb, storageMb, imageName, months, dsps[i]);
+            uint dapps = calcServiceDapps(imageName, ioMb, storageMb, dsps[i], include_base);
+
+            if(include_base) {
+                dapps *= months;
+                validateMin(ioMb, storageMb, imageName, months, dsps[i]);
+                sd.endDate = sd.endDate + ( months * 30 days );
+            }
 
             buyGasFor(
                 dapps,
@@ -569,7 +573,7 @@ contract Nexus is Ownable {
         return getDappUsd() * ( jobDockerImages[dsp][imageName].jobFee / usdtPrecision );
     }
 
-    function calcServiceDapps(string memory imageName, uint ioMegaBytes, uint storageMegaBytes, address dsp) private view returns (uint) {
+    function calcServiceDapps(string memory imageName, uint ioMegaBytes, uint storageMegaBytes, address dsp, bool include_base) private view returns (uint) {
         // base fee per hour * 24 hours * 30 days for monthly rate
         uint dappUsd = getDappUsd();
 
@@ -577,7 +581,7 @@ contract Nexus is Ownable {
         uint storageFee = serviceDockerImages[dsp][imageName].storageFee;
         uint ioFee = serviceDockerImages[dsp][imageName].ioFee;
 
-        baseFee = baseFee * 24 * 30 * dappUsd;
+        baseFee = include_base ? baseFee * 24 * 30 * dappUsd : 0;
         storageFee = storageFee * storageMegaBytes * dappUsd;
         ioFee = ioFee * ioMegaBytes * dappUsd;
         // ((100000 * 24 * 30) / 1e6) * 1249348) = 89,953,056 -> 4 dec adjusted -> 8,995.3056 DAPP ~ $72
@@ -592,7 +596,7 @@ contract Nexus is Ownable {
             return getMaxPaymentForGas(jobs[id].gasLimit,jobs[id].imageName, dsp);
         }
         else if(compareStrings(jobType, "service")) {
-            return calcServiceDapps(services[id].imageName, services[id].ioMegaBytes, services[id].storageMegaBytes, dsp);
+            return calcServiceDapps(services[id].imageName, services[id].ioMegaBytes, services[id].storageMegaBytes, dsp, true);
         }
     }
 
@@ -666,7 +670,7 @@ contract Nexus is Ownable {
         sd.dspServiceData[msg.sender].ioMegaBytesLimit += sd.ioMegaBytes;
         sd.dspServiceData[msg.sender].storageMegaBytesLimit += sd.storageMegaBytes;
         
-        uint dapps = calcServiceDapps(sd.imageName, sd.ioMegaBytes, sd.storageMegaBytes, msg.sender);
+        uint dapps = calcServiceDapps(sd.imageName, sd.ioMegaBytes, sd.storageMegaBytes, msg.sender, true);
 
         useGas(
             _consumer,
