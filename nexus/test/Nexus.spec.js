@@ -126,6 +126,7 @@ describe("Nexus", function() {
       inputFS: "",
       callback: false,
       gasLimit: 1000000,
+      requiresConsistent: false,
       args: ["target/wasm32-wasi/release/test"],
       dsps: [dsp1.address]
     });
@@ -272,6 +273,7 @@ describe("Nexus", function() {
       inputFS: "",
       callback: false,
       gasLimit: 1000000,
+      requiresConsistent: false,
       args: ["target/wasm32-wasi/release/test"],
       dsps: [dsp1.address]
     });

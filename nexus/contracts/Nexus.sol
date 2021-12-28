@@ -180,6 +180,7 @@ contract Nexus is Ownable {
         uint resultsCount;
         string imageName;
         uint gasLimit;
+        bool requireConsistent;
         mapping(uint => bool) done;
         mapping(uint => bytes32) dataHash;
     }
@@ -227,6 +228,7 @@ contract Nexus is Ownable {
         string inputFS;
         bool callback;
         uint gasLimit;
+        bool requireConsistent;
         string[] args;
         address[] dsps;
     }
@@ -546,8 +548,13 @@ contract Nexus is Ownable {
 
         JobData storage jd = jobs[jobID];
         
+        // maybe throw if user doesn't want to accept inconsistency
         bool inconsistent = submitResEntry(jobID, dataHash, jd.dsps);
         bool success;
+
+        if(jd.requireConsistent) {
+            require(inconsistent,"inconsistent response");
+        }
         
         uint gasUsed;
         if(jd.callback){
@@ -835,6 +842,7 @@ contract Nexus is Ownable {
         jd.imageName = args.imageName;
         jd.gasLimit = args.gasLimit;
         jd.dsps = args.dsps;
+        jd.requireConsistent = args.requireConsistent;
 
         for(uint i=0;i<args.dsps.length;i++) {
             require(

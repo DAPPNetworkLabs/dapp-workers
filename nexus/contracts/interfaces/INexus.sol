@@ -9,6 +9,7 @@ interface INexus {
       string inputFS;
       bool callback;
       uint gasLimit;
+      bool requireConsistent;
       string[] args;
       address[] dsps;
   }

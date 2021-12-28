@@ -30,7 +30,7 @@ contract Consumer {
     function runJob(address[] calldata dsps) external {
         string[] memory arr = new string[](1);
         arr[0] = "target/wasm32-wasi/release/test";
-        nexus.runJob(INexus.runJobArgs(address(this),"wasmrunner","",true,1000000,arr,dsps));
+        nexus.runJob(INexus.runJobArgs(address(this),"wasmrunner","",true,1000000,false,arr,dsps));
     }
 
     function _dspcallback(uint val, string calldata outputFS) external {
