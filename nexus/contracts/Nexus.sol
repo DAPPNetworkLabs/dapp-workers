@@ -397,7 +397,14 @@ contract Nexus is Ownable {
     /**
      * @dev extend service
      */
-    function extendService(uint serviceId, string calldata imageName, uint months, uint ioMb, uint storageMb, address[] calldata dsps) external {
+    function extendService(
+        uint serviceId, 
+        string calldata imageName, 
+        uint months, 
+        uint ioMb, 
+        uint storageMb, 
+        address[] calldata dsps
+    ) external {
         validateOwner(msg.sender);
         
         ServiceData storage sd = services[serviceId];
@@ -643,7 +650,13 @@ contract Nexus is Ownable {
         return getDappUsd() * ( jobDockerImages[dsp][imageName].jobFee / usdtPrecision );
     }
 
-    function calcServiceDapps(string memory imageName, uint ioMegaBytes, uint storageMegaBytes, address dsp, bool include_base) private view returns (uint) {
+    function calcServiceDapps(
+        string memory imageName, 
+        uint ioMegaBytes, 
+        uint storageMegaBytes, 
+        address dsp, 
+        bool include_base
+    ) private view returns (uint) {
         // base fee per hour * 24 hours * 30 days for monthly rate
         uint dappUsd = getDappUsd();
 
@@ -666,14 +679,24 @@ contract Nexus is Ownable {
             return getMaxPaymentForGas(jobs[id].gasLimit,jobs[id].imageName, dsp);
         }
         else if(compareStrings(jobType, "service")) {
-            return calcServiceDapps(services[id].imageName, services[id].ioMegaBytes, services[id].storageMegaBytes, dsp, true);
+            return calcServiceDapps(
+                services[id].imageName, 
+                services[id].ioMegaBytes, 
+                services[id].storageMegaBytes, 
+                dsp, 
+                true
+            );
         }
     }
 
     /**
     * @notice calculates the maximum payment for a given gas limit
     */
-    function getMaxPaymentForGas(uint256 gasLimit, string memory imageName, address dsp) public view returns (uint256 maxPayment) {
+    function getMaxPaymentForGas(
+        uint256 gasLimit, 
+        string memory imageName, 
+        address dsp
+    ) public view returns (uint256 maxPayment) {
         return calculatePaymentAmount(gasLimit, imageName, dsp);
     }
 
@@ -751,7 +774,15 @@ contract Nexus is Ownable {
             msg.sender
         );
 
-        emit ServiceRunning(_consumer, msg.sender, serviceId, port, sd.ioMegaBytes, sd.storageMegaBytes, sd.endDate);
+        emit ServiceRunning(
+            _consumer, 
+            msg.sender, 
+            serviceId, 
+            port, 
+            sd.ioMegaBytes, 
+            sd.storageMegaBytes, 
+            sd.endDate
+        );
     }
     
     /**
@@ -807,7 +838,11 @@ contract Nexus is Ownable {
         jd.dsps = args.dsps;
 
         for(uint i=0;i<args.dsps.length;i++) {
-            require(dspData[args.consumer][args.dsps[i]].amount >= getMinBalance(lastJobID,"job",args.dsps[i]) ,"min balance not met");
+            require(
+                dspData[args.consumer][args.dsps[i]].amount 
+                >= 
+                getMinBalance(lastJobID,"job",args.dsps[i]
+            ) ,"min balance not met");
         }
 
         emit RunJob(
@@ -829,7 +864,13 @@ contract Nexus is Ownable {
         validateDsps(args.dsps);
 
         for(uint i=0;i<args.dsps.length;i++) {
-            validateMin(args.ioMegaBytes, args.storageMegaBytes, args.imageName, args.months, args.dsps[i]);
+            validateMin(
+                args.ioMegaBytes, 
+                args.storageMegaBytes, 
+                args.imageName, 
+                args.months, 
+                args.dsps[i]
+            );
         }
 
         lastJobID = lastJobID + 1;
@@ -856,9 +897,24 @@ contract Nexus is Ownable {
         );
     }
 
-    function validateMin(uint ioMegaBytes, uint storageMegaBytes, string calldata imageName, uint months, address dsp) private view {
-        require(ioMegaBytes >= serviceDockerImages[dsp][imageName].minIoMegaBytes * months,"min io bytes not met");
-        require(storageMegaBytes >= serviceDockerImages[dsp][imageName].minStorageMegaBytes * months,"min storage bytes not met");
+    function validateMin(
+        uint ioMegaBytes, 
+        uint storageMegaBytes, 
+        string calldata imageName, 
+        uint months, 
+        address dsp
+    ) private view {
+        require(
+            ioMegaBytes 
+            >= 
+            serviceDockerImages[dsp][imageName].minIoMegaBytes * months
+            ,"min io bytes not met"
+        );
+        require(
+            storageMegaBytes 
+            >= serviceDockerImages[dsp][imageName].minStorageMegaBytes * months
+            ,"min storage bytes not met"
+        );
     }
 
     function validateOwner(address consumer) private view {
