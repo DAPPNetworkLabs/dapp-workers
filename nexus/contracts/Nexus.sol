@@ -30,8 +30,6 @@ contract Nexus is Ownable {
     uint256 private constant CUSHION = 5_000;
     uint256 private constant JOB_GAS_OVERHEAD = 80_000;
     uint256 private constant PPB_BASE = 1_000_000_000;
-    uint256 private constant BASE_MULT = 200_000_000;
-    uint256 private constant FLAT_FEE = 0;
 
     event BoughtGas(
         address indexed buyer,
@@ -155,6 +153,13 @@ contract Nexus is Ownable {
         string outputFS,
         uint id
     );
+    
+    event ConfigSet(
+        uint32 paymentPremiumPPB,
+        uint16 gasCeilingMultiplier,
+        uint fallbackGasPrice,
+        uint24 stalenessSeconds
+    );
 
     struct PerConsumerDSPEntry {
         uint amount;
@@ -243,6 +248,12 @@ contract Nexus is Ownable {
         uint storageMegaBytesLimit;
     }
 
+    struct Config {
+        uint32 paymentPremiumPPB;
+        uint16 gasCeilingMultiplier;
+        uint24 stalenessSeconds;
+    }
+
     mapping(address => RegisteredDSP) public registeredDSPs;
     mapping(address => mapping(address => PerConsumerDSPEntry)) public dspData;
     mapping(address => address) public consumerData;
@@ -257,15 +268,75 @@ contract Nexus is Ownable {
 
     uint private totalDsps;
 
+    Config private s_config;  
+    uint256 private s_fallbackGasPrice; // not in config object for gas savings
+
     constructor (
         // string memory manifest,
         address _tokenContract,
         address _bancorNetwork,
-        address fastGasFeed
+        address _fastGasFeed,
+        uint32 _paymentPremiumPPB,
+        uint24 _stalenessSeconds,
+        uint256 _fallbackGasPrice,
+        uint16 _gasCeilingMultiplier
     ) {
         token = IERC20(_tokenContract);
         bancorNetwork = IBancorNetwork(_bancorNetwork);
-        FAST_GAS_FEED = AggregatorV3Interface(fastGasFeed);
+        FAST_GAS_FEED = AggregatorV3Interface(_fastGasFeed);
+
+        setConfig(
+            _paymentPremiumPPB,
+            _gasCeilingMultiplier,
+            _fallbackGasPrice,
+            _stalenessSeconds
+        );
+    }  
+      
+    /**
+    * @notice set the current configuration of the nexus
+    */
+    function setConfig(
+        uint32 paymentPremiumPPB,
+        uint16 gasCeilingMultiplier,
+        uint256 fallbackGasPrice,
+        uint24 stalenessSeconds
+    ) public onlyOwner {
+        s_config = Config({
+            paymentPremiumPPB: paymentPremiumPPB,
+            gasCeilingMultiplier: gasCeilingMultiplier,
+            stalenessSeconds: stalenessSeconds
+        });
+        s_fallbackGasPrice = fallbackGasPrice;
+
+        emit ConfigSet(
+            paymentPremiumPPB,
+            gasCeilingMultiplier,
+            fallbackGasPrice,
+            stalenessSeconds
+        );
+    }  
+
+    /**
+    * @notice read the current configuration of the nexus
+    */
+    function getConfig()
+        external
+        view
+        returns (
+            uint32 paymentPremiumPPB,
+            uint24 stalenessSeconds,
+            uint16 gasCeilingMultiplier,
+            uint256 fallbackGasPrice
+        )
+    {
+        Config memory config = s_config;
+        return (
+            config.paymentPremiumPPB,
+            config.stalenessSeconds,
+            config.gasCeilingMultiplier,
+            s_fallbackGasPrice
+        );
     }
     
     /**
@@ -521,8 +592,7 @@ contract Nexus is Ownable {
         // 9.504E33 / 1989696218183 = 4.776608566E21
         // add 0
         // 4.776608566E21 + 0 = 4.776608566E21
-        uint total = weiForGas * 1e9 * (PPB_BASE + BASE_MULT) / dappEth;
-        // uint total = weiForGas.mul(1e9).mul(PPB_BASE.add(BASE_MULT)).div(dappEth).add(FLAT_FEE.mul(1e12));
+        uint total = weiForGas * 1e9 * (PPB_BASE + s_config.paymentPremiumPPB) / dappEth;
         total /= 1e14;
         total += jobDapps;
         // require(total <= LINK_TOTAL_SUPPLY, "payment greater than all LINK");
@@ -556,13 +626,13 @@ contract Nexus is Ownable {
     * price in order to reduce costs for the upkeep clients.
     */
     function getFeedData() private view returns (uint256 gasWei) {
-        uint32 stalenessSeconds = 86400; // can make configurable
+        uint32 stalenessSeconds = s_config.stalenessSeconds;
         bool staleFallback = stalenessSeconds > 0;
         uint256 timestamp;
         int256 feedValue; // = 99000000000 / 1e9 = 99 gwei
         (, feedValue, , timestamp, ) = FAST_GAS_FEED.latestRoundData();
         if ((staleFallback && stalenessSeconds < block.timestamp - timestamp) || feedValue <= 0) {
-            gasWei = 200; // can make configurable
+            gasWei = s_fallbackGasPrice;
         } else {
             gasWei = uint256(feedValue);
         }
@@ -607,8 +677,11 @@ contract Nexus is Ownable {
         return calculatePaymentAmount(gasLimit, imageName, dsp);
     }
 
+    /**
+    * @notice use max of transaction gas price and adjusted price
+    */
     function adjustGasPrice(uint256 gasWei, bool useTxGasPrice) private view returns (uint256 adjustedPrice) {
-        adjustedPrice = gasWei * 1; // future config
+        adjustedPrice = gasWei * s_config.gasCeilingMultiplier;
         if (useTxGasPrice && tx.gasprice < adjustedPrice) {
             adjustedPrice = tx.gasprice;
         }

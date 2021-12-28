@@ -5,6 +5,10 @@ const { BigNumber } = require("ethers");
 
 const bancorNetwork = "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0";
 const fastGasFeed = "0x169e633a2d1e6c10dd91238ba11c4a708dfef37c";
+const paymentPremiumPPB = 200000000;
+const stalenessSeconds = 86400;
+const fallbackGasPrice = 200;
+const gasCeilingMultiplier = 2;
 
 describe("Nexus", function() {
   this.timeout(100000);
@@ -20,10 +24,27 @@ describe("Nexus", function() {
     const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
 
     dappTokenContract = await dappTokenFactory.deploy();
-    nexusContract = await nexusTokenFactory.deploy(dappTokenContract.address,bancorNetwork,fastGasFeed);
+    nexusContract = await nexusTokenFactory.deploy(
+      dappTokenContract.address,
+      bancorNetwork,
+      fastGasFeed,
+      paymentPremiumPPB,
+      stalenessSeconds,
+      fallbackGasPrice,
+      gasCeilingMultiplier
+    );
     consumerContract = await consumerTokenFactory.deploy(1,nexusContract.address);
 
     // start docker compose unit tests
+  });
+
+  it("Get config", async function() {
+    const config = await nexusContract.connect(dsp1).getConfig();
+
+    expect(config.paymentPremiumPPB).to.equal(paymentPremiumPPB);
+    expect(config.stalenessSeconds).to.equal(stalenessSeconds);
+    expect(config.gasCeilingMultiplier).to.equal(gasCeilingMultiplier);
+    expect(config.fallbackGasPrice.toString()).to.equal(fallbackGasPrice.toString());
   });
 
   it("Deprecate DSP", async function() {
@@ -47,7 +68,7 @@ describe("Nexus", function() {
   });
 
   it("Buy dapp gas", async function() {
-    const dapps = ethers.utils.parseUnits("200000",4);
+    const dapps = ethers.utils.parseUnits("800000",4);
     await dappTokenContract.mint(addr1.address, dapps);
     await dappTokenContract.approve(nexusContract.address, dapps);
     await nexusContract.buyGasFor(dapps, addr1.address, dsp1.address);
@@ -59,22 +80,23 @@ describe("Nexus", function() {
 
   it("Sell dapp gas", async function() {
     const dapps = ethers.utils.parseUnits("100000",4);
+    const dappsLeft = ethers.utils.parseUnits("700000",4);
 
     await nexusContract.sellGas(dapps, dsp1.address);
 
     const dspData = await nexusContract.dspData(addr1.address, dsp1.address);
 
-    expect(dspData.amount.toString()).to.equal(dapps);
+    expect(dspData.amount.toString()).to.equal(dappsLeft);
   });
 
   it("Register job image", async function() {
-    await nexusContract.connect(dsp1).setJobDockerImage("wasmrunner","","",200000);
+    await nexusContract.connect(dsp1).setJobDockerImage("wasmrunner","","",100000);
 
     const dockerImage = await nexusContract.jobDockerImages(dsp1.address,"wasmrunner");
 
     expect(dockerImage.image).to.equal("");
     expect(dockerImage.imageHash).to.equal("");
-    expect(dockerImage.jobFee.toString()).to.equal('200000');
+    expect(dockerImage.jobFee.toString()).to.equal('100000');
   });
 
   it("Register service image", async function() {
@@ -125,7 +147,7 @@ describe("Nexus", function() {
   });
 
   it("Queue job with callback", async function() {
-    const dapps = ethers.utils.parseUnits("200000",4);
+    const dapps = ethers.utils.parseUnits("250000",4);
     await dappTokenContract.mint(addr2.address, dapps);
     await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
     await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, dsp1.address);
