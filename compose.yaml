@@ -70,6 +70,7 @@ services:
       - ETH_ADDR=ws://eth:8545
       - COMPOSE_PROFILES
       - NODE_OPTIONS=--openssl-legacy-provider
+      - ADDRESS=0x85C5Dd61585773423e378146D4bEC6f8D149E248
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -77,7 +78,21 @@ services:
     depends_on:
       - "eth"
     links:
-        - eth    
+        - eth
+  nexus:
+    image: nexus
+    ports:
+      - 8545
+    build: nexus
+    environment:
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - ETH_ADDR=http://0.0.0.0:8545
+    profiles:
+      - debug
+    depends_on:
+      - "eth"
+    links:
+        - eth  
   dspportal:
     image: dspportal
     build: uis/jobs
@@ -98,7 +113,7 @@ services:
       - ETH_ADDR=ws://eth:8545
       - NODE_OPTIONS=--openssl-legacy-provider
     profiles:
-      - debug
+      - faucet
     depends_on:
       - "eth"
     links:

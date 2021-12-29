@@ -1,4 +1,4 @@
-const Web3 = require("web3");
+// const Web3 = require("web3");
 const { expect } = require("chai");
 const { network, ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
@@ -12,7 +12,7 @@ const gasCeilingMultiplier = 2;
 
 describe("Nexus", function() {
   this.timeout(100000);
-  const web3 = new Web3();
+  // const web3 = new Web3();
   let owner, addr1, addr2, addr3, dsp1, dsp2, addrs;
   let dappTokenContract, nexusContract, consumerContract;
 
@@ -34,6 +34,8 @@ describe("Nexus", function() {
       gasCeilingMultiplier
     );
     consumerContract = await consumerTokenFactory.deploy(1,nexusContract.address);
+
+    console.log(nexusContract.address);
 
     // start docker compose unit tests
   });
