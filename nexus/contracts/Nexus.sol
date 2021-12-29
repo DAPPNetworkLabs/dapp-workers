@@ -96,6 +96,7 @@ contract Nexus is Ownable {
         string imageName,
         string inputFS,
         bool callback,
+        bool requireConsistent,
         string[] args,
         uint id,
         address[] indexed dsps
@@ -838,11 +839,11 @@ contract Nexus is Ownable {
         JobData storage jd = jobs[lastJobID];
 
         jd.callback = args.callback;
+        jd.requireConsistent = args.requireConsistent;
         jd.owner = args.consumer;
         jd.imageName = args.imageName;
         jd.gasLimit = args.gasLimit;
         jd.dsps = args.dsps;
-        jd.requireConsistent = args.requireConsistent;
 
         for(uint i=0;i<args.dsps.length;i++) {
             require(
@@ -858,6 +859,7 @@ contract Nexus is Ownable {
             args.imageName,
             args.inputFS,
             args.callback,
+            args.requireConsistent,
             args.args,
             lastJobID,
             args.dsps
