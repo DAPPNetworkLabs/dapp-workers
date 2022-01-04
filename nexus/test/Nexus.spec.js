@@ -35,7 +35,7 @@ describe("Nexus", function() {
     );
     consumerContract = await consumerTokenFactory.deploy(1,nexusContract.address);
 
-    console.log(nexusContract.address);
+    console.log(`nexus contract: ${nexusContract.address}`);
 
     // start docker compose unit tests
   });
@@ -114,9 +114,10 @@ describe("Nexus", function() {
   });
 
   it("Set consumer", async function() {
-    await nexusContract.setConsumerPermissions(addr1.address);
+    await nexusContract.setConsumerPermissions([addr1.address]);
 
-    const consumerData = await nexusContract.consumerData(addr1.address);
+    // why do I have to pass this 0?
+    const consumerData = await nexusContract.consumerData(addr1.address,0);
 
     expect(consumerData).to.equal(addr1.address);
   });
@@ -218,6 +219,24 @@ describe("Nexus", function() {
     // 9,315.0201 * 0.00730 $/DAPP = $68.00
 
     expect(min).is.above(50000000);
+  });
+
+  it("Set dsps", async function() {
+    await nexusContract.connect(dsp2).regDSP("endpoint");
+
+    const dapps = ethers.utils.parseUnits("800000",4);
+    await dappTokenContract.mint(addr1.address, dapps);
+    await dappTokenContract.approve(nexusContract.address, dapps);
+    await nexusContract.buyGasFor(dapps, addr1.address, dsp2.address);
+
+    await nexusContract.setDsps(1,[dsp1.address,dsp2.address],"job","wasmrunner");
+
+    const dsps = await nexusContract.getDspAddresses();
+
+    expect(JSON.stringify(dsps)).to.equal(JSON.stringify([dsp1.address,dsp2.address]));
+    
+    await nexusContract.setDsps(1,[dsp1.address],"job","wasmrunner");
+    await nexusContract.connect(dsp2).deprecateDSP();
   });
 
   it("Run job", async function() {
@@ -412,7 +431,7 @@ describe("Nexus", function() {
   it("Get dsp list", async function() {
     const dsps = await nexusContract.getDspAddresses();
 
-    const expectedResult = [ '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65' ];
+    const expectedResult = [ '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65',dsp2.address ];
 
     expect(JSON.stringify(dsps)).to.equal(JSON.stringify(expectedResult));
   });

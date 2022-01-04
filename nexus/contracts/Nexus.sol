@@ -160,6 +160,18 @@ contract Nexus is Ownable {
         uint fallbackGasPrice,
         uint24 stalenessSeconds
     );
+    
+    event UpdateJob(
+        address consumer,
+        uint id,
+        address[] dsps
+    );
+    
+    event UpdateService(
+        address consumer,
+        uint id,
+        address[] dsps
+    );
 
     struct PerConsumerDSPEntry {
         uint amount;
@@ -258,7 +270,7 @@ contract Nexus is Ownable {
 
     mapping(address => RegisteredDSP) public registeredDSPs;
     mapping(address => mapping(address => PerConsumerDSPEntry)) public dspData;
-    mapping(address => address) public consumerData;
+    mapping(address => address[]) public consumerData;
     mapping(uint => JobData) public jobs;
     mapping(uint => ServiceData) public services;
     mapping(address => mapping(string => JobDockerImage)) public jobDockerImages;
@@ -381,8 +393,65 @@ contract Nexus is Ownable {
     /**
      * @dev create consumer data entry
      */
-    function setConsumerPermissions(address owner) public {
-        consumerData[msg.sender] = owner;
+    function setDsps(uint id, address[] calldata dsps, string calldata jobType, string calldata imageName) external {
+        validateOwner(msg.sender);
+        validateDsps(dsps);
+
+        if(compareStrings(jobType, "job")) {
+            JobData storage jd = jobs[id];
+
+            require(jd.owner != address(0),"invalid job");
+            require(compareStrings(imageName, jd.imageName),"image missmatch");
+
+            for(uint i=0;i<dsps.length;i++) {
+                require(
+                    dspData[msg.sender][dsps[i]].amount 
+                    >= 
+                    calculatePaymentAmount(jobs[id].gasLimit,jobs[id].imageName, dsps[i])
+                    ,"min balance not met"
+                );
+            }
+
+            jd.dsps = dsps;
+
+            emit UpdateJob(
+                msg.sender,
+                id,
+                dsps
+            );
+        } else if(compareStrings(jobType, "service")) {
+            ServiceData storage sd = services[id];
+
+            require(sd.owner != address(0),"invalid service");
+            require(compareStrings(imageName, sd.imageName),"image missmatch");
+            
+            sd.dsps = dsps;
+
+            for(uint i=0;i<dsps.length;i++) {
+                validateMin(
+                    sd.ioMegaBytes, 
+                    sd.storageMegaBytes, 
+                    imageName, 
+                    sd.months, 
+                    sd.dsps[i]
+                );
+            }
+
+            emit UpdateService(
+                msg.sender,
+                id,
+                dsps
+            );
+        } else {
+            revert("invalid job type");
+        }
+    }
+    
+    /**
+     * @dev create consumer data entry
+     */
+    function setConsumerPermissions(address[] calldata owners) public {
+        consumerData[msg.sender] = owners;
     }
     
     /**
@@ -928,10 +997,13 @@ contract Nexus is Ownable {
     }
 
     function validateOwner(address consumer) private view {
-        if(consumerData[consumer] != address(0)){
-            require(consumerData[consumer] == msg.sender, "consumer not owner");
-        } else {
-            require(consumer == msg.sender, "consumer not sender");
+        address[] storage owners = consumerData[consumer];
+        for (uint i=0; i<owners.length; i++) {
+            if(owners[i] != address(0)){
+                require(owners[i] == msg.sender, "consumer not owner");
+            } else {
+                require(consumer == msg.sender, "consumer not sender");
+            }
         }
     }
 
