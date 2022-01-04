@@ -397,11 +397,11 @@ describe("Nexus", function() {
   it("Get image approved for dsp", async function() {
     const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"wasmrunner");
     
-    expect(approved).to.equal(false);
+    expect(approved).to.equal(true);
   });
 
   it("Approve image for dsp", async function() {
-    await nexusContract.connect(dsp1).approveDockerForDSP("wasmrunner");
+    await nexusContract.connect(dsp1).approveDockerForDSP("wasmrunner",true);
 
     const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"wasmrunner");
     

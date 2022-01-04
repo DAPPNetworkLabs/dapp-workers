@@ -222,6 +222,7 @@ contract Nexus is Ownable {
         string image;
         string imageHash;
         uint jobFee;
+        bool setup;
     }
 
     struct ServiceDockerImage {
@@ -233,6 +234,7 @@ contract Nexus is Ownable {
         uint ioFee;
         uint minStorageMegaBytes;
         uint minIoMegaBytes;
+        bool setup;
     }
 
     struct runJobArgs {
@@ -1051,6 +1053,9 @@ contract Nexus is Ownable {
         jobDockerImages[owner][imageName].image = imageAddress;
         jobDockerImages[owner][imageName].imageHash = imageHash;
         jobDockerImages[owner][imageName].jobFee = jobFee;
+        jobDockerImages[owner][imageName].setup = true;
+
+        approveDockerForDSP(imageName,true);
         
         emit DockerSet(owner,imageName,imageAddress,imageHash,"job");
     }
@@ -1076,6 +1081,9 @@ contract Nexus is Ownable {
         serviceDockerImages[owner][imageName].ioFee = ioFee;
         serviceDockerImages[owner][imageName].minStorageMegaBytes = minStorageMegaBytes;
         serviceDockerImages[owner][imageName].minIoMegaBytes = minIoMegaBytes;
+        serviceDockerImages[owner][imageName].setup = true;
+
+        approveDockerForDSP(imageName,false);
         
         emit DockerSet(owner,imageName,imageAddress,imageHash,"service");
     }
@@ -1090,9 +1098,16 @@ contract Nexus is Ownable {
     /**
      * @dev approve docker image for dsp
      */
-    function approveDockerForDSP(string calldata imageName) public {
+    function approveDockerForDSP(string calldata imageName, bool isJob) public {
+        if(isJob) {
+            require(jobDockerImages[msg.sender][imageName].setup == true, "image does not exist");
+        } else {
+            require(serviceDockerImages[msg.sender][imageName].setup == true, "image does not exist");
+        }
+        
         address _dsp = msg.sender;
-        registeredDSPs[_dsp].approvedImages[imageName] = true;        
+        registeredDSPs[_dsp].approvedImages[imageName] = true;
+
         emit DockerApprovalChanged(_dsp,imageName,true);
     }
     
@@ -1102,6 +1117,7 @@ contract Nexus is Ownable {
     function unapproveDockerForDSP(string calldata imageName) public  {
         address _dsp = msg.sender;
         registeredDSPs[_dsp].approvedImages[imageName] = false;
+
         emit DockerApprovalChanged(_dsp,imageName,false);
     }
     
