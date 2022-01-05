@@ -19,7 +19,7 @@ module.exports = {
       allowUnlimitedContractSize: true
     },
     tests: {
-      url: `${'http://127.0.0.1:8545'}`,
+      url: `${'http://eth:8545'}`,
       accounts: {
         mnemonic: `${process.env.SEED}`
       }
