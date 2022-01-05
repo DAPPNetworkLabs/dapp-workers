@@ -331,69 +331,10 @@ contract Nexus is Ownable {
             fallbackGasPrice,
             stalenessSeconds
         );
-    }  
-
-    /**
-    * @notice read the current configuration of the nexus
-    */
-    function getConfig()
-        external
-        view
-        returns (
-            uint32 paymentPremiumPPB,
-            uint24 stalenessSeconds,
-            uint16 gasCeilingMultiplier,
-            uint256 fallbackGasPrice
-        )
-    {
-        Config memory config = s_config;
-        return (
-            config.paymentPremiumPPB,
-            config.stalenessSeconds,
-            config.gasCeilingMultiplier,
-            s_fallbackGasPrice
-        );
     }
     
     /**
-     * @dev convert address type to string
-     */
-    function toString(address account) public pure returns(string memory) {
-        return toString(abi.encodePacked(account));
-    }
-    
-    /**
-     * @dev converts uint to string
-     */
-    function toString(uint value) public pure returns(string memory) {
-        return toString(abi.encodePacked(value));
-    }
-    
-    /**
-     * @dev converts bytes32 value to string
-     */
-    function toString(bytes32 value) public pure returns(string memory) {
-        return toString(abi.encodePacked(value));
-    }
-    
-    /**
-     * @dev converts bytes value to string
-     */
-    function toString(bytes memory data) public pure returns(string memory) {
-        bytes memory alphabet = "0123456789abcdef";
-
-        bytes memory str = new bytes(2 + data.length * 2);
-        str[0] = "0";
-        str[1] = "x";
-        for (uint i = 0; i < data.length; i++) {
-            str[2+i*2] = alphabet[uint(uint8(data[i] >> 4))];
-            str[3+i*2] = alphabet[uint(uint8(data[i] & 0x0f))];
-        }
-        return string(str);
-    }
-    
-    /**
-     * @dev create consumer data entry
+     * @dev set dsps for job or service
      */
     function setDsps(uint id, address[] calldata dsps, string calldata jobType, string calldata imageName) external {
         validateOwner(msg.sender);
@@ -455,20 +396,9 @@ contract Nexus is Ownable {
     function setConsumerPermissions(address[] calldata owners) public {
         consumerData[msg.sender] = owners;
     }
-    
-    /**
-     * @dev return dsp addresses
-     */
-    function getDspAddresses() public view returns (address[] memory) {
-        address[] memory addresses = new address[](totalDsps);
-        for(uint i=0; i<totalDsps; i++) {
-            addresses[i] = dspList[i];
-        }
-        return addresses;
-    }
 
     /**
-     * @dev extend service
+     * @dev extend service duration
      */
     function extendService(
         uint serviceId, 
@@ -598,20 +528,6 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev validates dsp is authorized for job or service
-     */
-    function validateDsp(address[] memory dsps) private view {
-        int founds = -1;
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == msg.sender){
-                founds = int(i);
-                break;
-            }
-        }
-        require(founds > -1, "dsp not found");
-    }
-    
-    /**
      * @dev determines data hash consistency and performs optional callback
      */
     function jobCallback(uint jobID, string calldata outputFS) public {
@@ -684,50 +600,16 @@ contract Nexus is Ownable {
         return total;
     }
 
-    function getDappEth() private view returns (uint256) {
-        address[] memory table = new address[](5);
-        table[0] = dappToken;
-        table[1] = dappBntToken;
-        table[2] = bntToken;
-        table[3] = ethBntToken;
-        table[4] = ethToken;
-        return bancorNetwork.rateByPath(table,10000); // how much 18,ETH for 1 4,DAPP
-    }
-
-    function getDappUsd() private view returns (uint256) {
-        address[] memory table = new address[](5);
-        table[0] = usdtToken;
-        table[1] = usdtBntToken;
-        table[2] = bntToken;
-        table[3] = dappBntToken;
-        table[4] = dappToken;
-        return bancorNetwork.rateByPath(table,1000000); // how much 18,ETH for 1 6,USDT
-    }
-
     /**
-    * @dev retrieves feed data for fast gas/eth and link/eth prices. if the feed
-    * data is stale it uses the configured fallback price. Once a price is picked
-    * for gas it takes the min of gas price in the transaction or the fast gas
-    * price in order to reduce costs for the upkeep clients.
-    */
-    function getFeedData() private view returns (uint256 gasWei) {
-        uint32 stalenessSeconds = s_config.stalenessSeconds;
-        bool staleFallback = stalenessSeconds > 0;
-        uint256 timestamp;
-        int256 feedValue; // = 99000000000 / 1e9 = 99 gwei
-        (, feedValue, , timestamp, ) = FAST_GAS_FEED.latestRoundData();
-        if ((staleFallback && stalenessSeconds < block.timestamp - timestamp) || feedValue <= 0) {
-            gasWei = s_fallbackGasPrice;
-        } else {
-            gasWei = uint256(feedValue);
-        }
-        return gasWei;
-    }
-
+     * @dev calculate job fee
+     */
     function calcJobDapps(string memory imageName, address dsp) private view returns (uint) {
         return getDappUsd() * ( jobDockerImages[dsp][imageName].jobFee / usdtPrecision );
     }
 
+    /**
+     * @dev calculate service fee
+     */
     function calcServiceDapps(
         string memory imageName, 
         uint ioMegaBytes, 
@@ -892,13 +774,6 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev compare strings by hash
-     */
-    function compareStrings(string memory a, string memory b) internal pure returns (bool) {
-        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
-    }
-    
-    /**
      * @dev run job or service
      */
     function runJob(runJobArgs calldata args) public {
@@ -978,6 +853,9 @@ contract Nexus is Ownable {
         );
     }
 
+    /**
+     * @dev require min io/storage met
+     */
     function validateMin(
         uint ioMegaBytes, 
         uint storageMegaBytes, 
@@ -996,23 +874,6 @@ contract Nexus is Ownable {
             >= serviceDockerImages[dsp][imageName].minStorageMegaBytes * months
             ,"min storage bytes not met"
         );
-    }
-
-    function validateOwner(address consumer) private view {
-        address[] storage owners = consumerData[consumer];
-        for (uint i=0; i<owners.length; i++) {
-            if(owners[i] != address(0)){
-                require(owners[i] == msg.sender, "consumer not owner");
-            } else {
-                require(consumer == msg.sender, "consumer not sender");
-            }
-        }
-    }
-
-    function validateDsps(address[] memory dsps) private view {
-        for (uint i=0; i<dsps.length; i++) {
-            require(registeredDSPs[dsps[i]].active, "dsp not active");
-        }
     }
     
     /**
@@ -1119,6 +980,122 @@ contract Nexus is Ownable {
         registeredDSPs[_dsp].approvedImages[imageName] = false;
 
         emit DockerApprovalChanged(_dsp,imageName,false);
+    }  
+    
+    /**
+     * @dev validates dsp is authorized for job or service
+     */
+    function validateDsp(address[] memory dsps) private view {
+        int founds = -1;
+        for (uint i=0; i<dsps.length; i++) {
+            if(dsps[i] == msg.sender){
+                founds = int(i);
+                break;
+            }
+        }
+        require(founds > -1, "dsp not found");
+    }
+
+    /**
+     * @dev require consumer be caller or owner
+     */
+    function validateOwner(address consumer) private view {
+        address[] storage owners = consumerData[consumer];
+        for (uint i=0; i<owners.length; i++) {
+            if(owners[i] != address(0)){
+                require(owners[i] == msg.sender, "consumer not owner");
+            } else {
+                require(consumer == msg.sender, "consumer not sender");
+            }
+        }
+    }
+
+    /**
+     * @dev require all dsps be active
+     */
+    function validateDsps(address[] memory dsps) private view {
+        for (uint i=0; i<dsps.length; i++) {
+            require(registeredDSPs[dsps[i]].active, "dsp not active");
+        }
+    }
+
+    /**
+     * @dev return bancor rate dapp eth
+     */
+    function getDappEth() private view returns (uint256) {
+        address[] memory table = new address[](5);
+        table[0] = dappToken;
+        table[1] = dappBntToken;
+        table[2] = bntToken;
+        table[3] = ethBntToken;
+        table[4] = ethToken;
+        return bancorNetwork.rateByPath(table,10000); // how much 18,ETH for 1 4,DAPP
+    }
+
+    /**
+     * @dev return bancor rate dapp usd
+     */
+    function getDappUsd() private view returns (uint256) {
+        address[] memory table = new address[](5);
+        table[0] = usdtToken;
+        table[1] = usdtBntToken;
+        table[2] = bntToken;
+        table[3] = dappBntToken;
+        table[4] = dappToken;
+        return bancorNetwork.rateByPath(table,1000000); // how much 18,ETH for 1 6,USDT
+    }
+
+    /**
+    * @dev retrieves feed data for fast gas/eth and link/eth prices. if the feed
+    * data is stale it uses the configured fallback price. Once a price is picked
+    * for gas it takes the min of gas price in the transaction or the fast gas
+    * price in order to reduce costs for the upkeep clients.
+    */
+    function getFeedData() private view returns (uint256 gasWei) {
+        uint32 stalenessSeconds = s_config.stalenessSeconds;
+        bool staleFallback = stalenessSeconds > 0;
+        uint256 timestamp;
+        int256 feedValue; // = 99000000000 / 1e9 = 99 gwei
+        (, feedValue, , timestamp, ) = FAST_GAS_FEED.latestRoundData();
+        if ((staleFallback && stalenessSeconds < block.timestamp - timestamp) || feedValue <= 0) {
+            gasWei = s_fallbackGasPrice;
+        } else {
+            gasWei = uint256(feedValue);
+        }
+        return gasWei;
+    }
+
+    /**
+    * @notice read the current configuration of the nexus
+    */
+    function getConfig()
+        external
+        view
+        returns (
+            uint32 paymentPremiumPPB,
+            uint24 stalenessSeconds,
+            uint16 gasCeilingMultiplier,
+            uint256 fallbackGasPrice
+        )
+    {
+        Config memory config = s_config;
+        return (
+            config.paymentPremiumPPB,
+            config.stalenessSeconds,
+            config.gasCeilingMultiplier,
+            s_fallbackGasPrice
+        );
+    }
+    
+    /**
+     * @dev return dsp addresses
+     */
+    function getDspAddresses() public view returns (address[] memory) {
+        address[] memory addresses = new address[](totalDsps);
+        for(uint i=0; i<totalDsps; i++) {
+            addresses[i] = dspList[i];
+        }
+        return addresses;
     }
     
     /**
@@ -1144,5 +1121,49 @@ contract Nexus is Ownable {
             services[id].dspServiceData[dsp].ioMegaBytesLimit,
             services[id].dspServiceData[dsp].storageMegaBytesLimit
         );
+    }
+    
+    /**
+     * @dev compare strings by hash
+     */
+    function compareStrings(string memory a, string memory b) internal pure returns (bool) {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
+    }
+    
+    /**
+     * @dev convert address type to string
+     */
+    function toString(address account) internal pure returns(string memory) {
+        return toString(abi.encodePacked(account));
+    }
+    
+    /**
+     * @dev converts uint to string
+     */
+    function toString(uint value) internal pure returns(string memory) {
+        return toString(abi.encodePacked(value));
+    }
+    
+    /**
+     * @dev converts bytes32 value to string
+     */
+    function toString(bytes32 value) internal pure returns(string memory) {
+        return toString(abi.encodePacked(value));
+    }
+    
+    /**
+     * @dev converts bytes value to string
+     */
+    function toString(bytes memory data) internal pure returns(string memory) {
+        bytes memory alphabet = "0123456789abcdef";
+
+        bytes memory str = new bytes(2 + data.length * 2);
+        str[0] = "0";
+        str[1] = "x";
+        for (uint i = 0; i < data.length; i++) {
+            str[2+i*2] = alphabet[uint(uint8(data[i] >> 4))];
+            str[3+i*2] = alphabet[uint(uint8(data[i] & 0x0f))];
+        }
+        return string(str);
     }
 }
