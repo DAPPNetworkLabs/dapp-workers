@@ -10,7 +10,19 @@ const config = require("./.config.json");
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: "0.8.10",
+  solidity: {
+    compilers: [
+      {
+        version: "0.8.10",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 2000
+          }
+        }
+      },
+    ]
+  },
   networks: {
     hardhat: {
       forking: {

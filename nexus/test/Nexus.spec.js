@@ -229,13 +229,13 @@ describe("Nexus", function() {
     await dappTokenContract.approve(nexusContract.address, dapps);
     await nexusContract.buyGasFor(dapps, addr1.address, dsp2.address);
 
-    await nexusContract.setDsps(1,[dsp1.address,dsp2.address],"job","wasmrunner");
+    await nexusContract.setDsps(1,[dsp1.address,dsp2.address],1,"wasmrunner");
 
     const dsps = await nexusContract.getDspAddresses();
 
     expect(JSON.stringify(dsps)).to.equal(JSON.stringify([dsp1.address,dsp2.address]));
     
-    await nexusContract.setDsps(1,[dsp1.address],"job","wasmrunner");
+    await nexusContract.setDsps(1,[dsp1.address],1,"wasmrunner");
     await nexusContract.connect(dsp2).deprecateDSP();
   });
 

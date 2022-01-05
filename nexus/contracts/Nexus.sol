@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/IBancorNetwork.sol";
 import "./interfaces/AggregatorV3Interface.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract Nexus is Ownable {
     using SafeERC20 for IERC20;
@@ -336,11 +336,11 @@ contract Nexus is Ownable {
     /**
      * @dev set dsps for job or service
      */
-    function setDsps(uint id, address[] calldata dsps, string calldata jobType, string calldata imageName) external {
+    function setDsps(uint id, address[] calldata dsps, bool isJob, string calldata imageName) external {
         validateOwner(msg.sender);
         validateDsps(dsps);
 
-        if(compareStrings(jobType, "job")) {
+        if(isJob) {
             JobData storage jd = jobs[id];
 
             require(jd.owner != address(0),"invalid job");
@@ -362,7 +362,7 @@ contract Nexus is Ownable {
                 id,
                 dsps
             );
-        } else if(compareStrings(jobType, "service")) {
+        } else {
             ServiceData storage sd = services[id];
 
             require(sd.owner != address(0),"invalid service");
@@ -385,8 +385,6 @@ contract Nexus is Ownable {
                 id,
                 dsps
             );
-        } else {
-            revert("invalid job type");
         }
     }
     
