@@ -431,7 +431,7 @@ describe("Nexus", function() {
   it("Get dsp list", async function() {
     const dsps = await nexusContract.getDspAddresses();
 
-    const expectedResult = [ '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65',dsp2.address ];
+    const expectedResult = [ dsp1.address,dsp2.address ];
 
     expect(JSON.stringify(dsps)).to.equal(JSON.stringify(expectedResult));
   });

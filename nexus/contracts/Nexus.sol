@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/IBancorNetwork.sol";
 import "./interfaces/AggregatorV3Interface.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract Nexus is Ownable {
     using SafeERC20 for IERC20;
@@ -578,7 +578,7 @@ contract Nexus is Ownable {
         uint gas,
         string memory imageName,
         address dsp
-    ) private view returns (uint total) {
+    ) private view returns (uint) {
         uint jobDapps = calcJobDapps(imageName,dsp);
         uint gasWei = getFeedData(); // 99000000000 fast gas price of 1 gas in wei
         uint dappEth = getDappEth(); // how much 18,ETH for 1 4,DAPP

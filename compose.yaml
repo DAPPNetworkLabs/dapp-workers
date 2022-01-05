@@ -19,19 +19,6 @@ services:
       - "30303"
     labels:
       kompose.service.type: LoadBalancer
-  eth:
-    image: trufflesuite/ganache-cli:latest
-    ports:
-      - "8545:8545"
-    command:
-      - --defaultBalanceEther
-      - "1000000"
-      - --account_keys_path
-      - /keys/keys
-      - -l 
-      - "10000000"
-      - -m
-      - cruel rebel frown short month love belt weather sense hood cage pact
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8545"]
       interval: 1m30s
@@ -67,7 +54,7 @@ services:
     build: services/orchestrator
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
-      - ETH_ADDR=ws://eth:8545
+      - ETH_ADDR=ws://nexus:8545
       - COMPOSE_PROFILES
       - NODE_OPTIONS=--openssl-legacy-provider
       - ADDRESS=0x85C5Dd61585773423e378146D4bEC6f8D149E248
@@ -76,23 +63,19 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./nexus:/nexus
     depends_on:
-      - "eth"
+      - "nexus"
     links:
-        - eth
+        - nexus
   nexus:
     image: nexus
     ports:
-      - 8545
+      - "8545:8545"
     build: nexus
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
       - ETH_ADDR=http://0.0.0.0:8545
     profiles:
-      - debug
-    depends_on:
-      - "eth"
-    links:
-        - eth  
+      - debug 
   dspportal:
     image: dspportal
     build: uis/jobs
@@ -110,7 +93,7 @@ services:
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
       - PORT=8080
-      - ETH_ADDR=ws://eth:8545
+      - ETH_ADDR=ws://nexus:8545
       - NODE_OPTIONS=--openssl-legacy-provider
     profiles:
       - faucet
