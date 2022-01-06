@@ -1,0 +1,19 @@
+@import "css/vars";
+
+.main-menu {
+  display: flex;
+  align-items: center;
+
+  a {
+    color: $grey;
+
+    &.active {
+      //color: $purple;
+      font-weight: bold;
+    }
+
+    &:not(:last-child) {
+      margin-right: 80px;
+    }
+  }
+}

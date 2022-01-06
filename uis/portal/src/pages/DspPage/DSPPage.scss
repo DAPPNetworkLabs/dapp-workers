@@ -1,0 +1,35 @@
+@import "css/vars";
+
+.page.dsp-page {
+  .section.info-section {
+    .info {
+      .endpoints {
+        margin-top: 20px;
+
+        & > div:nth-child(1) {
+          margin-right: 50px;
+        }
+      }
+    }
+
+    .status {
+      align-self: flex-start;
+
+      .tag:not(:first-child) {
+        margin-left: 20px;
+      }
+    }
+  }
+
+  .tabs {
+    .subheader {
+      font-size: 1.4em;
+      font-weight: bold;
+      margin: 32px 0 12px;
+    }
+  }
+
+  table {
+    //margin-top: 20px;
+  }
+}

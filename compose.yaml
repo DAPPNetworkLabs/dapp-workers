@@ -80,7 +80,7 @@ services:
         - eth    
   dspportal:
     image: dspportal
-    build: uis/jobs
+    build: uis/portal
     ports:
       - 8888:80
     depends_on:

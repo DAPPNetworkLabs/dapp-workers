@@ -7,3 +7,5 @@
 **/artifacts
 **/build
 *.config.json
+
+/.idea

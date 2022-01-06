@@ -1,0 +1,110 @@
+@import "vars";
+
+body {
+  text-align: left;
+  font-size: 14px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none !important;
+}
+
+.center-aligned-row {
+  display: flex;
+  align-items: center;
+}
+
+.center-aligned-spaced-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.text-lg {
+  font-size: 1.6em;
+  font-weight: bold;
+}
+
+.text-md {
+  font-size: 1.2em;
+}
+
+.text-bold {
+  font-weight: bold;
+}
+
+table {
+  width: 100%;
+
+  thead tr th {
+    padding-bottom: 20px;
+  }
+
+  tr {
+    &:not(:last-child) {
+      td {
+        padding-bottom: 20px;
+      }
+    }
+  }
+}
+
+header {
+  width: 1000px;
+  margin: 0 auto;
+}
+
+.page {
+  width: 1000px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.section {
+  &:not(:last-child) {
+    margin-bottom: 2.4em;
+  }
+}
+
+.tabs {
+  .tabs-header {
+    margin: 40px 0 10px;
+  }
+
+  .tab-header {
+    color: $purple !important;
+  }
+}
+
+.tag {
+  background-color: $light-grey;
+  border-radius: 4px;
+  padding: 10px 24px;
+
+  &.active {
+    background-color: $active;
+    color: $white;
+  }
+}
+
+.placeholder {
+  min-height: 200px;
+  background-color: $light-grey;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+
+  &.small {
+    min-height: 100px;
+  }
+
+  &.large {
+    min-height: 400px;
+  }
+
+  //&:not(:first-child) {
+  //  margin-top: 50px;
+  //}
+}

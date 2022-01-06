@@ -1,0 +1,18 @@
+@import 'css/vars';
+
+.page.search-page {
+  a.dsp-link {
+    .dsp-item {
+      padding: 24px;
+      font-size: 1.2em;
+      font-weight: bold;
+      border: solid 1px black;
+    }
+
+    &:not(:first-child) {
+      .dsp-item {
+        border-top-width: 0;
+      }
+    }
+  }
+}
