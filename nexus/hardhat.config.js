@@ -33,7 +33,7 @@ module.exports = {
     tests: {
       url: `${'http://eth:8545'}`,
       accounts: {
-        mnemonic: `${process.env.SEED}`
+        mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
       }
     }
   }
