@@ -48,7 +48,17 @@ services:
     profiles:
       - images    
     build: images/wasi-service
-    image: wasi-service    
+    image: wasi-service  
+  nexus:
+    image: nexus
+    ports:
+      - "8545:8545"
+    build: nexus
+    environment:
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - ETH_ADDR=http://0.0.0.0:8545
+    profiles:
+      - debug   
   orchestrator:
     image: orchestrator
     build: services/orchestrator
@@ -66,16 +76,6 @@ services:
       - "nexus"
     links:
         - nexus
-  nexus:
-    image: nexus
-    ports:
-      - "8545:8545"
-    build: nexus
-    environment:
-      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
-      - ETH_ADDR=http://0.0.0.0:8545
-    profiles:
-      - debug 
   dspportal:
     image: dspportal
     build: uis/jobs
