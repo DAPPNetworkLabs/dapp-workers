@@ -788,7 +788,6 @@ contract Nexus is Ownable {
                 calculatePaymentAmount(jobs[lastJobID].gasLimit,jobs[lastJobID].imageName, args.dsps[i])
                 ,"min balance not met"
             );
-            console.log(args.dsps[i]);
         }
         
         emit RunJob(
@@ -829,15 +828,6 @@ contract Nexus is Ownable {
         sd.storageMegaBytes = args.storageMegaBytes;
         sd.months = args.months;
         sd.dsps = args.dsps;
-        
-        console.log(args.consumer);
-        console.log(args.imageName);
-        console.log(args.inputFS);
-        console.log(args.ioMegaBytes);
-        console.log(args.storageMegaBytes);
-        //console.log(args.args);
-        console.log(lastJobID);
-        console.log(args.months);
 
         emit RunService(
             args.consumer,
