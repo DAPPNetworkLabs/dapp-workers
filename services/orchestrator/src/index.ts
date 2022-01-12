@@ -68,7 +68,7 @@ const run = ()=>{
     // abi = contractFile.abi;
     
     // /// deploy contract if needed
-    // dspAccount = getAccount();    
+    dspAccount = getAccount();    
     // if(!address){
     //     ownerAccount = dspAccount;
     //     if(process.env.COMPOSE_PROFILES != "debug"){
@@ -176,12 +176,21 @@ async function DAPPsFor(minutes){
     return minutes * 100;
 }
 
+const getInfo = async(jobId,type) => {
+    let fidx = 0;
+    if(type=="job") {
+        return await theContract.methods.jobs(jobId).call({from:dspAccount.address});
+    } else if(type=="service") {
+        return await theContract.methods.services(jobId).call({from:dspAccount.address});
+    }
+}
+
 // todo: subscribe to Kill
 
 function subscribe(theContract: any) {
     console.log('subscribing');
     theContract.events["RunJob"]({
-        fromBlock: "latest"
+        fromBlock: 0
     }, async function (error, result) {
         console.log('run job hit');
         if (error) {
@@ -189,68 +198,79 @@ function subscribe(theContract: any) {
             return;
         }
         const returnValues = result.returnValues;
-        console.log(returnValues);
         let fidx = 0;
         const consumer = returnValues[fidx++];
-        const jobImage = returnValues[fidx++];
-        const inputFS = returnValues[fidx++];
-        const callback = returnValues[fidx++];
-        const requireConsistent = returnValues[fidx++];
-        const args = returnValues[fidx++];
+        // const jobImage = returnValues[fidx++];
+        // const inputFS = returnValues[fidx++];
+        // const callback = returnValues[fidx++];
+        // const requireConsistent = returnValues[fidx++];
+        // const args = returnValues[fidx++];
         const jobID = returnValues[fidx++];
         const jobType = "job";
+        
+        let jobInfo = await getInfo(jobID, jobType);
+        jobInfo = {
+            owner: jobInfo[fidx++],
+            callback: jobInfo[fidx++],
+            resultsCount: jobInfo[fidx++],
+            imageName: jobInfo[fidx++],
+            gasLimit: jobInfo[fidx++],
+            requireConsistent: jobInfo[fidx++]
+        }
+        console.log("jobInfo");
+        console.log(jobInfo);
         
         /*
         
             - get job info
             - check if DSP paid to perform job
             - check if already processed
-            - check if consumer has enough gas
-            - run docker job
+            - check if consumer has enough gas, if not run job error
+            - run docker job, if error run job error with output
             - run job callback without of docker job
         
         */
 
-        const dappGasRemaining = await getConsumerDAPPGas(consumer);
+        // const dappGasRemaining = await getConsumerDAPPGas(consumer);
         
 
-        // check if already processed (in case not caught up with events)
-         if(!await isPending(jobID)){
-             return;
-         }
-        // todo: resolve image from registry
-        const account_dsp = dspAccount;
-        const dockerImage = await getDockerImage(jobImage, account_dsp.address,jobType);
-        const gasPrice = await getGasPrice();
-        const gasForCallback = await getGasForCallback(jobType);
-        let dapps = (await EthGAS2DAPPs(gasForCallback * gasPrice));
+        // // check if already processed (in case not caught up with events)
+        //  if(!await isPending(jobID)){
+        //      return;
+        //  }
+        // // todo: resolve image from registry
+        // const account_dsp = dspAccount;
+        // const dockerImage = await getDockerImage(jobImage, account_dsp.address,jobType);
+        // const gasPrice = await getGasPrice();
+        // const gasForCallback = await getGasForCallback(jobType);
+        // let dapps = (await EthGAS2DAPPs(gasForCallback * gasPrice));
         
-        // run dispatcher
-        const start = Date.now();
-        let dispatchResult
-        try{
-            dispatchResult  = await dispatch(dockerImage, inputFS, args);
-        }
-        catch(e){
-            // todo: handle failure. 
-            const rcpterr = await postTrx("jobError", account_dsp, jobID,  "", dapps.toFixed());
-            console.log(e);
-            console.log(rcpterr);
-        }
-        // todo: kill docker if running too long and fail with not enough gas
+        // // run dispatcher
+        // const start = Date.now();
+        // let dispatchResult
+        // try{
+        //     dispatchResult  = await dispatch(dockerImage, inputFS, args);
+        // }
+        // catch(e){
+        //     // todo: handle failure. 
+        //     const rcpterr = await postTrx("jobError", account_dsp, jobID,  "", dapps.toFixed());
+        //     console.log(e);
+        //     console.log(rcpterr);
+        // }
+        // // todo: kill docker if running too long and fail with not enough gas
 
-        // measure time
-        const millis = Date.now() - start;
-        dapps += (await DAPPsFor((millis / (1000 * 60))) + 1 );
-        // post results
-        const { outputFS } = dispatchResult;
+        // // measure time
+        // const millis = Date.now() - start;
+        // dapps += (await DAPPsFor((millis / (1000 * 60))) + 1 );
+        // // post results
+        // const { outputFS } = dispatchResult;
 
-        const rcpt = await postTrx("jobCallback", account_dsp, jobID,  outputFS);
-        // const rcpt = await postTrx("jobCallback", account_dsp, jobID,  outputFS, dapps.toFixed());
-        console.log(`posted results`,consumer,jobImage);
+        // const rcpt = await postTrx("jobCallback", account_dsp, jobID,  outputFS);
+        // // const rcpt = await postTrx("jobCallback", account_dsp, jobID,  outputFS, dapps.toFixed());
+        // console.log(`posted results`,consumer,jobImage);
     });
     theContract.events["JobDone"]({
-        fromBlock: "pending"
+        fromBlock: 0
     }, async function (error, result) {
         console.log('JobDone hit');
         if (error) {
@@ -266,10 +286,10 @@ function subscribe(theContract: any) {
             inconsistent:returnValues[fidx++],
             jobID:returnValues[fidx++]
         }
-        if(pendingJobs[obj.jobID]){
-            await pendingJobs[obj.jobID](obj);
-            delete pendingJobs[obj.jobID];
-        }
+        // if(pendingJobs[obj.jobID]){
+        //     await pendingJobs[obj.jobID](obj);
+        //     delete pendingJobs[obj.jobID];
+        // }
         // console.log(`got final results`,obj);
     });
 
@@ -282,71 +302,73 @@ function subscribe(theContract: any) {
             return;
         }
         
-        /*
-            
-            - get service info
-            - check if DSP paid to perform service
-            - check if already processed
-            - check if consumer has enough gas
-            - run docker service
-            - run service callback without of docker service
-        
-        */
-        
         const returnValues = result.returnValues;
         let fidx = 0;
         const consumer = returnValues[fidx++];
-        const jobImage = returnValues[fidx++];
-        const inputFS = returnValues[fidx++];
-        const ioMegaBytes = returnValues[fidx++];
-        const storageMegaBytes = returnValues[fidx++];
-        const args = returnValues[fidx++];
+        // const jobImage = returnValues[fidx++];
+        // const inputFS = returnValues[fidx++];
+        // const ioMegaBytes = returnValues[fidx++];
+        // const storageMegaBytes = returnValues[fidx++];
+        // const args = returnValues[fidx++];
         const jobID = returnValues[fidx++];
-        const months = returnValues[fidx++];
+        // const months = returnValues[fidx++];
         const jobType = "service";
-
-        const dappGasRemaining = await getConsumerDAPPGas(consumer);
-
-        // check if already processed (in case not caught up with events)
-         if(!await isPending(jobID)){
-             return;
-         }
-        // todo: resolve image from registry
-        const account_dsp = dspAccount;
-        const dockerImage = await getDockerImage(jobImage, account_dsp.address,jobType);
-        const gasPrice = await getGasPrice();
-        const gasForCallback = await getGasForCallback(jobType);
-        let dapps = (await EthGAS2DAPPs(gasForCallback * gasPrice));
         
-        dapps += (await DAPPsFor(24 * 60));
-        // todo: check if user has enough dapp gas for one hour of service before starting
-        if(dappGasRemaining < dapps){
-            // todo: fail
-            const rcpterr = await postTrx("serviceError", account_dsp, jobID, "", dapps.toFixed());
+        let serviceInfo = await getInfo(jobID, jobType);
+        serviceInfo = {
+            owner: serviceInfo[fidx++],
+            imageName: serviceInfo[fidx++],
+            lastCalled: serviceInfo[fidx++],
+            endDate: serviceInfo[fidx++],
+            months: serviceInfo[fidx++],
+            ioMegaBytes: serviceInfo[fidx++],
+            storageMegaBytes: serviceInfo[fidx++]
         }
-        let serviceResults;
-        try{
-            serviceResults = await dispatchService(dockerImage, inputFS, args);
-        }
-        catch(e){
-            // todo: handle failure. 
-            const rcpterr = await postTrx("serviceError", account_dsp, jobID, "", dapps.toFixed());
-            console.log(e);
-            console.log(rcpterr);
-        }
-        // post results
-        const servicercpt = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port);
-        setInterval(async ()=>{
-            const servicercpt2 = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port, await DAPPsFor(24 * 60) + await EthGAS2DAPPs(gasForCallback * gasPrice));
-            console.log(`posting alive`,consumer,jobImage);    
-            // todo: kill if not enough gas
-        },1000 * 60 * 60 * 24)
-        // todo: set a timer to periodically post serviceCallback
-        console.log(`posted service results`,consumer,jobImage, serviceResults.port,dapps.toFixed());
+        console.log("serviceInfo");
+        console.log(serviceInfo);
+
+        // const dappGasRemaining = await getConsumerDAPPGas(consumer);
+
+        // // check if already processed (in case not caught up with events)
+        //  if(!await isPending(jobID)){
+        //      return;
+        //  }
+        // // todo: resolve image from registry
+        // const account_dsp = dspAccount;
+        // const dockerImage = await getDockerImage(jobImage, account_dsp.address,jobType);
+        // const gasPrice = await getGasPrice();
+        // const gasForCallback = await getGasForCallback(jobType);
+        // let dapps = (await EthGAS2DAPPs(gasForCallback * gasPrice));
+        
+        // dapps += (await DAPPsFor(24 * 60));
+        // // todo: check if user has enough dapp gas for one hour of service before starting
+        // if(dappGasRemaining < dapps){
+        //     // todo: fail
+        //     const rcpterr = await postTrx("serviceError", account_dsp, jobID, "", dapps.toFixed());
+        // }
+        // let serviceResults;
+        // try{
+        //     serviceResults = await dispatchService(dockerImage, inputFS, args);
+        // }
+        // catch(e){
+        //     // todo: handle failure. 
+        //     const rcpterr = await postTrx("serviceError", account_dsp, jobID, "", dapps.toFixed());
+        //     console.log(e);
+        //     console.log(rcpterr);
+        // }
+        // // post results
+        // const servicercpt = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port);
+        // setInterval(async ()=>{
+        //     const servicercpt2 = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port, await DAPPsFor(24 * 60) + await EthGAS2DAPPs(gasForCallback * gasPrice));
+        //     console.log(`posting alive`,consumer,jobImage);    
+        //     // todo: kill if not enough gas
+        // },1000 * 60 * 60 * 24)
+        // // todo: set a timer to periodically post serviceCallback
+        // console.log(`posted service results`,consumer,jobImage, serviceResults.port,dapps.toFixed());
     });
 
     theContract.events["ServiceRunning"]({
-        fromBlock: "pending"
+        fromBlock: 0
     }, async function (error, result) {
         console.log('ServiceRunning hit');
         if (error) {
@@ -354,18 +376,18 @@ function subscribe(theContract: any) {
             return;
         }
 
-        const returnValues = result.returnValues;
-        let fidx = 0;        
-        const obj={
-            consumer: returnValues[fidx++],
-            dsp: returnValues[fidx++],
-            jobID: returnValues[fidx++],
-            port: returnValues[fidx++]
-        }
-        if(pendingJobs[obj.jobID]){
-            await pendingJobs[obj.jobID](obj);
-            delete pendingJobs[obj.jobID];
-        }
-        console.log(`got final results`,obj);
+        // const returnValues = result.returnValues;
+        // let fidx = 0;        
+        // const obj={
+        //     consumer: returnValues[fidx++],
+        //     dsp: returnValues[fidx++],
+        //     jobID: returnValues[fidx++],
+        //     port: returnValues[fidx++]
+        // }
+        // if(pendingJobs[obj.jobID]){
+        //     await pendingJobs[obj.jobID](obj);
+        //     delete pendingJobs[obj.jobID];
+        // }
+        // console.log(`got final results`,obj);
     });
 }

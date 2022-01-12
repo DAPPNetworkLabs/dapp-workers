@@ -90,23 +90,12 @@ contract Nexus is Ownable {
 
     event RunJob(
         address indexed consumer,
-        string imageName,
-        string inputFS,
-        bool callback,
-        bool requireConsistent,
-        string[] args,
         uint id
     );
 
     event RunService(
         address indexed consumer,
-        string imageName,
-        string inputFS,
-        uint ioMegaBytes,
-        uint storageMegaBytes,
-        string[] args,
-        uint id,
-        uint months
+        uint id
     );
 
     event Kill(
@@ -563,7 +552,12 @@ contract Nexus is Ownable {
             return;
         }
 
-        emit JobDone(jd.owner, outputFS,inconsistent, jobID);
+        emit JobDone(
+            jd.owner,
+            outputFS,
+            inconsistent,
+            jobID
+        );
     }
     
     /**
@@ -792,11 +786,6 @@ contract Nexus is Ownable {
         
         emit RunJob(
             args.consumer,
-            args.imageName,
-            args.inputFS,
-            args.callback,
-            args.requireConsistent,
-            args.args,
             lastJobID
         );
     }
@@ -831,13 +820,7 @@ contract Nexus is Ownable {
 
         emit RunService(
             args.consumer,
-            args.imageName,
-            args.inputFS,
-            args.ioMegaBytes,
-            args.storageMegaBytes,
-            args.args,
-            lastJobID,
-            args.months
+            lastJobID
         );
     }
 
