@@ -70,10 +70,7 @@ contract Nexus is Ownable {
         address indexed consumer,
         address indexed dsp,
         uint id,
-        uint port,
-        uint ioMegaBytes, 
-        uint storageMegaBytes,
-        uint endDate
+        uint port
     );
 
     event ServiceExtended(
@@ -98,8 +95,7 @@ contract Nexus is Ownable {
         bool callback,
         bool requireConsistent,
         string[] args,
-        uint id,
-        address[] indexed dsps
+        uint id
     );
 
     event RunService(
@@ -110,8 +106,7 @@ contract Nexus is Ownable {
         uint storageMegaBytes,
         string[] args,
         uint id,
-        uint months,
-        address[] indexed dsps
+        uint months
     );
 
     event Kill(
@@ -736,10 +731,7 @@ contract Nexus is Ownable {
             _consumer, 
             msg.sender, 
             serviceId, 
-            port, 
-            sd.ioMegaBytes, 
-            sd.storageMegaBytes, 
-            sd.endDate
+            port
         );
     }
     
@@ -796,8 +788,9 @@ contract Nexus is Ownable {
                 calculatePaymentAmount(jobs[lastJobID].gasLimit,jobs[lastJobID].imageName, args.dsps[i])
                 ,"min balance not met"
             );
+            console.log(args.dsps[i]);
         }
-
+        
         emit RunJob(
             args.consumer,
             args.imageName,
@@ -805,8 +798,7 @@ contract Nexus is Ownable {
             args.callback,
             args.requireConsistent,
             args.args,
-            lastJobID,
-            args.dsps
+            lastJobID
         );
     }
     
@@ -837,6 +829,15 @@ contract Nexus is Ownable {
         sd.storageMegaBytes = args.storageMegaBytes;
         sd.months = args.months;
         sd.dsps = args.dsps;
+        
+        console.log(args.consumer);
+        console.log(args.imageName);
+        console.log(args.inputFS);
+        console.log(args.ioMegaBytes);
+        console.log(args.storageMegaBytes);
+        //console.log(args.args);
+        console.log(lastJobID);
+        console.log(args.months);
 
         emit RunService(
             args.consumer,
@@ -846,8 +847,7 @@ contract Nexus is Ownable {
             args.storageMegaBytes,
             args.args,
             lastJobID,
-            args.months,
-            args.dsps
+            args.months
         );
     }
 
