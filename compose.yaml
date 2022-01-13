@@ -49,33 +49,45 @@ services:
       - images    
     build: images/wasi-service
     image: wasi-service  
-  nexus:
-    image: nexus
+  eth:
+    image: eth
+    build: eth
     ports:
       - "8545:8545"
-    build: nexus
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
       - ETH_ADDR=http://0.0.0.0:8545
     profiles:
+      - debug    
+  nexus:
+    image: nexus
+    build: nexus
+    environment:
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - ETH_ADDR=ws://eth:8545
+    profiles:
       - debug   
+    depends_on:
+      - "eth"
+    links:
+        - eth
   orchestrator:
     image: orchestrator
     build: services/orchestrator
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
-      - ETH_ADDR=ws://nexus:8545
+      - ETH_ADDR=ws://eth:8545
       - COMPOSE_PROFILES
       - NODE_OPTIONS=--openssl-legacy-provider
-      - ADDRESS=0x85C5Dd61585773423e378146D4bEC6f8D149E248
+      - ADDRESS=0x1af5e6689288F69BBAE9E41fC6BE1C82d008935f
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./nexus:/nexus
     depends_on:
-      - "nexus"
+      - "eth"
     links:
-        - nexus
+        - eth
   dspportal:
     image: dspportal
     build: uis/jobs
@@ -93,7 +105,7 @@ services:
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
       - PORT=8080
-      - ETH_ADDR=ws://nexus:8545
+      - ETH_ADDR=ws://eth:8545
       - NODE_OPTIONS=--openssl-legacy-provider
     profiles:
       - faucet
