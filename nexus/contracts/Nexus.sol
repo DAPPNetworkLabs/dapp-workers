@@ -52,16 +52,16 @@ contract Nexus is Ownable {
     event JobResult(
         address indexed consumer, 
         address indexed dsp,
-        // string stdOut,  
         string outputFS,
+        string outputHash,
         uint dapps,
         uint id
     );
 
     event JobDone(
         address indexed consumer, 
-        // string stdOut,  
         string outputFS,
+        string outputHash,
         bool inconsistent,
         uint id
     );
@@ -88,14 +88,22 @@ contract Nexus is Ownable {
         uint amount
     );
 
-    event RunJob(
+    event QueueJob(
         address indexed consumer,
-        uint id
+        string imageName,
+        uint id,
+        string inputFS,
+        string[] args
     );
 
-    event RunService(
+    event QueueService(
         address indexed consumer,
-        uint id
+        string imageName,
+        uint ioMegaBytes,
+        uint storageMegaBytes,
+        uint id,
+        string inputFS,
+        string[] args
     );
 
     event Kill(
@@ -107,14 +115,6 @@ contract Nexus is Ownable {
         address indexed dsp,
         bool active,
         string endpoint
-    );
-    
-    event DockerSet(
-        address owner,
-        string imageName,
-        string image,
-        string imageHash,
-        string imageType
     );
 
     event DockerApprovalChanged(
@@ -205,7 +205,7 @@ contract Nexus is Ownable {
         uint minIoMegaBytes;
     }
 
-    struct runJobArgs {
+    struct queueJobArgs {
         address consumer;
         string imageName;
         string inputFS;
@@ -215,7 +215,7 @@ contract Nexus is Ownable {
         string[] args;
     }
 
-    struct runServiceArgs {
+    struct queueServiceArgs {
         address consumer;
         string imageName;
         uint ioMegaBytes;
@@ -236,6 +236,12 @@ contract Nexus is Ownable {
         uint24 stalenessSeconds;
     }
 
+    struct jobCallbackArgs {
+        uint jobID;
+        string outputFS;
+        string outputHash;
+    }
+
     mapping(address => RegisteredDSP) public registeredDSPs;
     mapping(address => mapping(address => PerConsumerDSPEntry)) public dspData;
     mapping(address => address[]) public providers;
@@ -252,6 +258,13 @@ contract Nexus is Ownable {
 
     Config private s_config;  
     uint256 private s_fallbackGasPrice; // not in config object for gas savings
+
+    /*
+
+        Todo
+        - add update image fees
+
+    */
 
     constructor (
         // string memory manifest,
@@ -289,6 +302,7 @@ contract Nexus is Ownable {
             gasCeilingMultiplier: gasCeilingMultiplier,
             stalenessSeconds: stalenessSeconds
         });
+
         s_fallbackGasPrice = fallbackGasPrice;
 
         emit ConfigSet(
@@ -382,8 +396,11 @@ contract Nexus is Ownable {
         address _dsp
     ) public {
         require(registeredDSPs[_dsp].active,"dsp inactive");
+
         token.safeTransferFrom(msg.sender, address(this), _amount);
+        
         dspData[_consumer][_dsp].amount += _amount;
+        
         emit BoughtGas(msg.sender, _consumer, _dsp, _amount);
     }
     
@@ -395,9 +412,13 @@ contract Nexus is Ownable {
         address _dsp
     ) public {
         address _consumer = msg.sender;
+
         require(!(_amountToSell > dspData[_consumer][_dsp].amount),"overdrawn balance");
+        
         dspData[_consumer][_dsp].amount -= _amountToSell;
+
         token.safeTransfer(_consumer, _amountToSell);
+        
         emit SoldGas(_consumer, _dsp, _amountToSell);
     }
     
@@ -413,6 +434,7 @@ contract Nexus is Ownable {
 
         dspData[_consumer][_dsp].amount -= _amountToUse;
         registeredDSPs[_dsp].claimableDapp += _amountToUse;
+
         emit UsedGas(_consumer, _dsp, _amountToUse);
     }
     
@@ -421,8 +443,11 @@ contract Nexus is Ownable {
      */
     function claim() external {
         uint claimableAmount = registeredDSPs[msg.sender].claimableDapp;
+
         require(claimableAmount != 0,"must have positive balance to claim");
+        
         token.safeTransfer(msg.sender, claimableAmount);
+        
         emit ClaimedGas(msg.sender, claimableAmount);
     }
     
@@ -434,6 +459,7 @@ contract Nexus is Ownable {
         address _dsp = msg.sender;
         int founds = -1;
         bool inconsistent = false;
+
         for (uint i=0; i<dsps.length; i++) {
             if(jd.done[i]){
                 if(jd.dataHash[i] != dataHash){
@@ -445,41 +471,42 @@ contract Nexus is Ownable {
                 break;
             }
         }
-        require(founds > -1, "dsp not found");
 
+        require(founds > -1, "dsp not found");
         require(!jd.done[uint(founds)], "already done");
+
         jd.done[uint(founds)]  = true;
         jd.resultsCount++;
         jd.dataHash[uint(founds)] = dataHash;
+
         return inconsistent;
     }
     
     /**
      * @dev determines data hash consistency and performs optional callback
      */
-    function jobCallback(uint jobID, string calldata outputFS) public {
-        
-        bytes32 dataHash = keccak256(abi.encodePacked(outputFS));
+    function jobCallback(jobCallbackArgs calldata args) public {
+        JobData storage jd = jobs[args.jobID];
 
-        JobData storage jd = jobs[jobID];
-
-        address[] storage dsps = providers[msg.sender];
-        
         // maybe throw if user doesn't want to accept inconsistency
-        bool inconsistent = submitResEntry(jobID, dataHash, dsps);
-        bool success;
+        bool inconsistent = submitResEntry(
+            args.jobID,
+            keccak256(abi.encodePacked(args.outputFS)),
+            providers[msg.sender]
+        );
 
         if(jd.requireConsistent) {
             require(inconsistent,"inconsistent response");
         }
         
         uint gasUsed;
+        bool success;
         if(jd.callback){
             gasUsed = gasleft();
             success = callWithExactGas(jd.gasLimit, jd.owner, abi.encodeWithSignature(
-                "_dspcallback(uint256,string)",
-                jobID,
-                outputFS
+                "_dspcallback(string,string)",
+                args.outputFS,
+                args.outputHash
             ));
             gasUsed = gasUsed - gasleft();
         }
@@ -496,20 +523,22 @@ contract Nexus is Ownable {
         emit JobResult(
             jd.owner,
             msg.sender,
-            outputFS,
+            args.outputFS,
+            args.outputHash,
             dapps,
-            jobID
+            args.jobID
         );
 
-        if(dsps.length != jd.resultsCount){
+        if(providers[msg.sender].length != jd.resultsCount){
             return;
         }
 
         emit JobDone(
             jd.owner,
-            outputFS,
+            args.outputFS,
+            args.outputHash,
             inconsistent,
-            jobID
+            args.jobID
         );
     }
     
@@ -521,6 +550,7 @@ contract Nexus is Ownable {
         string memory imageName,
         address dsp
     ) private view returns (uint) {
+
         uint jobDapps = calcJobDapps(imageName,dsp);
         uint gasWei = getFeedData(); // 99000000000 fast gas price of 1 gas in wei
         uint dappEth = getDappEth(); // how much 18,ETH for 1 4,DAPP
@@ -577,8 +607,7 @@ contract Nexus is Ownable {
     function getMinBalance(uint256 id, string memory jobType, address dsp) external view returns (uint) {
         if(compareStrings(jobType, "job")) {
             return calculatePaymentAmount(jobs[id].gasLimit,jobs[id].imageName, dsp);
-        }
-        else if(compareStrings(jobType, "service")) {
+        } else if(compareStrings(jobType, "service")) {
             return calcServiceDapps(
                 services[id].imageName, 
                 services[id].ioMegaBytes, 
@@ -692,15 +721,19 @@ contract Nexus is Ownable {
         address[] storage dsps = providers[consumer];
         address _dsp = msg.sender;
         int founds = -1;
+
         for (uint i=0; i<dsps.length; i++) {
             if(dsps[i] == _dsp){
                 founds = int(i);
                 break;
             }
         }
+        
         require(founds > -1, "dsp not found");
         require(!jd.done[uint(founds)], "already done");
+
         jd.done[uint(founds)]  = true;
+        
         emit JobError(jd.owner, stdErr, outputFS, jobID);
     }
     
@@ -718,9 +751,9 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev run job or service
+     * @dev queue job
      */
-    function runJob(runJobArgs calldata args) public {
+    function queueJob(queueJobArgs calldata args) public {
         validateOwner(args.consumer);
 
         address[] storage dsps = providers[args.consumer];
@@ -730,8 +763,6 @@ contract Nexus is Ownable {
         lastJobID = lastJobID + 1;
 
         JobData storage jd = jobs[lastJobID];
-
-        
 
         jd.callback = args.callback;
         jd.requireConsistent = args.requireConsistent;
@@ -748,16 +779,19 @@ contract Nexus is Ownable {
             );
         }
         
-        emit RunJob(
+        emit QueueJob(
             args.consumer,
-            lastJobID
+            args.imageName,
+            lastJobID,
+            args.inputFS,
+            args.args
         );
     }
     
     /**
-     * @dev run job or service
+     * @dev queue service
      */
-    function runService(runServiceArgs calldata args) public {
+    function queueService(queueServiceArgs calldata args) public {
         validateOwner(args.consumer);
 
         address[] storage dsps = providers[args.consumer];
@@ -784,9 +818,14 @@ contract Nexus is Ownable {
         sd.storageMegaBytes = args.storageMegaBytes;
         sd.months = args.months;
 
-        emit RunService(
+        emit QueueService(
             args.consumer,
-            lastJobID
+            args.imageName,
+            args.ioMegaBytes,
+            args.storageMegaBytes,
+            lastJobID,
+            args.inputFS,
+            args.args
         );
     }
 
@@ -817,6 +856,8 @@ contract Nexus is Ownable {
      * @dev gov approve image
      */
     function approveImage(string calldata imageName, string calldata imageHash) external onlyOwner {
+        require(bytes(approvedImages[imageName]).length == 0, "image exists");
+
         approvedImages[imageName] = imageHash;
     }
     
@@ -843,17 +884,18 @@ contract Nexus is Ownable {
      */
     function deprecateDSP() public {
         address _dsp = msg.sender;
+
         registeredDSPs[_dsp].active = false;
         registeredDSPs[_dsp].endpoint = "deprecated";
+
         emit DSPStatusChanged(_dsp, false,"deprecated");
     }
     
     /**
      * @dev set docker image
      */
-    function setDspDockerImage(
+    function setDockerImage(
         string calldata imageName,
-        string calldata imageAddress,
         string calldata imageHash,
         uint jobFee,
         uint baseFee,
@@ -861,11 +903,17 @@ contract Nexus is Ownable {
         uint ioFee,
         uint minStorageMegaBytes,
         uint minIoMegaBytes
-    ) public {
+    ) external {
         require(bytes(imageHash).length != 0, "hash must not be empty");
         require(compareStrings(approvedImages[imageName],imageHash), "image not approved");
+        require(jobFee > 0, "job fee must be > 0");
+        require(baseFee > 0, "base fee must be > 0");
+        require(storageFee > 0, "storage fee must be > 0");
+        require(ioFee > 0, "io fee must be > 0");
+        require(minIoMegaBytes > 0, "min io must be > 0");
 
-        address owner = msg.sender;        
+        address owner = msg.sender;
+
         registeredDSPs[owner].approvedImages[imageName].imageHash = imageHash;
 
         // job related
@@ -877,8 +925,38 @@ contract Nexus is Ownable {
         registeredDSPs[owner].approvedImages[imageName].ioFee = ioFee;
         registeredDSPs[owner].approvedImages[imageName].minStorageMegaBytes = minStorageMegaBytes;
         registeredDSPs[owner].approvedImages[imageName].minIoMegaBytes = minIoMegaBytes;
+    }
+    
+    /**
+     * @dev update docker image fees
+     */
+    function updateDockerImage(
+        string calldata imageName,
+        uint jobFee,
+        uint baseFee,
+        uint storageFee,
+        uint ioFee,
+        uint minStorageMegaBytes,
+        uint minIoMegaBytes
+    ) external {
+        address owner = msg.sender;
 
-        emit DockerSet(owner,imageName,imageAddress,imageHash,"job");
+        require(isImageApprovedForDSP(owner, imageName), "image not approved");
+        require(jobFee > 0, "job fee must be > 0");
+        require(baseFee > 0, "base fee must be > 0");
+        require(storageFee > 0, "storage fee must be > 0");
+        require(ioFee > 0, "io fee must be > 0");
+        require(minIoMegaBytes > 0, "min io must be > 0");
+
+        // job related
+        registeredDSPs[owner].approvedImages[imageName].jobFee = jobFee;
+
+        // service related
+        registeredDSPs[owner].approvedImages[imageName].baseFee = baseFee;
+        registeredDSPs[owner].approvedImages[imageName].storageFee = storageFee;
+        registeredDSPs[owner].approvedImages[imageName].ioFee = ioFee;
+        registeredDSPs[owner].approvedImages[imageName].minStorageMegaBytes = minStorageMegaBytes;
+        registeredDSPs[owner].approvedImages[imageName].minIoMegaBytes = minIoMegaBytes;
     }
     
     /**
@@ -897,19 +975,21 @@ contract Nexus is Ownable {
         delete registeredDSPs[_dsp].approvedImages[imageName];
 
         emit DockerApprovalChanged(_dsp,imageName,false);
-    }  
+    }
     
     /**
      * @dev validates dsp is authorized for job or service
      */
     function validateDsp(address[] memory dsps) private view {
         int founds = -1;
+        
         for (uint i=0; i<dsps.length; i++) {
             if(dsps[i] == msg.sender){
                 founds = int(i);
                 break;
             }
         }
+
         require(founds > -1, "dsp not found");
     }
 
@@ -918,6 +998,7 @@ contract Nexus is Ownable {
      */
     function validateOwner(address consumer) private view {
         address[] storage v_consumers = consumers[consumer];
+
         for (uint i=0; i<v_consumers.length; i++) {
             if(v_consumers[i] != address(0)){
                 require(v_consumers[i] == msg.sender, "consumer not owner");
@@ -941,11 +1022,13 @@ contract Nexus is Ownable {
      */
     function getDappEth() private view returns (uint256) {
         address[] memory table = new address[](5);
+
         table[0] = dappToken;
         table[1] = dappBntToken;
         table[2] = bntToken;
         table[3] = ethBntToken;
         table[4] = ethToken;
+        
         return bancorNetwork.rateByPath(table,10000); // how much 18,ETH for 1 4,DAPP
     }
 
@@ -954,11 +1037,13 @@ contract Nexus is Ownable {
      */
     function getDappUsd() private view returns (uint256) {
         address[] memory table = new address[](5);
+
         table[0] = usdtToken;
         table[1] = usdtBntToken;
         table[2] = bntToken;
         table[3] = dappBntToken;
         table[4] = dappToken;
+        
         return bancorNetwork.rateByPath(table,1000000); // how much 18,ETH for 1 6,USDT
     }
 
@@ -968,18 +1053,19 @@ contract Nexus is Ownable {
     * for gas it takes the min of gas price in the transaction or the fast gas
     * price in order to reduce costs for the upkeep clients.
     */
-    function getFeedData() private view returns (uint256 gasWei) {
+    function getFeedData() private view returns (uint) {
         uint32 stalenessSeconds = s_config.stalenessSeconds;
         bool staleFallback = stalenessSeconds > 0;
         uint256 timestamp;
         int256 feedValue; // = 99000000000 / 1e9 = 99 gwei
+
         (, feedValue, , timestamp, ) = FAST_GAS_FEED.latestRoundData();
+        
         if ((staleFallback && stalenessSeconds < block.timestamp - timestamp) || feedValue <= 0) {
-            gasWei = s_fallbackGasPrice;
+            return s_fallbackGasPrice;
         } else {
-            gasWei = uint256(feedValue);
+            return uint256(feedValue);
         }
-        return gasWei;
     }
 
     /**
@@ -996,6 +1082,7 @@ contract Nexus is Ownable {
         )
     {
         Config memory config = s_config;
+
         return (
             config.paymentPremiumPPB,
             config.stalenessSeconds,
@@ -1009,9 +1096,11 @@ contract Nexus is Ownable {
      */
     function getDspAddresses() public view returns (address[] memory) {
         address[] memory addresses = new address[](totalDsps);
+
         for(uint i=0; i<totalDsps; i++) {
             addresses[i] = dspList[i];
         }
+
         return addresses;
     }
     
@@ -1020,6 +1109,7 @@ contract Nexus is Ownable {
      */
     function getPortForDSP(uint jobID, address dsp) public view returns (uint) {        
         ServiceData storage sd = services[jobID];
+
         return sd.dspServiceData[dsp].port;
     }
     
@@ -1073,14 +1163,15 @@ contract Nexus is Ownable {
      */
     function toString(bytes memory data) internal pure returns(string memory) {
         bytes memory alphabet = "0123456789abcdef";
-
         bytes memory str = new bytes(2 + data.length * 2);
         str[0] = "0";
         str[1] = "x";
+
         for (uint i = 0; i < data.length; i++) {
             str[2+i*2] = alphabet[uint(uint8(data[i] >> 4))];
             str[3+i*2] = alphabet[uint(uint8(data[i] & 0x0f))];
         }
+
         return string(str);
     }
 }

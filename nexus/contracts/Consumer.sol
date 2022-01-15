@@ -7,33 +7,24 @@ import "hardhat/console.sol";
 
 contract Consumer {
     /**
-    * Public counter variable
+    * Last state hash
     */
-    uint public counter;
+    string public lastHash;
 
-    /**
-    * Use an interval in seconds and a timestamp to slow execution of Upkeep
-    */
-    uint public immutable interval;
-    uint public lastTimeStamp;
     INexus public nexus;
 
-    constructor(uint updateInterval, address _nexus) {
-      interval = updateInterval;
-      lastTimeStamp = block.timestamp;
-
-      nexus = INexus(_nexus);
-
-      counter = 0;
+    constructor(address _nexus) {
+        nexus = INexus(_nexus);
     }
 
-    function runJob(address[] calldata dsps) external {
+    function runJob() external {
         string[] memory arr = new string[](1);
         arr[0] = "target/wasm32-wasi/release/test";
-        nexus.runJob(INexus.runJobArgs(address(this),"wasmrunner","",true,1000000,false,arr,dsps));
+        nexus.queueJob(INexus.queueJobArgs(address(this),"wasmrunner","",true,1000000,false,arr));
     }
 
-    function _dspcallback(uint val, string calldata outputFS) external {
-        counter = val;
+    function _dspcallback(string calldata outputFS, string  calldata outputHash) external {
+        // use outputFS for logic...
+        lastHash = outputHash;
     }
 }
