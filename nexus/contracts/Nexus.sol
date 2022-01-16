@@ -262,12 +262,10 @@ contract Nexus is Ownable {
     /*
 
         Todo
-        - add update image fees
 
     */
 
     constructor (
-        // string memory manifest,
         address _tokenContract,
         address _bancorNetwork,
         address _fastGasFeed,
@@ -389,7 +387,6 @@ contract Nexus is Ownable {
     /**
      * @dev transfer DAPP to contract to process jobs
      */
-    // holds snapshots
     function buyGasFor(
         uint _amount,
         address _consumer,
