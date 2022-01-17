@@ -90,6 +90,7 @@ contract Nexus is Ownable {
 
     event QueueJob(
         address indexed consumer,
+        address indexed owner,
         string imageName,
         uint id,
         string inputFS,
@@ -98,6 +99,7 @@ contract Nexus is Ownable {
 
     event QueueService(
         address indexed consumer,
+        address indexed owner,
         string imageName,
         uint ioMegaBytes,
         uint storageMegaBytes,
@@ -147,8 +149,6 @@ contract Nexus is Ownable {
     
     event UpdateDsps(
         address consumer,
-        uint id,
-        bool isJob,
         address[] dsps
     );
 
@@ -161,10 +161,10 @@ contract Nexus is Ownable {
         bool active;
         string endpoint;
         uint claimableDapp;
-        mapping(string => DspDockerImage) approvedImages;
     }
 
     struct JobData {
+        address consumer;
         address owner;
         address[] dsps;
         bool callback;
@@ -183,6 +183,7 @@ contract Nexus is Ownable {
     }
 
     struct ServiceData {
+        address consumer;
         address owner;
         address[] dsps;
         string imageName;
@@ -193,10 +194,10 @@ contract Nexus is Ownable {
         uint storageMegaBytes;
         mapping(address => DspServiceData) dspServiceData;
         mapping(address => bytes32) dataHash;
+        mapping(uint => bool) done;
     }
 
     struct DspDockerImage {
-        string imageHash;
         uint jobFee;
         uint baseFee;
         uint storageFee;
@@ -206,7 +207,7 @@ contract Nexus is Ownable {
     }
 
     struct queueJobArgs {
-        address consumer;
+        address owner;
         string imageName;
         string inputFS;
         bool callback;
@@ -216,7 +217,7 @@ contract Nexus is Ownable {
     }
 
     struct queueServiceArgs {
-        address consumer;
+        address owner;
         string imageName;
         uint ioMegaBytes;
         uint storageMegaBytes;
@@ -244,17 +245,22 @@ contract Nexus is Ownable {
 
     mapping(address => RegisteredDSP) public registeredDSPs;
     mapping(address => mapping(address => PerConsumerDSPEntry)) public dspData;
+
     mapping(address => address[]) public providers;
-    mapping(address => address[]) public consumers;
+
+    mapping(address => address) public contracts;
+    
     mapping(uint => JobData) public jobs;
     mapping(uint => ServiceData) public services;
+
     mapping(string => string) public approvedImages;
+    mapping(address => mapping(string => DspDockerImage)) public dspApprovedImages;
+
+    uint public totalDsps;
 
     uint public lastJobID;
 
     mapping(uint => address) private dspList;
-
-    uint private totalDsps;
 
     Config private s_config;  
     uint256 private s_fallbackGasPrice; // not in config object for gas savings
@@ -314,25 +320,25 @@ contract Nexus is Ownable {
     /**
      * @dev set dsps
      */
-    function setDsps(uint id, address[] calldata dsps, bool isJob) external {
-        validateOwner(msg.sender);
+    function setDsps(address[] calldata dsps) external {
+        // still need to be able to set dsps after registering contract
+        // should not require de-registering then re-registering
+        // validateConsumer(msg.sender);
         validateDsps(dsps);
 
         providers[msg.sender] = dsps;
 
         emit UpdateDsps(
             msg.sender,
-            id,
-            isJob,
             dsps
         );
     }
     
     /**
-     * @dev create consumer data entry
+     * @dev set consumer contract
      */
-    function setConsumerPermissions(address[] calldata v_consumers) public {
-        consumers[msg.sender] = v_consumers;
+    function setConsumerContract(address authorized_contract) external {
+        contracts[msg.sender] = authorized_contract;
     }
 
     /**
@@ -345,13 +351,14 @@ contract Nexus is Ownable {
         uint ioMb, 
         uint storageMb 
     ) external {
-        validateOwner(msg.sender);
+        validateConsumer(msg.sender);
         
         ServiceData storage sd = services[serviceId];
 
         require(compareStrings(imageName, sd.imageName),"image missmatch");
 
         address[] storage dsps = providers[msg.sender];
+        require(dsps.length > 0,"no dsps selected for consumer");
 
         for(uint i=0;i<dsps.length;i++) {
             bool include_base = months == 0 ? false : true;
@@ -472,71 +479,11 @@ contract Nexus is Ownable {
         require(founds > -1, "dsp not found");
         require(!jd.done[uint(founds)], "already done");
 
-        jd.done[uint(founds)]  = true;
+        jd.done[uint(founds)] = true;
         jd.resultsCount++;
         jd.dataHash[uint(founds)] = dataHash;
 
         return inconsistent;
-    }
-    
-    /**
-     * @dev determines data hash consistency and performs optional callback
-     */
-    function jobCallback(jobCallbackArgs calldata args) public {
-        JobData storage jd = jobs[args.jobID];
-
-        // maybe throw if user doesn't want to accept inconsistency
-        bool inconsistent = submitResEntry(
-            args.jobID,
-            keccak256(abi.encodePacked(args.outputFS)),
-            providers[msg.sender]
-        );
-
-        if(jd.requireConsistent) {
-            require(inconsistent,"inconsistent response");
-        }
-        
-        uint gasUsed;
-        bool success;
-        if(jd.callback){
-            gasUsed = gasleft();
-            success = callWithExactGas(jd.gasLimit, jd.owner, abi.encodeWithSignature(
-                "_dspcallback(string,string)",
-                args.outputFS,
-                args.outputHash
-            ));
-            gasUsed = gasUsed - gasleft();
-        }
-
-        // calc gas usage and deduct from quota as DAPPs (using Bancor) or as eth
-        uint dapps = calculatePaymentAmount(gasUsed,jd.imageName,msg.sender);
-
-        useGas(
-            jd.owner,
-            dapps,
-            msg.sender
-        );
-
-        emit JobResult(
-            jd.owner,
-            msg.sender,
-            args.outputFS,
-            args.outputHash,
-            dapps,
-            args.jobID
-        );
-
-        if(providers[msg.sender].length != jd.resultsCount){
-            return;
-        }
-
-        emit JobDone(
-            jd.owner,
-            args.outputFS,
-            args.outputHash,
-            inconsistent,
-            args.jobID
-        );
     }
     
     /**
@@ -571,7 +518,7 @@ contract Nexus is Ownable {
      * @dev calculate job fee
      */
     function calcJobDapps(string memory imageName, address dsp) private view returns (uint) {
-        return getDappUsd() * ( registeredDSPs[dsp].approvedImages[imageName].jobFee / usdtPrecision );
+        return getDappUsd() * ( dspApprovedImages[dsp][imageName].jobFee / usdtPrecision );
     }
 
     /**
@@ -587,9 +534,9 @@ contract Nexus is Ownable {
         // base fee per hour * 24 hours * 30 days for monthly rate
         uint dappUsd = getDappUsd();
 
-        uint baseFee = registeredDSPs[dsp].approvedImages[imageName].baseFee;
-        uint storageFee = registeredDSPs[dsp].approvedImages[imageName].storageFee;
-        uint ioFee = registeredDSPs[dsp].approvedImages[imageName].ioFee;
+        uint baseFee = dspApprovedImages[dsp][imageName].baseFee;
+        uint storageFee = dspApprovedImages[dsp][imageName].storageFee;
+        uint ioFee = dspApprovedImages[dsp][imageName].ioFee;
 
         baseFee = include_base ? baseFee * 24 * 30 * dappUsd : 0;
         storageFee = storageFee * storageMegaBytes * dappUsd;
@@ -668,92 +615,13 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev run service
-     */
-    // add check for not conflicting with DSP frontend default ports
-    function serviceCallback(uint serviceId, uint port) public {
-        require(port != 8888,"dsp portal port overlap");
-
-        ServiceData storage sd = services[serviceId];
-
-        address[] storage dsps = providers[msg.sender];
-
-        validateDsp(dsps);
-
-        if(sd.lastCalled == 0) {
-            sd.lastCalled = block.timestamp;
-            sd.endDate = block.timestamp + ( sd.months * 30 days );
-        } else {
-            require(sd.lastCalled > block.timestamp + 30 days,"called within 30 days");
-            sd.lastCalled = block.timestamp;
-        }
-        
-        address _consumer = sd.owner;
-
-        sd.dspServiceData[msg.sender].port = port;
-        sd.dspServiceData[msg.sender].ioMegaBytesLimit += sd.ioMegaBytes;
-        sd.dspServiceData[msg.sender].storageMegaBytesLimit += sd.storageMegaBytes;
-        
-        uint dapps = calcServiceDapps(sd.imageName, sd.ioMegaBytes, sd.storageMegaBytes, msg.sender, true);
-
-        useGas(
-            _consumer,
-            dapps,
-            msg.sender
-        );
-
-        emit ServiceRunning(
-            _consumer, 
-            msg.sender, 
-            serviceId, 
-            port
-        );
-    }
-    
-    /**
-     * @dev handle job error
-     */
-    function jobError(uint jobID, string calldata  stdErr, string calldata outputFS, address consumer) public {
-        JobData storage jd = jobs[lastJobID];
-        address[] storage dsps = providers[consumer];
-        address _dsp = msg.sender;
-        int founds = -1;
-
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == _dsp){
-                founds = int(i);
-                break;
-            }
-        }
-        
-        require(founds > -1, "dsp not found");
-        require(!jd.done[uint(founds)], "already done");
-
-        jd.done[uint(founds)]  = true;
-        
-        emit JobError(jd.owner, stdErr, outputFS, jobID);
-    }
-    
-    /**
-     * @dev handle service error
-     */
-    function serviceError(uint jobID, string calldata  stdErr, string calldata outputFS, address consumer) public {
-        ServiceData storage sd = services[lastJobID];
-
-        address[] storage dsps = providers[consumer];
-        
-        validateDsp(dsps);
-        
-        emit ServiceError(sd.owner, msg.sender, stdErr, outputFS, jobID);
-    }
-    
-    /**
      * @dev queue job
      */
     function queueJob(queueJobArgs calldata args) public {
-        validateOwner(args.consumer);
+        validateConsumer(msg.sender);
 
-        address[] storage dsps = providers[args.consumer];
+        address[] storage dsps = providers[args.owner];
+        require(dsps.length > 0,"no dsps selected for consumer");
         
         validateDsps(dsps);
 
@@ -763,13 +631,15 @@ contract Nexus is Ownable {
 
         jd.callback = args.callback;
         jd.requireConsistent = args.requireConsistent;
-        jd.owner = args.consumer;
+        jd.consumer = msg.sender;
+        jd.owner = args.owner;
         jd.imageName = args.imageName;
         jd.gasLimit = args.gasLimit;
 
         for(uint i=0;i<dsps.length;i++) {
+            require(isImageApprovedForDSP(dsps[i], args.imageName), "image not approved");
             require(
-                dspData[args.consumer][dsps[i]].amount 
+                dspData[msg.sender][dsps[i]].amount 
                 >= 
                 calculatePaymentAmount(jobs[lastJobID].gasLimit,jobs[lastJobID].imageName, dsps[i])
                 ,"min balance not met"
@@ -777,7 +647,8 @@ contract Nexus is Ownable {
         }
         
         emit QueueJob(
-            args.consumer,
+            msg.sender,
+            args.owner,
             args.imageName,
             lastJobID,
             args.inputFS,
@@ -789,13 +660,15 @@ contract Nexus is Ownable {
      * @dev queue service
      */
     function queueService(queueServiceArgs calldata args) public {
-        validateOwner(args.consumer);
+        validateConsumer(msg.sender);
 
-        address[] storage dsps = providers[args.consumer];
+        address[] storage dsps = providers[args.owner];
+        require(dsps.length > 0,"no dsps selected for consumer");
 
         validateDsps(dsps);
 
         for(uint i=0;i<dsps.length;i++) {
+            require(isImageApprovedForDSP(dsps[i], args.imageName), "image not approved");
             validateMin(
                 args.ioMegaBytes, 
                 args.storageMegaBytes, 
@@ -809,14 +682,16 @@ contract Nexus is Ownable {
 
         ServiceData storage sd = services[lastJobID];
 
-        sd.owner = args.consumer;
+        sd.consumer = msg.sender;
+        sd.owner = args.owner;
         sd.imageName = args.imageName;
         sd.ioMegaBytes = args.ioMegaBytes;
         sd.storageMegaBytes = args.storageMegaBytes;
         sd.months = args.months;
 
         emit QueueService(
-            args.consumer,
+            msg.sender,
+            args.owner,
             args.imageName,
             args.ioMegaBytes,
             args.storageMegaBytes,
@@ -824,6 +699,176 @@ contract Nexus is Ownable {
             args.inputFS,
             args.args
         );
+    }
+    
+    /**
+     * @dev dsp run job, determines data hash consistency and performs optional callback
+     */
+    function jobCallback(jobCallbackArgs calldata args) public {
+        JobData storage jd = jobs[args.jobID];
+
+        // maybe throw if user doesn't want to accept inconsistency
+        bool inconsistent = submitResEntry(
+            args.jobID,
+            keccak256(abi.encodePacked(args.outputFS)),
+            providers[jd.owner]
+        );
+
+        if(jd.requireConsistent) {
+            require(inconsistent,"inconsistent response");
+        }
+        
+        uint gasUsed;
+        bool success;
+        if(jd.callback){
+            gasUsed = gasleft();
+            success = callWithExactGas(jd.gasLimit, jd.consumer, abi.encodeWithSignature(
+                "_dspcallback(string,string)",
+                args.outputFS,
+                args.outputHash
+            ));
+            gasUsed = gasUsed - gasleft();
+        }
+
+        // calc gas usage and deduct from quota as DAPPs (using Bancor) or as eth
+        uint dapps = calculatePaymentAmount(gasUsed,jd.imageName,msg.sender);
+
+        useGas(
+            jd.consumer,
+            dapps,
+            msg.sender
+        );
+
+        emit JobResult(
+            jd.consumer,
+            msg.sender,
+            args.outputFS,
+            args.outputHash,
+            dapps,
+            args.jobID
+        );
+
+        if(providers[msg.sender].length != jd.resultsCount){
+            return;
+        }
+
+        emit JobDone(
+            jd.consumer,
+            args.outputFS,
+            args.outputHash,
+            inconsistent,
+            args.jobID
+        );
+    }
+    
+    /**
+     * @dev dsp run service
+     */
+    // add check for not conflicting with DSP frontend default ports
+    // add check not already done
+    function serviceCallback(uint serviceId, uint port) public {
+        require(port != 8888,"dsp portal port overlap");
+
+        ServiceData storage sd = services[serviceId];
+
+        address[] storage dsps = providers[sd.owner];
+        require(dsps.length > 0,"no dsps selected for consumer");
+
+        // validateDsp(dsps);
+
+        address _dsp = msg.sender;
+        int founds = -1;
+
+        for (uint i=0; i<dsps.length; i++) {
+            if(dsps[i] == _dsp){
+                founds = int(i);
+                break;
+            }
+        }
+
+        if(sd.lastCalled == 0) {
+            sd.lastCalled = block.timestamp;
+            sd.endDate = block.timestamp + ( sd.months * 30 days );
+        } else {
+            require(sd.lastCalled > block.timestamp + 30 days,"called within 30 days");
+            sd.lastCalled = block.timestamp;
+        }
+        
+        address _consumer = sd.consumer;
+
+        sd.dspServiceData[msg.sender].port = port;
+        sd.dspServiceData[msg.sender].ioMegaBytesLimit += sd.ioMegaBytes;
+        sd.dspServiceData[msg.sender].storageMegaBytesLimit += sd.storageMegaBytes;
+        
+        uint dapps = calcServiceDapps(sd.imageName, sd.ioMegaBytes, sd.storageMegaBytes, msg.sender, true);
+
+        useGas(
+            _consumer,
+            dapps,
+            msg.sender
+        );
+
+        require(!sd.done[uint(founds)], "already done");
+        sd.done[uint(founds)] = true;
+
+        emit ServiceRunning(
+            _consumer, 
+            msg.sender, 
+            serviceId, 
+            port
+        );
+    }
+    
+    /**
+     * @dev handle job error
+     */
+    function jobError(uint jobID, string calldata  stdErr, string calldata outputFS) public {
+        JobData storage jd = jobs[lastJobID];
+        address[] storage dsps = providers[jd.consumer];
+        require(dsps.length > 0,"no dsps selected for consumer");
+        address _dsp = msg.sender;
+        int founds = -1;
+
+        for (uint i=0; i<dsps.length; i++) {
+            if(dsps[i] == _dsp){
+                founds = int(i);
+                break;
+            }
+        }
+        
+        require(founds > -1, "dsp not found");
+        require(!jd.done[uint(founds)], "already done");
+
+        jd.done[uint(founds)] = true;
+        
+        emit JobError(jd.consumer, stdErr, outputFS, jobID);
+    }
+    
+    /**
+     * @dev handle service error
+     */
+    function serviceError(uint jobID, string calldata  stdErr, string calldata outputFS) public {
+        ServiceData storage sd = services[lastJobID];
+
+        address[] storage dsps = providers[sd.consumer];
+        require(dsps.length > 0,"no dsps selected for consumer");
+
+        address _dsp = msg.sender;
+        int founds = -1;
+
+        for (uint i=0; i<dsps.length; i++) {
+            if(dsps[i] == _dsp){
+                founds = int(i);
+                break;
+            }
+        }
+
+        require(!sd.done[uint(founds)], "already done");
+        sd.done[uint(founds)] = true;
+        
+        validateDsp(dsps);
+        
+        emit ServiceError(sd.consumer, msg.sender, stdErr, outputFS, jobID);
     }
 
     /**
@@ -839,12 +884,13 @@ contract Nexus is Ownable {
         require(
             ioMegaBytes 
             >= 
-            registeredDSPs[dsp].approvedImages[imageName].minIoMegaBytes * months
+            dspApprovedImages[dsp][imageName].minIoMegaBytes * months
             ,"min io bytes not met"
         );
         require(
             storageMegaBytes 
-            >= registeredDSPs[dsp].approvedImages[imageName].minStorageMegaBytes * months
+            >= 
+            dspApprovedImages[dsp][imageName].minStorageMegaBytes * months
             ,"min storage bytes not met"
         );
     }
@@ -854,6 +900,7 @@ contract Nexus is Ownable {
      */
     function approveImage(string calldata imageName, string calldata imageHash) external onlyOwner {
         require(bytes(approvedImages[imageName]).length == 0, "image exists");
+        require(bytes(imageHash).length != 0, "hash must not be empty");
 
         approvedImages[imageName] = imageHash;
     }
@@ -882,6 +929,10 @@ contract Nexus is Ownable {
     function deprecateDSP() public {
         address _dsp = msg.sender;
 
+        if(bytes(registeredDSPs[_dsp].endpoint).length == 0) {
+            dspList[totalDsps++] = _dsp;
+        }
+
         registeredDSPs[_dsp].active = false;
         registeredDSPs[_dsp].endpoint = "deprecated";
 
@@ -893,7 +944,6 @@ contract Nexus is Ownable {
      */
     function setDockerImage(
         string calldata imageName,
-        string calldata imageHash,
         uint jobFee,
         uint baseFee,
         uint storageFee,
@@ -901,8 +951,7 @@ contract Nexus is Ownable {
         uint minStorageMegaBytes,
         uint minIoMegaBytes
     ) external {
-        require(bytes(imageHash).length != 0, "hash must not be empty");
-        require(compareStrings(approvedImages[imageName],imageHash), "image not approved");
+        require(bytes(approvedImages[imageName]).length != 0, "image not approved");
         require(jobFee > 0, "job fee must be > 0");
         require(baseFee > 0, "base fee must be > 0");
         require(storageFee > 0, "storage fee must be > 0");
@@ -911,17 +960,15 @@ contract Nexus is Ownable {
 
         address owner = msg.sender;
 
-        registeredDSPs[owner].approvedImages[imageName].imageHash = imageHash;
-
         // job related
-        registeredDSPs[owner].approvedImages[imageName].jobFee = jobFee;
+        dspApprovedImages[owner][imageName].jobFee = jobFee;
 
         // service related
-        registeredDSPs[owner].approvedImages[imageName].baseFee = baseFee;
-        registeredDSPs[owner].approvedImages[imageName].storageFee = storageFee;
-        registeredDSPs[owner].approvedImages[imageName].ioFee = ioFee;
-        registeredDSPs[owner].approvedImages[imageName].minStorageMegaBytes = minStorageMegaBytes;
-        registeredDSPs[owner].approvedImages[imageName].minIoMegaBytes = minIoMegaBytes;
+        dspApprovedImages[owner][imageName].baseFee = baseFee;
+        dspApprovedImages[owner][imageName].storageFee = storageFee;
+        dspApprovedImages[owner][imageName].ioFee = ioFee;
+        dspApprovedImages[owner][imageName].minStorageMegaBytes = minStorageMegaBytes;
+        dspApprovedImages[owner][imageName].minIoMegaBytes = minIoMegaBytes;
     }
     
     /**
@@ -945,22 +992,33 @@ contract Nexus is Ownable {
         require(ioFee > 0, "io fee must be > 0");
         require(minIoMegaBytes > 0, "min io must be > 0");
 
+        bool diff = false;
+
+        if(dspApprovedImages[owner][imageName].jobFee != jobFee) diff = true;
+        if(dspApprovedImages[owner][imageName].baseFee != baseFee) diff = true;
+        if(dspApprovedImages[owner][imageName].storageFee != storageFee) diff = true;
+        if(dspApprovedImages[owner][imageName].ioFee != ioFee) diff = true;
+        if(dspApprovedImages[owner][imageName].minStorageMegaBytes != minStorageMegaBytes) diff = true;
+        if(dspApprovedImages[owner][imageName].minIoMegaBytes != minIoMegaBytes) diff = true;
+
+        require(diff, "no change in image");
+
         // job related
-        registeredDSPs[owner].approvedImages[imageName].jobFee = jobFee;
+        dspApprovedImages[owner][imageName].jobFee = jobFee;
 
         // service related
-        registeredDSPs[owner].approvedImages[imageName].baseFee = baseFee;
-        registeredDSPs[owner].approvedImages[imageName].storageFee = storageFee;
-        registeredDSPs[owner].approvedImages[imageName].ioFee = ioFee;
-        registeredDSPs[owner].approvedImages[imageName].minStorageMegaBytes = minStorageMegaBytes;
-        registeredDSPs[owner].approvedImages[imageName].minIoMegaBytes = minIoMegaBytes;
+        dspApprovedImages[owner][imageName].baseFee = baseFee;
+        dspApprovedImages[owner][imageName].storageFee = storageFee;
+        dspApprovedImages[owner][imageName].ioFee = ioFee;
+        dspApprovedImages[owner][imageName].minStorageMegaBytes = minStorageMegaBytes;
+        dspApprovedImages[owner][imageName].minIoMegaBytes = minIoMegaBytes;
     }
     
     /**
      * @dev returns approval status of image for dsp
      */
     function isImageApprovedForDSP(address _dsp, string calldata imageName) public view returns (bool) {
-        return bytes(registeredDSPs[_dsp].approvedImages[imageName].imageHash).length != 0;
+        return dspApprovedImages[_dsp][imageName].jobFee > 0;
     }
     
     /**
@@ -969,7 +1027,7 @@ contract Nexus is Ownable {
     function unapproveDockerForDSP(string calldata imageName) public  {
         address _dsp = msg.sender;
 
-        delete registeredDSPs[_dsp].approvedImages[imageName];
+        delete dspApprovedImages[_dsp][imageName];
 
         emit DockerApprovalChanged(_dsp,imageName,false);
     }
@@ -993,15 +1051,13 @@ contract Nexus is Ownable {
     /**
      * @dev require consumer be caller or owner
      */
-    function validateOwner(address consumer) private view {
-        address[] storage v_consumers = consumers[consumer];
+    function validateConsumer(address consumer) private view {
+        address authorized_contract = contracts[consumer];
 
-        for (uint i=0; i<v_consumers.length; i++) {
-            if(v_consumers[i] != address(0)){
-                require(v_consumers[i] == msg.sender, "consumer not owner");
-            } else {
-                require(consumer == msg.sender, "consumer not sender");
-            }
+        if(authorized_contract != address(0)){
+            require(authorized_contract == msg.sender, "consumer not authorized");
+        } else {
+            require(consumer == msg.sender, "consumer not sender");
         }
     }
 
@@ -1009,6 +1065,7 @@ contract Nexus is Ownable {
      * @dev require all dsps be active
      */
     function validateDsps(address[] memory dsps) private view {
+        require(dsps.length > 0, "no dsps selected");
         for (uint i=0; i<dsps.length; i++) {
             require(registeredDSPs[dsps[i]].active, "dsp not active");
         }

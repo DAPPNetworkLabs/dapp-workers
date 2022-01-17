@@ -33,7 +33,7 @@ describe("Nexus", function() {
       fallbackGasPrice,
       gasCeilingMultiplier
     );
-    consumerContract = await consumerTokenFactory.deploy(1,nexusContract.address);
+    consumerContract = await consumerTokenFactory.deploy(nexusContract.address);
 
     console.log(`nexus contract: ${nexusContract.address}`);
 
@@ -55,7 +55,7 @@ describe("Nexus", function() {
     const registeredDSPs = await nexusContract.registeredDSPs(dsp1.address);
 
     expect(registeredDSPs.active).to.equal(false);
-    expect(registeredDSPs.endpoint).to.equal("");
+    expect(registeredDSPs.endpoint).to.equal("deprecated");
   });
 
   it("Register DSP", async function() {
@@ -64,7 +64,6 @@ describe("Nexus", function() {
     const registeredDSPs = await nexusContract.registeredDSPs(dsp1.address);
 
     expect(registeredDSPs.active).to.equal(true);
-    expect(registeredDSPs.registered).to.equal(true);
     expect(registeredDSPs.endpoint).to.equal("https://dsp.address");
     expect(registeredDSPs.claimableDapp.toString()).to.equal('0');
   });
@@ -91,52 +90,70 @@ describe("Nexus", function() {
     expect(dspData.amount.toString()).to.equal(dappsLeft);
   });
 
-  it("Register job image", async function() {
-    await nexusContract.connect(dsp1).setJobDockerImage("wasmrunner","","",100000);
+  it("Approve image", async function() {
+    await nexusContract.approveImage("wasmrunner","hash");
 
-    const dockerImage = await nexusContract.jobDockerImages(dsp1.address,"wasmrunner");
+    const hash = await nexusContract.approvedImages("wasmrunner");
 
-    expect(dockerImage.image).to.equal("");
-    expect(dockerImage.imageHash).to.equal("");
-    expect(dockerImage.jobFee.toString()).to.equal('100000');
+    expect(hash).to.equal("hash");
   });
 
-  it("Register service image", async function() {
-    await nexusContract.connect(dsp1).setServiceDockerImage("wasi-service","","",100000,100000,100000,1,1);
+  it("Register image", async function() {
+    await nexusContract.connect(dsp1).setDockerImage("wasmrunner",200000,200000,200000,200000,2,2);
 
-    const dockerImage = await nexusContract.serviceDockerImages(dsp1.address,"wasi-service");
+    const dockerImage = await nexusContract.dspApprovedImages(dsp1.address,"wasmrunner");
 
-    expect(dockerImage.image).to.equal("");
-    expect(dockerImage.imageHash).to.equal("");
+    expect(dockerImage.jobFee.toString()).to.equal('200000');
+    expect(dockerImage.baseFee.toString()).to.equal('200000');
+    expect(dockerImage.storageFee.toString()).to.equal('200000');
+    expect(dockerImage.ioFee.toString()).to.equal('200000');
+    expect(dockerImage.minStorageMegaBytes.toString()).to.equal('2');
+    expect(dockerImage.minIoMegaBytes.toString()).to.equal('2');
+  });
+
+  it("Update image", async function() {
+    await nexusContract.connect(dsp1).updateDockerImage("wasmrunner",100000,100000,100000,100000,1,1);
+
+    const dockerImage = await nexusContract.dspApprovedImages(dsp1.address,"wasmrunner");
+
+    expect(dockerImage.jobFee.toString()).to.equal('100000');
     expect(dockerImage.baseFee.toString()).to.equal('100000');
     expect(dockerImage.storageFee.toString()).to.equal('100000');
     expect(dockerImage.ioFee.toString()).to.equal('100000');
+    expect(dockerImage.minStorageMegaBytes.toString()).to.equal('1');
+    expect(dockerImage.minIoMegaBytes.toString()).to.equal('1');
   });
 
   it("Set consumer", async function() {
-    await nexusContract.setConsumerPermissions([addr1.address]);
+    await nexusContract.connect(addr2).setConsumerContract(consumerContract.address);
 
-    // why do I have to pass this 0?
-    const consumerData = await nexusContract.consumerData(addr1.address,0);
+    const authorizedContract = await nexusContract.contracts(addr2.address);
 
-    expect(consumerData).to.equal(addr1.address);
+    expect(authorizedContract).to.equal(consumerContract.address);
+  });
+
+  it("Set dsps", async function() {
+    await nexusContract.setDsps([dsp1.address]);
+
+    const consumerData = await nexusContract.providers(addr1.address,0);
+
+    expect(consumerData).to.equal(dsp1.address);
   });
 
   it("Queue job", async function() {
-    await nexusContract.runJob({
-      consumer: addr1.address,
+    await nexusContract.queueJob({
+      owner: addr1.address,
       imageName: "wasmrunner",
       inputFS: "",
       callback: false,
       gasLimit: 1000000,
       requiresConsistent: false,
-      args: ["target/wasm32-wasi/release/test"],
-      dsps: [dsp1.address]
+      args: ["target/wasm32-wasi/release/test"]
     });
 
     const job = await nexusContract.jobs(1);
 
-    expect(job.owner).to.equal(addr1.address);
+    expect(job.consumer).to.equal(addr1.address);
     expect(job.callback).to.equal(false);
     expect(job.resultsCount.toString()).to.equal('0');
     expect(job.imageName).to.equal("wasmrunner");
@@ -147,29 +164,32 @@ describe("Nexus", function() {
     await dappTokenContract.mint(addr2.address, dapps);
     await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
     await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, dsp1.address);
+    await nexusContract.connect(addr2).setDsps([dsp1.address]);
 
-    await consumerContract.runJob([dsp1.address]);
+    await consumerContract.queueJob(addr2.address);
 
     const job = await nexusContract.jobs(2);
 
-    expect(job.owner).to.equal(consumerContract.address);
+    expect(job.consumer).to.equal(consumerContract.address);
     expect(job.callback).to.equal(true);
     expect(job.resultsCount.toString()).to.equal('0');
     expect(job.imageName).to.equal("wasmrunner");
   });
 
   it("Queue service - try below min bytes", async function() {
+    await nexusContract.approveImage("wasi-service","hash");
+    await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
+
     let failed = false;
     try {
-      await nexusContract.runService({
-        consumer: addr1.address,
+      await nexusContract.queueService({
+        owner: addr1.address,
         imageName: "wasi-service",
         ioMegaBytes: 0,
         storageMegaBytes: 0,
         inputFS: "",
         args: ["target/wasm32-wasi/release/test"],
-        months: 1,
-        dsps: [dsp1.address]
+        months: 1
       });
     } catch(e) {
       failed = true;
@@ -177,20 +197,19 @@ describe("Nexus", function() {
 
     expect(failed).to.equal(true);
 
-    await nexusContract.runService({
-      consumer: addr1.address,
+    await nexusContract.queueService({
+      owner: addr1.address,
       imageName: "wasi-service",
       ioMegaBytes: 1,
       storageMegaBytes: 1,
       inputFS: "",
       args: ["target/wasm32-wasi/release/test"],
-      months: 1,
-      dsps: [dsp1.address]
+      months: 1
     });
 
     const service = await nexusContract.services(3);
 
-    expect(service.owner).to.equal(addr1.address);
+    expect(service.consumer).to.equal(addr1.address);
     expect(service.imageName).to.equal("wasi-service");
   });
 
@@ -229,20 +248,24 @@ describe("Nexus", function() {
     await dappTokenContract.approve(nexusContract.address, dapps);
     await nexusContract.buyGasFor(dapps, addr1.address, dsp2.address);
 
-    await nexusContract.setDsps(1,[dsp1.address,dsp2.address],1,"wasmrunner");
+    await nexusContract.setDsps([dsp1.address,dsp2.address]);
 
     const dsps = await nexusContract.getDspAddresses();
 
     expect(JSON.stringify(dsps)).to.equal(JSON.stringify([dsp1.address,dsp2.address]));
     
-    await nexusContract.setDsps(1,[dsp1.address],1,"wasmrunner");
+    await nexusContract.setDsps([dsp1.address]);
     await nexusContract.connect(dsp2).deprecateDSP();
   });
 
   it("Run job", async function() {
     const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
-    await nexusContract.connect(dsp1).jobCallback(1,"");
+    await nexusContract.connect(dsp1).jobCallback({
+      jobID: 1,
+      outputFS: "",
+      outputHash: "hash"
+    });
 
     const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     
@@ -254,14 +277,18 @@ describe("Nexus", function() {
   it("Run job with callback", async function() {
     const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
-    await nexusContract.connect(dsp1).jobCallback(2,"");
+    await nexusContract.connect(dsp1).jobCallback({
+      jobID: 2,
+      outputFS: "",
+      outputHash: "hash"
+    });
 
     const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
-    const job = await consumerContract.counter();
+    const lastHash = await consumerContract.lastHash();
     
     expect(postDspBal).is.above(preDspBal);
-    expect(job.toString()).to.equal('2');
+    expect(lastHash.toString()).to.equal('hash');
   });
 
   it("Run service", async function() {
@@ -288,21 +315,22 @@ describe("Nexus", function() {
   it("Run job - error", async function() {
     const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
-    await nexusContract.runJob({
-      consumer: addr1.address,
+    await nexusContract.queueJob({
+      owner: addr1.address,
       imageName: "wasmrunner",
       inputFS: "",
       callback: false,
       gasLimit: 1000000,
       requiresConsistent: false,
-      args: ["target/wasm32-wasi/release/test"],
-      dsps: [dsp1.address]
+      args: ["target/wasm32-wasi/release/test"]
     });
-    await nexusContract.connect(dsp1).jobError(4,"big error","");
+
+    await nexusContract.connect(dsp1).jobError(4,"big error","newhash");
 
     const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     
-    expect(postDspBal).to.equal(preDspBal);
+    // ensure get base payment for job
+    // expect(postDspBal).is.above(preDspBal);
 
     // ensure job not completed
   });
@@ -312,24 +340,23 @@ describe("Nexus", function() {
   });
 
   it("Run service - error", async function() {
-    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    // const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
-    await nexusContract.runService({
-      consumer: addr1.address,
+    await nexusContract.queueService({
+      owner: addr1.address,
       imageName: "wasi-service",
       ioMegaBytes: 1,
       storageMegaBytes: 1,
       inputFS: "",
-      callback: false,
       args: ["target/wasm32-wasi/release/test"],
-      months: 1,
-      dsps: [dsp1.address]
+      months: 1
     });
+
     await nexusContract.connect(dsp1).serviceError(5,"big error","");
 
-    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    // const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     
-    expect(postDspBal).to.equal(preDspBal);
+    // expect(postDspBal).is.above(preDspBal);
 
     // ensure service not running
   });
@@ -346,8 +373,7 @@ describe("Nexus", function() {
       "wasi-service",
       1,
       1,
-      1,
-      [dsp1.address]
+      1
     );
 
     const postDspEnDate = (await nexusContract.services(3)).endDate;
@@ -371,8 +397,7 @@ describe("Nexus", function() {
       "wasi-service",
       0,
       1,
-      1,
-      [dsp1.address]
+      1
     );
 
     const postDspEnDate = (await nexusContract.services(3)).endDate;
@@ -395,14 +420,6 @@ describe("Nexus", function() {
   });
 
   it("Get image approved for dsp", async function() {
-    const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"wasmrunner");
-    
-    expect(approved).to.equal(true);
-  });
-
-  it("Approve image for dsp", async function() {
-    await nexusContract.connect(dsp1).approveDockerForDSP("wasmrunner",true);
-
     const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"wasmrunner");
     
     expect(approved).to.equal(true);
