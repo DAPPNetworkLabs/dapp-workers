@@ -399,22 +399,6 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev use DAPP gas, vroom
-     */
-    function useGas(
-        address _consumer,
-        uint _amountToUse,
-        address _dsp
-    ) internal {
-        require(_amountToUse <= dspData[_consumer][_dsp].amount, "not enough dapp gas");
-
-        dspData[_consumer][_dsp].amount -= _amountToUse;
-        registeredDSPs[_dsp].claimableDapp += _amountToUse;
-
-        emit UsedGas(_consumer, _dsp, _amountToUse);
-    }
-    
-    /**
      * @dev allows dsp to claim for consumer
      */
     function claim() external {
@@ -425,96 +409,6 @@ contract Nexus is Ownable {
         token.safeTransfer(msg.sender, claimableAmount);
         
         emit ClaimedGas(msg.sender, claimableAmount);
-    }
-    
-    /**
-     * @dev ensures returned data hash is universally accepted
-     */
-    function submitResEntry(uint jobID,bytes32 dataHash, address[] memory dsps) private returns (bool) {
-        JobData storage jd = jobs[jobID];
-        address _dsp = msg.sender;
-        int founds = -1;
-        bool inconsistent = false;
-
-        for (uint i=0; i<dsps.length; i++) {
-            if(jd.done[i]){
-                if(jd.dataHash[i] != dataHash){
-                    inconsistent = true;
-                }
-            }
-            if(dsps[i] == _dsp){
-                founds = int(i);
-                break;
-            }
-        }
-
-        require(founds > -1, "dsp not found");
-        require(!jd.done[uint(founds)], "already done");
-
-        jd.done[uint(founds)] = true;
-        jd.resultsCount++;
-        jd.dataHash[uint(founds)] = dataHash;
-
-        return inconsistent;
-    }
-    
-    /**
-     * @dev calculate fee
-     */
-    function calculatePaymentAmount(
-        uint gas,
-        string memory imageName,
-        address dsp
-    ) private view returns (uint) {
-
-        uint jobDapps = calcJobDapps(imageName,dsp);
-        uint gasWei = getFeedData(); // 99000000000 fast gas price of 1 gas in wei
-        uint dappEth = getDappEth(); // how much 18,ETH for 1 4,DAPP
-        // 99000000000 * 80000 = 7.92E15 ((7.92E15/1e18)*$3,980) = $31.52 for gas for base * 20% fee
-        // 5,051.2821 DAPP for $39.40
-        gas += JOB_GAS_OVERHEAD;
-        uint weiForGas = gasWei * gas; 
-        // 7.92E15 * 1e9 = 7.92E24
-        // 7.92E24 * 1,200,000,000 = 9.504E33
-        // 9.504E33 / 1989696218183 = 4.776608566E21
-        // add 0
-        // 4.776608566E21 + 0 = 4.776608566E21
-        uint total = weiForGas * 1e9 * (PPB_BASE + s_config.paymentPremiumPPB) / dappEth;
-        total /= 1e14;
-        total += jobDapps;
-        // require(total <= LINK_TOTAL_SUPPLY, "payment greater than all LINK");
-        return total;
-    }
-
-    /**
-     * @dev calculate job fee
-     */
-    function calcJobDapps(string memory imageName, address dsp) private view returns (uint) {
-        return getDappUsd() * ( dspApprovedImages[dsp][imageName].jobFee / usdtPrecision );
-    }
-
-    /**
-     * @dev calculate service fee
-     */
-    function calcServiceDapps(
-        string memory imageName, 
-        uint ioMegaBytes, 
-        uint storageMegaBytes, 
-        address dsp, 
-        bool include_base
-    ) private view returns (uint) {
-        // base fee per hour * 24 hours * 30 days for monthly rate
-        uint dappUsd = getDappUsd();
-
-        uint baseFee = dspApprovedImages[dsp][imageName].baseFee;
-        uint storageFee = dspApprovedImages[dsp][imageName].storageFee;
-        uint ioFee = dspApprovedImages[dsp][imageName].ioFee;
-
-        baseFee = include_base ? baseFee * 24 * 30 * dappUsd : 0;
-        storageFee = storageFee * storageMegaBytes * dappUsd;
-        ioFee = ioFee * ioMegaBytes * dappUsd;
-        // ((100000 * 24 * 30) / 1e6) * 1249348) = 89,953,056 -> 4 dec adjusted -> 8,995.3056 DAPP ~ $72
-        return ( baseFee + storageFee + ioFee ) / usdtPrecision;
     }
 
     /**
@@ -532,58 +426,6 @@ contract Nexus is Ownable {
                 true
             );
         }
-    }
-
-    /**
-    * @notice calculates the maximum payment for a given gas limit
-    */
-    function getMaxPaymentForGas(
-        uint256 gasLimit, 
-        string memory imageName, 
-        address dsp
-    ) external view returns (uint256 maxPayment) {
-        return calculatePaymentAmount(gasLimit, imageName, dsp);
-    }
-
-    /**
-    * @notice use max of transaction gas price and adjusted price
-    */
-    function adjustGasPrice(uint256 gasWei, bool useTxGasPrice) private view returns (uint256 adjustedPrice) {
-        adjustedPrice = gasWei * s_config.gasCeilingMultiplier;
-        if (useTxGasPrice && tx.gasprice < adjustedPrice) {
-            adjustedPrice = tx.gasprice;
-        }
-    }
-
-    /**
-    * @dev calls target address with exactly gasAmount gas and data as calldata
-    * or reverts if at least gasAmount gas is not available
-    */
-    function callWithExactGas(
-        uint256 gasAmount,
-        address target,
-        bytes memory data
-    ) private returns (bool success) {
-        assembly {
-        let g := gas()
-        // Compute g -= CUSHION and check for underflow
-        if lt(g, CUSHION) {
-            revert(0, 0)
-        }
-        g := sub(g, CUSHION)
-        // if g - g//64 <= gasAmount, revert
-        // (we subtract g//64 because of EIP-150)
-        if iszero(gt(sub(g, div(g, 64)), gasAmount)) {
-            revert(0, 0)
-        }
-        // solidity calls check that a contract actually exists at the destination, so we do the same
-        if iszero(extcodesize(target)) {
-            revert(0, 0)
-        }
-        // call and return whether we succeeded. ignore return data
-        success := call(gasAmount, target, 0, add(data, 0x20), mload(data), 0, 0)
-        }
-        return success;
     }
     
     /**
@@ -996,27 +838,14 @@ contract Nexus is Ownable {
     }
 
     /**
-     * @dev require min io/storage met
-     */
-    function validateMin(
-        uint ioMegaBytes, 
-        uint storageMegaBytes, 
-        string calldata imageName, 
-        uint months, 
+    * @notice calculates the maximum payment for a given gas limit
+    */
+    function getMaxPaymentForGas(
+        uint256 gasLimit, 
+        string memory imageName, 
         address dsp
-    ) private view {
-        require(
-            ioMegaBytes 
-            >= 
-            dspApprovedImages[dsp][imageName].minIoMegaBytes * months
-            ,"min io bytes not met"
-        );
-        require(
-            storageMegaBytes 
-            >= 
-            dspApprovedImages[dsp][imageName].minStorageMegaBytes * months
-            ,"min storage bytes not met"
-        );
+    ) external view returns (uint256 maxPayment) {
+        return calculatePaymentAmount(gasLimit, imageName, dsp);
     }
     
     /**
@@ -1154,6 +983,161 @@ contract Nexus is Ownable {
         delete dspApprovedImages[_dsp][imageName];
 
         emit DockerApprovalChanged(_dsp,imageName,false);
+    }
+    
+    /**
+     * @dev ensures returned data hash is universally accepted
+     */
+    function submitResEntry(uint jobID,bytes32 dataHash, address[] memory dsps) private returns (bool) {
+        JobData storage jd = jobs[jobID];
+        address _dsp = msg.sender;
+        int founds = -1;
+        bool inconsistent = false;
+
+        for (uint i=0; i<dsps.length; i++) {
+            if(jd.done[i]){
+                if(jd.dataHash[i] != dataHash){
+                    inconsistent = true;
+                }
+            }
+            if(dsps[i] == _dsp){
+                founds = int(i);
+                break;
+            }
+        }
+
+        require(founds > -1, "dsp not found");
+        require(!jd.done[uint(founds)], "already done");
+
+        jd.done[uint(founds)] = true;
+        jd.resultsCount++;
+        jd.dataHash[uint(founds)] = dataHash;
+
+        return inconsistent;
+    }
+    
+    /**
+     * @dev calculate fee
+     */
+    function calculatePaymentAmount(
+        uint gas,
+        string memory imageName,
+        address dsp
+    ) private view returns (uint) {
+
+        uint jobDapps = calcJobDapps(imageName,dsp);
+        uint gasWei = getFeedData(); // 99000000000 fast gas price of 1 gas in wei
+        uint dappEth = getDappEth(); // how much 18,ETH for 1 4,DAPP
+        // 99000000000 * 80000 = 7.92E15 ((7.92E15/1e18)*$3,980) = $31.52 for gas for base * 20% fee
+        // 5,051.2821 DAPP for $39.40
+        gas += JOB_GAS_OVERHEAD;
+        uint weiForGas = gasWei * gas; 
+        // 7.92E15 * 1e9 = 7.92E24
+        // 7.92E24 * 1,200,000,000 = 9.504E33
+        // 9.504E33 / 1989696218183 = 4.776608566E21
+        // add 0
+        // 4.776608566E21 + 0 = 4.776608566E21
+        uint total = weiForGas * 1e9 * (PPB_BASE + s_config.paymentPremiumPPB) / dappEth;
+        total /= 1e14;
+        total += jobDapps;
+        // require(total <= LINK_TOTAL_SUPPLY, "payment greater than all LINK");
+        return total;
+    }
+
+    /**
+     * @dev calculate job fee
+     */
+    function calcJobDapps(string memory imageName, address dsp) private view returns (uint) {
+        return getDappUsd() * ( dspApprovedImages[dsp][imageName].jobFee / usdtPrecision );
+    }
+
+    /**
+     * @dev calculate service fee
+     */
+    function calcServiceDapps(
+        string memory imageName, 
+        uint ioMegaBytes, 
+        uint storageMegaBytes, 
+        address dsp, 
+        bool include_base
+    ) private view returns (uint) {
+        // base fee per hour * 24 hours * 30 days for monthly rate
+        uint dappUsd = getDappUsd();
+
+        uint baseFee = dspApprovedImages[dsp][imageName].baseFee;
+        uint storageFee = dspApprovedImages[dsp][imageName].storageFee;
+        uint ioFee = dspApprovedImages[dsp][imageName].ioFee;
+
+        baseFee = include_base ? baseFee * 24 * 30 * dappUsd : 0;
+        storageFee = storageFee * storageMegaBytes * dappUsd;
+        ioFee = ioFee * ioMegaBytes * dappUsd;
+        // ((100000 * 24 * 30) / 1e6) * 1249348) = 89,953,056 -> 4 dec adjusted -> 8,995.3056 DAPP ~ $72
+        return ( baseFee + storageFee + ioFee ) / usdtPrecision;
+    }
+
+    /**
+    * @notice use max of transaction gas price and adjusted price
+    */
+    function adjustGasPrice(uint256 gasWei, bool useTxGasPrice) private view returns (uint256 adjustedPrice) {
+        adjustedPrice = gasWei * s_config.gasCeilingMultiplier;
+        if (useTxGasPrice && tx.gasprice < adjustedPrice) {
+            adjustedPrice = tx.gasprice;
+        }
+    }
+
+    /**
+    * @dev calls target address with exactly gasAmount gas and data as calldata
+    * or reverts if at least gasAmount gas is not available
+    */
+    function callWithExactGas(
+        uint256 gasAmount,
+        address target,
+        bytes memory data
+    ) private returns (bool success) {
+        assembly {
+        let g := gas()
+        // Compute g -= CUSHION and check for underflow
+        if lt(g, CUSHION) {
+            revert(0, 0)
+        }
+        g := sub(g, CUSHION)
+        // if g - g//64 <= gasAmount, revert
+        // (we subtract g//64 because of EIP-150)
+        if iszero(gt(sub(g, div(g, 64)), gasAmount)) {
+            revert(0, 0)
+        }
+        // solidity calls check that a contract actually exists at the destination, so we do the same
+        if iszero(extcodesize(target)) {
+            revert(0, 0)
+        }
+        // call and return whether we succeeded. ignore return data
+        success := call(gasAmount, target, 0, add(data, 0x20), mload(data), 0, 0)
+        }
+        return success;
+    }
+
+    /**
+     * @dev require min io/storage met
+     */
+    function validateMin(
+        uint ioMegaBytes, 
+        uint storageMegaBytes, 
+        string calldata imageName, 
+        uint months, 
+        address dsp
+    ) private view {
+        require(
+            ioMegaBytes 
+            >= 
+            dspApprovedImages[dsp][imageName].minIoMegaBytes * months
+            ,"min io bytes not met"
+        );
+        require(
+            storageMegaBytes 
+            >= 
+            dspApprovedImages[dsp][imageName].minStorageMegaBytes * months
+            ,"min storage bytes not met"
+        );
     }
     
     /**
@@ -1306,6 +1290,22 @@ contract Nexus is Ownable {
             services[id].dspServiceData[dsp].ioMegaBytesLimit,
             services[id].dspServiceData[dsp].storageMegaBytesLimit
         );
+    }
+    
+    /**
+     * @dev use DAPP gas, vroom
+     */
+    function useGas(
+        address _consumer,
+        uint _amountToUse,
+        address _dsp
+    ) internal {
+        require(_amountToUse <= dspData[_consumer][_dsp].amount, "not enough dapp gas");
+
+        dspData[_consumer][_dsp].amount -= _amountToUse;
+        registeredDSPs[_dsp].claimableDapp += _amountToUse;
+
+        emit UsedGas(_consumer, _dsp, _amountToUse);
     }
     
     /**

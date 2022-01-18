@@ -40,6 +40,14 @@ describe("Nexus", function() {
     // start docker compose unit tests
   });
 
+  /*
+
+    Todo tests
+    - setConfig
+    - getMaxPaymentForGas
+
+  */
+
   it("Get config", async function() {
     const config = await nexusContract.connect(dsp1).getConfig();
 
