@@ -140,6 +140,13 @@ contract Nexus is Ownable {
         uint id
     );
     
+    event ServiceComplete(
+        address indexed consumer, 
+        address indexed dsp, 
+        string outputFS,
+        uint id
+    );
+    
     event ConfigSet(
         uint32 paymentPremiumPPB,
         uint16 gasCeilingMultiplier,
@@ -187,7 +194,7 @@ contract Nexus is Ownable {
         address owner;
         address[] dsps;
         string imageName;
-        uint lastCalled;
+        bool started;
         uint endDate;
         uint months;
         uint ioMegaBytes;
@@ -224,6 +231,21 @@ contract Nexus is Ownable {
         string inputFS;
         string[] args;
         uint months;
+    }
+
+    struct serviceErrorArgs {
+        uint jobID;
+        string stdErr;
+        string outputFS;
+        uint ioMegaBytesUsed;
+        uint storageMegaBytesUsed;
+    }
+
+    struct serviceCompleteArgs {
+        uint jobID;
+        string outputFS;
+        uint ioMegaBytesUsed;
+        uint storageMegaBytesUsed;
     }
 
     struct DspLimits {
@@ -339,56 +361,6 @@ contract Nexus is Ownable {
      */
     function setConsumerContract(address authorized_contract) external {
         contracts[msg.sender] = authorized_contract;
-    }
-
-    /**
-     * @dev extend service duration
-     */
-    function extendService(
-        uint serviceId, 
-        string calldata imageName, 
-        uint months, 
-        uint ioMb, 
-        uint storageMb 
-    ) external {
-        validateConsumer(msg.sender);
-        
-        ServiceData storage sd = services[serviceId];
-
-        require(compareStrings(imageName, sd.imageName),"image missmatch");
-
-        address[] storage dsps = providers[msg.sender];
-        require(dsps.length > 0,"no dsps selected for consumer");
-
-        for(uint i=0;i<dsps.length;i++) {
-            bool include_base = months == 0 ? false : true;
-            
-            uint dapps = calcServiceDapps(imageName, ioMb, storageMb, dsps[i], include_base);
-
-            if(include_base) {
-                dapps *= months;
-                validateMin(ioMb, storageMb, imageName, months, dsps[i]);
-                sd.endDate = sd.endDate + ( months * 30 days );
-            }
-
-            buyGasFor(
-                dapps,
-                msg.sender,
-                dsps[i]
-            );
-
-            sd.dspServiceData[dsps[i]].ioMegaBytesLimit += ioMb;
-            sd.dspServiceData[dsps[i]].storageMegaBytesLimit += storageMb;
-
-            emit ServiceExtended(
-                msg.sender, 
-                dsps[i], 
-                serviceId, 
-                sd.dspServiceData[dsps[i]].ioMegaBytesLimit, 
-                sd.dspServiceData[dsps[i]].storageMegaBytesLimit, 
-                sd.endDate
-            );
-        }
     }
     
     /**
@@ -720,6 +692,7 @@ contract Nexus is Ownable {
         
         uint gasUsed;
         bool success;
+
         if(jd.callback){
             gasUsed = gasleft();
             success = callWithExactGas(jd.gasLimit, jd.consumer, abi.encodeWithSignature(
@@ -765,7 +738,6 @@ contract Nexus is Ownable {
      * @dev dsp run service
      */
     // add check for not conflicting with DSP frontend default ports
-    // add check not already done
     function serviceCallback(uint serviceId, uint port) public {
         require(port != 8888,"dsp portal port overlap");
 
@@ -773,8 +745,6 @@ contract Nexus is Ownable {
 
         address[] storage dsps = providers[sd.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
-
-        // validateDsp(dsps);
 
         address _dsp = msg.sender;
         int founds = -1;
@@ -786,13 +756,11 @@ contract Nexus is Ownable {
             }
         }
 
-        if(sd.lastCalled == 0) {
-            sd.lastCalled = block.timestamp;
-            sd.endDate = block.timestamp + ( sd.months * 30 days );
-        } else {
-            require(sd.lastCalled > block.timestamp + 30 days,"called within 30 days");
-            sd.lastCalled = block.timestamp;
-        }
+        require(founds > -1, "dsp not found");
+        require(sd.started == false, "service already started");
+
+        sd.started = true;
+        sd.endDate = block.timestamp + ( sd.months * 30 days );
         
         address _consumer = sd.consumer;
 
@@ -800,16 +768,19 @@ contract Nexus is Ownable {
         sd.dspServiceData[msg.sender].ioMegaBytesLimit += sd.ioMegaBytes;
         sd.dspServiceData[msg.sender].storageMegaBytesLimit += sd.storageMegaBytes;
         
-        uint dapps = calcServiceDapps(sd.imageName, sd.ioMegaBytes, sd.storageMegaBytes, msg.sender, true);
+        uint dapps = calcServiceDapps(
+            sd.imageName,
+            sd.ioMegaBytes,
+            sd.storageMegaBytes,
+            msg.sender,
+            true
+        );
 
         useGas(
             _consumer,
             dapps,
             msg.sender
         );
-
-        require(!sd.done[uint(founds)], "already done");
-        sd.done[uint(founds)] = true;
 
         emit ServiceRunning(
             _consumer, 
@@ -822,8 +793,12 @@ contract Nexus is Ownable {
     /**
      * @dev handle job error
      */
-    function jobError(uint jobID, string calldata  stdErr, string calldata outputFS) public {
-        JobData storage jd = jobs[lastJobID];
+    function jobError(
+        uint jobID,
+        string calldata  stdErr,
+        string calldata outputFS
+    ) public {
+        JobData storage jd = jobs[jobID];
         address[] storage dsps = providers[jd.consumer];
         require(dsps.length > 0,"no dsps selected for consumer");
         address _dsp = msg.sender;
@@ -839,6 +814,14 @@ contract Nexus is Ownable {
         require(founds > -1, "dsp not found");
         require(!jd.done[uint(founds)], "already done");
 
+        uint dapps = calculatePaymentAmount(0,jd.imageName,msg.sender);
+
+        useGas(
+            jd.consumer,
+            dapps,
+            msg.sender
+        );
+
         jd.done[uint(founds)] = true;
         
         emit JobError(jd.consumer, stdErr, outputFS, jobID);
@@ -847,11 +830,13 @@ contract Nexus is Ownable {
     /**
      * @dev handle service error
      */
-    function serviceError(uint jobID, string calldata  stdErr, string calldata outputFS) public {
-        ServiceData storage sd = services[lastJobID];
+    function serviceError(serviceErrorArgs calldata args) public {
+        ServiceData storage sd = services[args.jobID];
 
         address[] storage dsps = providers[sd.consumer];
         require(dsps.length > 0,"no dsps selected for consumer");
+        
+        validateDsp(dsps);
 
         address _dsp = msg.sender;
         int founds = -1;
@@ -864,11 +849,150 @@ contract Nexus is Ownable {
         }
 
         require(!sd.done[uint(founds)], "already done");
+        
+        uint dapps = calcServiceDapps(
+            sd.imageName,
+            args.ioMegaBytesUsed,
+            args.storageMegaBytesUsed,
+            msg.sender,
+            true
+        );
+
+        useGas(
+            sd.consumer,
+            dapps,
+            msg.sender
+        );
+
         sd.done[uint(founds)] = true;
         
-        validateDsp(dsps);
+        emit ServiceError(
+            sd.consumer,
+            msg.sender,
+            args.stdErr,
+            args.outputFS,
+            args.jobID
+        );
+    }
+    
+    /**
+     * @dev complete service
+     */
+    function serviceComplete(serviceCompleteArgs calldata args) public {
+        ServiceData storage sd = services[args.jobID];
+
+        require(sd.started == true, "service not started");
+        require(sd.endDate <= block.timestamp, "service time remaining");
+
+        address[] storage dsps = providers[sd.consumer];
+        require(dsps.length > 0,"no dsps selected for consumer");
         
-        emit ServiceError(sd.consumer, msg.sender, stdErr, outputFS, jobID);
+        validateDsp(dsps);
+
+        address _dsp = msg.sender;
+        int founds = -1;
+
+        for (uint i=0; i<dsps.length; i++) {
+            if(dsps[i] == _dsp){
+                founds = int(i);
+                break;
+            }
+        }
+
+        require(!sd.done[uint(founds)], "already done");
+        
+        uint dapps = calcServiceDapps(
+            sd.imageName,
+            args.ioMegaBytesUsed,
+            args.storageMegaBytesUsed,
+            msg.sender,
+            true
+        );
+
+        useGas(
+            sd.consumer,
+            dapps,
+            msg.sender
+        );
+
+        sd.done[uint(founds)] = true;
+        
+        emit ServiceComplete(
+            sd.consumer,
+            msg.sender,
+            args.outputFS,
+            args.jobID
+        );
+    }
+
+    /**
+     * @dev extend service duration
+     */
+    function extendService(
+        uint serviceId, 
+        string calldata imageName, 
+        uint months, 
+        uint ioMb, 
+        uint storageMb 
+    ) external {
+        validateConsumer(msg.sender);
+        
+        ServiceData storage sd = services[serviceId];
+
+        require(compareStrings(imageName, sd.imageName),"image missmatch");
+        require(sd.endDate > block.timestamp, "no service time remaining");
+
+        address[] storage dsps = providers[msg.sender];
+        require(dsps.length > 0,"no dsps selected for consumer");
+
+        address _dsp = msg.sender;
+        int founds = -1;
+
+        for (uint i=0; i<dsps.length; i++) {
+            if(dsps[i] == _dsp){
+                founds = int(i);
+                break;
+            }
+        }
+
+        // why is this not tripping for service id 3?
+        require(!sd.done[uint(founds)], "already done");
+
+        for(uint i=0;i<dsps.length;i++) {
+            bool include_base = months == 0 ? false : true;
+            
+            uint dapps = calcServiceDapps(
+                imageName,
+                ioMb,
+                storageMb,
+                dsps[i],
+                include_base
+            );
+
+            if(include_base) {
+                dapps *= months;
+                validateMin(ioMb, storageMb, imageName, months, dsps[i]);
+                sd.endDate = sd.endDate + ( months * 30 days );
+            }
+
+            buyGasFor(
+                dapps,
+                msg.sender,
+                dsps[i]
+            );
+
+            sd.dspServiceData[dsps[i]].ioMegaBytesLimit += ioMb;
+            sd.dspServiceData[dsps[i]].storageMegaBytesLimit += storageMb;
+
+            emit ServiceExtended(
+                msg.sender, 
+                dsps[i], 
+                serviceId, 
+                sd.dspServiceData[dsps[i]].ioMegaBytesLimit, 
+                sd.dspServiceData[dsps[i]].storageMegaBytesLimit, 
+                sd.endDate
+            );
+        }
     }
 
     /**
