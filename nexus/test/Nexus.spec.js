@@ -45,6 +45,7 @@ describe("Nexus", function() {
     Todo tests
     - setConfig
     - getMaxPaymentForGas
+    - jobServiceCompleted
 
   */
 

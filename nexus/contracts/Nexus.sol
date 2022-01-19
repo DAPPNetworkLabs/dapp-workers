@@ -338,6 +338,18 @@ contract Nexus is Ownable {
             stalenessSeconds
         );
     }
+
+    function jobServiceCompleted(uint id, address dsp, bool isJob) external view returns (bool) {
+        if(isJob) {
+            JobData storage jd = jobs[id];
+            address[] storage dsps = providers[jd.owner];
+            return jd.done[validateDspCaller(dsps,dsp)];
+        } else {
+            ServiceData storage sd = services[id];
+            address[] storage dsps = providers[sd.owner];
+            return sd.done[validateDspCaller(dsps,dsp)];
+        }
+    }
     
     /**
      * @dev set dsps
@@ -346,7 +358,7 @@ contract Nexus is Ownable {
         // still need to be able to set dsps after registering contract
         // should not require de-registering then re-registering
         // validateConsumer(msg.sender);
-        validateDsps(dsps);
+        validateActiveDsps(dsps);
 
         providers[msg.sender] = dsps;
 
@@ -437,7 +449,7 @@ contract Nexus is Ownable {
         address[] storage dsps = providers[args.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
         
-        validateDsps(dsps);
+        validateActiveDsps(dsps);
 
         lastJobID = lastJobID + 1;
 
@@ -479,7 +491,7 @@ contract Nexus is Ownable {
         address[] storage dsps = providers[args.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
 
-        validateDsps(dsps);
+        validateActiveDsps(dsps);
 
         for(uint i=0;i<dsps.length;i++) {
             require(isImageApprovedForDSP(dsps[i], args.imageName), "image not approved");
@@ -520,6 +532,11 @@ contract Nexus is Ownable {
      */
     function jobCallback(jobCallbackArgs calldata args) public {
         JobData storage jd = jobs[args.jobID];
+
+        address[] storage dsps = providers[jd.owner];
+        require(dsps.length > 0,"no dsps selected for consumer");
+        
+        require(!jd.done[validateDspCaller(dsps,msg.sender)], "dsp already completed");
 
         // maybe throw if user doesn't want to accept inconsistency
         bool inconsistent = submitResEntry(
@@ -588,17 +605,8 @@ contract Nexus is Ownable {
         address[] storage dsps = providers[sd.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
 
-        address _dsp = msg.sender;
-        int founds = -1;
+        validateDspCaller(dsps,msg.sender);
 
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == _dsp){
-                founds = int(i);
-                break;
-            }
-        }
-
-        require(founds > -1, "dsp not found");
         require(sd.started == false, "service already started");
 
         sd.started = true;
@@ -641,20 +649,13 @@ contract Nexus is Ownable {
         string calldata outputFS
     ) public {
         JobData storage jd = jobs[jobID];
-        address[] storage dsps = providers[jd.consumer];
-        require(dsps.length > 0,"no dsps selected for consumer");
-        address _dsp = msg.sender;
-        int founds = -1;
 
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == _dsp){
-                founds = int(i);
-                break;
-            }
-        }
-        
-        require(founds > -1, "dsp not found");
-        require(!jd.done[uint(founds)], "already done");
+        address[] storage dsps = providers[jd.owner];
+        require(dsps.length > 0,"no dsps selected for consumer");
+
+        uint founds = validateDspCaller(dsps,msg.sender);
+
+        require(!jd.done[founds], "dsp already completed");
 
         uint dapps = calculatePaymentAmount(0,jd.imageName,msg.sender);
 
@@ -678,19 +679,9 @@ contract Nexus is Ownable {
         address[] storage dsps = providers[sd.consumer];
         require(dsps.length > 0,"no dsps selected for consumer");
         
-        validateDsp(dsps);
+        uint founds = validateDspCaller(dsps,msg.sender);
 
-        address _dsp = msg.sender;
-        int founds = -1;
-
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == _dsp){
-                founds = int(i);
-                break;
-            }
-        }
-
-        require(!sd.done[uint(founds)], "already done");
+        require(!sd.done[uint(founds)], "dsp already completed");
         
         uint dapps = calcServiceDapps(
             sd.imageName,
@@ -729,7 +720,7 @@ contract Nexus is Ownable {
         address[] storage dsps = providers[sd.consumer];
         require(dsps.length > 0,"no dsps selected for consumer");
         
-        validateDsp(dsps);
+        validateDspCaller(dsps,msg.sender);
 
         address _dsp = msg.sender;
         int founds = -1;
@@ -741,7 +732,7 @@ contract Nexus is Ownable {
             }
         }
 
-        require(!sd.done[uint(founds)], "already done");
+        require(!sd.done[uint(founds)], "dsp already completed");
         
         uint dapps = calcServiceDapps(
             sd.imageName,
@@ -787,18 +778,8 @@ contract Nexus is Ownable {
         address[] storage dsps = providers[msg.sender];
         require(dsps.length > 0,"no dsps selected for consumer");
 
-        address _dsp = msg.sender;
-        int founds = -1;
-
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == _dsp){
-                founds = int(i);
-                break;
-            }
-        }
-
-        // why is this not tripping for service id 3?
-        require(!sd.done[uint(founds)], "already done");
+        // require service not completed
+        // if service completed by dsp, do not charge
 
         for(uint i=0;i<dsps.length;i++) {
             bool include_base = months == 0 ? false : true;
@@ -1007,7 +988,7 @@ contract Nexus is Ownable {
         }
 
         require(founds > -1, "dsp not found");
-        require(!jd.done[uint(founds)], "already done");
+        require(!jd.done[uint(founds)], "dsp already completed");
 
         jd.done[uint(founds)] = true;
         jd.resultsCount++;
@@ -1139,22 +1120,6 @@ contract Nexus is Ownable {
             ,"min storage bytes not met"
         );
     }
-    
-    /**
-     * @dev validates dsp is authorized for job or service
-     */
-    function validateDsp(address[] memory dsps) private view {
-        int founds = -1;
-        
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == msg.sender){
-                founds = int(i);
-                break;
-            }
-        }
-
-        require(founds > -1, "dsp not found");
-    }
 
     /**
      * @dev require consumer be caller or owner
@@ -1168,11 +1133,29 @@ contract Nexus is Ownable {
             require(consumer == msg.sender, "consumer not sender");
         }
     }
+    
+    /**
+     * @dev validates dsp is authorized for job or service
+     */
+    function validateDspCaller(address[] memory dsps, address dsp) private view returns(uint) {
+        int founds = -1;
+        
+        for (uint i=0; i<dsps.length; i++) {
+            if(dsps[i] == dsp){
+                founds = int(i);
+                break;
+            }
+        }
+
+        require(founds > -1, "dsp not found");
+
+        return uint(founds);
+    }
 
     /**
      * @dev require all dsps be active
      */
-    function validateDsps(address[] memory dsps) private view {
+    function validateActiveDsps(address[] memory dsps) private view {
         require(dsps.length > 0, "no dsps selected");
         for (uint i=0; i<dsps.length; i++) {
             require(registeredDSPs[dsps[i]].active, "dsp not active");
