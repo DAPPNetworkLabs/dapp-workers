@@ -140,6 +140,13 @@ contract Nexus is Ownable {
         uint id
     );
     
+    event ServiceComplete(
+        address indexed consumer, 
+        address indexed dsp, 
+        string outputFS,
+        uint id
+    );
+    
     event ConfigSet(
         uint32 paymentPremiumPPB,
         uint16 gasCeilingMultiplier,
@@ -187,7 +194,7 @@ contract Nexus is Ownable {
         address owner;
         address[] dsps;
         string imageName;
-        uint lastCalled;
+        bool started;
         uint endDate;
         uint months;
         uint ioMegaBytes;
@@ -224,6 +231,21 @@ contract Nexus is Ownable {
         string inputFS;
         string[] args;
         uint months;
+    }
+
+    struct serviceErrorArgs {
+        uint jobID;
+        string stdErr;
+        string outputFS;
+        uint ioMegaBytesUsed;
+        uint storageMegaBytesUsed;
+    }
+
+    struct serviceCompleteArgs {
+        uint jobID;
+        string outputFS;
+        uint ioMegaBytesUsed;
+        uint storageMegaBytesUsed;
     }
 
     struct DspLimits {
@@ -316,6 +338,18 @@ contract Nexus is Ownable {
             stalenessSeconds
         );
     }
+
+    function jobServiceCompleted(uint id, address dsp, bool isJob) external view returns (bool) {
+        if(isJob) {
+            JobData storage jd = jobs[id];
+            address[] storage dsps = providers[jd.owner];
+            return jd.done[validateDspCaller(dsps,dsp)];
+        } else {
+            ServiceData storage sd = services[id];
+            address[] storage dsps = providers[sd.owner];
+            return sd.done[validateDspCaller(dsps,dsp)];
+        }
+    }
     
     /**
      * @dev set dsps
@@ -324,7 +358,7 @@ contract Nexus is Ownable {
         // still need to be able to set dsps after registering contract
         // should not require de-registering then re-registering
         // validateConsumer(msg.sender);
-        validateDsps(dsps);
+        validateActiveDsps(dsps);
 
         providers[msg.sender] = dsps;
 
@@ -339,56 +373,6 @@ contract Nexus is Ownable {
      */
     function setConsumerContract(address authorized_contract) external {
         contracts[msg.sender] = authorized_contract;
-    }
-
-    /**
-     * @dev extend service duration
-     */
-    function extendService(
-        uint serviceId, 
-        string calldata imageName, 
-        uint months, 
-        uint ioMb, 
-        uint storageMb 
-    ) external {
-        validateConsumer(msg.sender);
-        
-        ServiceData storage sd = services[serviceId];
-
-        require(compareStrings(imageName, sd.imageName),"image missmatch");
-
-        address[] storage dsps = providers[msg.sender];
-        require(dsps.length > 0,"no dsps selected for consumer");
-
-        for(uint i=0;i<dsps.length;i++) {
-            bool include_base = months == 0 ? false : true;
-            
-            uint dapps = calcServiceDapps(imageName, ioMb, storageMb, dsps[i], include_base);
-
-            if(include_base) {
-                dapps *= months;
-                validateMin(ioMb, storageMb, imageName, months, dsps[i]);
-                sd.endDate = sd.endDate + ( months * 30 days );
-            }
-
-            buyGasFor(
-                dapps,
-                msg.sender,
-                dsps[i]
-            );
-
-            sd.dspServiceData[dsps[i]].ioMegaBytesLimit += ioMb;
-            sd.dspServiceData[dsps[i]].storageMegaBytesLimit += storageMb;
-
-            emit ServiceExtended(
-                msg.sender, 
-                dsps[i], 
-                serviceId, 
-                sd.dspServiceData[dsps[i]].ioMegaBytesLimit, 
-                sd.dspServiceData[dsps[i]].storageMegaBytesLimit, 
-                sd.endDate
-            );
-        }
     }
     
     /**
@@ -427,22 +411,6 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev use DAPP gas, vroom
-     */
-    function useGas(
-        address _consumer,
-        uint _amountToUse,
-        address _dsp
-    ) internal {
-        require(_amountToUse <= dspData[_consumer][_dsp].amount, "not enough dapp gas");
-
-        dspData[_consumer][_dsp].amount -= _amountToUse;
-        registeredDSPs[_dsp].claimableDapp += _amountToUse;
-
-        emit UsedGas(_consumer, _dsp, _amountToUse);
-    }
-    
-    /**
      * @dev allows dsp to claim for consumer
      */
     function claim() external {
@@ -453,96 +421,6 @@ contract Nexus is Ownable {
         token.safeTransfer(msg.sender, claimableAmount);
         
         emit ClaimedGas(msg.sender, claimableAmount);
-    }
-    
-    /**
-     * @dev ensures returned data hash is universally accepted
-     */
-    function submitResEntry(uint jobID,bytes32 dataHash, address[] memory dsps) private returns (bool) {
-        JobData storage jd = jobs[jobID];
-        address _dsp = msg.sender;
-        int founds = -1;
-        bool inconsistent = false;
-
-        for (uint i=0; i<dsps.length; i++) {
-            if(jd.done[i]){
-                if(jd.dataHash[i] != dataHash){
-                    inconsistent = true;
-                }
-            }
-            if(dsps[i] == _dsp){
-                founds = int(i);
-                break;
-            }
-        }
-
-        require(founds > -1, "dsp not found");
-        require(!jd.done[uint(founds)], "already done");
-
-        jd.done[uint(founds)] = true;
-        jd.resultsCount++;
-        jd.dataHash[uint(founds)] = dataHash;
-
-        return inconsistent;
-    }
-    
-    /**
-     * @dev calculate fee
-     */
-    function calculatePaymentAmount(
-        uint gas,
-        string memory imageName,
-        address dsp
-    ) private view returns (uint) {
-
-        uint jobDapps = calcJobDapps(imageName,dsp);
-        uint gasWei = getFeedData(); // 99000000000 fast gas price of 1 gas in wei
-        uint dappEth = getDappEth(); // how much 18,ETH for 1 4,DAPP
-        // 99000000000 * 80000 = 7.92E15 ((7.92E15/1e18)*$3,980) = $31.52 for gas for base * 20% fee
-        // 5,051.2821 DAPP for $39.40
-        gas += JOB_GAS_OVERHEAD;
-        uint weiForGas = gasWei * gas; 
-        // 7.92E15 * 1e9 = 7.92E24
-        // 7.92E24 * 1,200,000,000 = 9.504E33
-        // 9.504E33 / 1989696218183 = 4.776608566E21
-        // add 0
-        // 4.776608566E21 + 0 = 4.776608566E21
-        uint total = weiForGas * 1e9 * (PPB_BASE + s_config.paymentPremiumPPB) / dappEth;
-        total /= 1e14;
-        total += jobDapps;
-        // require(total <= LINK_TOTAL_SUPPLY, "payment greater than all LINK");
-        return total;
-    }
-
-    /**
-     * @dev calculate job fee
-     */
-    function calcJobDapps(string memory imageName, address dsp) private view returns (uint) {
-        return getDappUsd() * ( dspApprovedImages[dsp][imageName].jobFee / usdtPrecision );
-    }
-
-    /**
-     * @dev calculate service fee
-     */
-    function calcServiceDapps(
-        string memory imageName, 
-        uint ioMegaBytes, 
-        uint storageMegaBytes, 
-        address dsp, 
-        bool include_base
-    ) private view returns (uint) {
-        // base fee per hour * 24 hours * 30 days for monthly rate
-        uint dappUsd = getDappUsd();
-
-        uint baseFee = dspApprovedImages[dsp][imageName].baseFee;
-        uint storageFee = dspApprovedImages[dsp][imageName].storageFee;
-        uint ioFee = dspApprovedImages[dsp][imageName].ioFee;
-
-        baseFee = include_base ? baseFee * 24 * 30 * dappUsd : 0;
-        storageFee = storageFee * storageMegaBytes * dappUsd;
-        ioFee = ioFee * ioMegaBytes * dappUsd;
-        // ((100000 * 24 * 30) / 1e6) * 1249348) = 89,953,056 -> 4 dec adjusted -> 8,995.3056 DAPP ~ $72
-        return ( baseFee + storageFee + ioFee ) / usdtPrecision;
     }
 
     /**
@@ -561,58 +439,6 @@ contract Nexus is Ownable {
             );
         }
     }
-
-    /**
-    * @notice calculates the maximum payment for a given gas limit
-    */
-    function getMaxPaymentForGas(
-        uint256 gasLimit, 
-        string memory imageName, 
-        address dsp
-    ) external view returns (uint256 maxPayment) {
-        return calculatePaymentAmount(gasLimit, imageName, dsp);
-    }
-
-    /**
-    * @notice use max of transaction gas price and adjusted price
-    */
-    function adjustGasPrice(uint256 gasWei, bool useTxGasPrice) private view returns (uint256 adjustedPrice) {
-        adjustedPrice = gasWei * s_config.gasCeilingMultiplier;
-        if (useTxGasPrice && tx.gasprice < adjustedPrice) {
-            adjustedPrice = tx.gasprice;
-        }
-    }
-
-    /**
-    * @dev calls target address with exactly gasAmount gas and data as calldata
-    * or reverts if at least gasAmount gas is not available
-    */
-    function callWithExactGas(
-        uint256 gasAmount,
-        address target,
-        bytes memory data
-    ) private returns (bool success) {
-        assembly {
-        let g := gas()
-        // Compute g -= CUSHION and check for underflow
-        if lt(g, CUSHION) {
-            revert(0, 0)
-        }
-        g := sub(g, CUSHION)
-        // if g - g//64 <= gasAmount, revert
-        // (we subtract g//64 because of EIP-150)
-        if iszero(gt(sub(g, div(g, 64)), gasAmount)) {
-            revert(0, 0)
-        }
-        // solidity calls check that a contract actually exists at the destination, so we do the same
-        if iszero(extcodesize(target)) {
-            revert(0, 0)
-        }
-        // call and return whether we succeeded. ignore return data
-        success := call(gasAmount, target, 0, add(data, 0x20), mload(data), 0, 0)
-        }
-        return success;
-    }
     
     /**
      * @dev queue job
@@ -623,7 +449,7 @@ contract Nexus is Ownable {
         address[] storage dsps = providers[args.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
         
-        validateDsps(dsps);
+        validateActiveDsps(dsps);
 
         lastJobID = lastJobID + 1;
 
@@ -665,7 +491,7 @@ contract Nexus is Ownable {
         address[] storage dsps = providers[args.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
 
-        validateDsps(dsps);
+        validateActiveDsps(dsps);
 
         for(uint i=0;i<dsps.length;i++) {
             require(isImageApprovedForDSP(dsps[i], args.imageName), "image not approved");
@@ -707,6 +533,11 @@ contract Nexus is Ownable {
     function jobCallback(jobCallbackArgs calldata args) public {
         JobData storage jd = jobs[args.jobID];
 
+        address[] storage dsps = providers[jd.owner];
+        require(dsps.length > 0,"no dsps selected for consumer");
+        
+        require(!jd.done[validateDspCaller(dsps,msg.sender)], "dsp already completed");
+
         // maybe throw if user doesn't want to accept inconsistency
         bool inconsistent = submitResEntry(
             args.jobID,
@@ -720,6 +551,7 @@ contract Nexus is Ownable {
         
         uint gasUsed;
         bool success;
+
         if(jd.callback){
             gasUsed = gasleft();
             success = callWithExactGas(jd.gasLimit, jd.consumer, abi.encodeWithSignature(
@@ -765,7 +597,6 @@ contract Nexus is Ownable {
      * @dev dsp run service
      */
     // add check for not conflicting with DSP frontend default ports
-    // add check not already done
     function serviceCallback(uint serviceId, uint port) public {
         require(port != 8888,"dsp portal port overlap");
 
@@ -774,25 +605,12 @@ contract Nexus is Ownable {
         address[] storage dsps = providers[sd.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
 
-        // validateDsp(dsps);
+        validateDspCaller(dsps,msg.sender);
 
-        address _dsp = msg.sender;
-        int founds = -1;
+        require(sd.started == false, "service already started");
 
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == _dsp){
-                founds = int(i);
-                break;
-            }
-        }
-
-        if(sd.lastCalled == 0) {
-            sd.lastCalled = block.timestamp;
-            sd.endDate = block.timestamp + ( sd.months * 30 days );
-        } else {
-            require(sd.lastCalled > block.timestamp + 30 days,"called within 30 days");
-            sd.lastCalled = block.timestamp;
-        }
+        sd.started = true;
+        sd.endDate = block.timestamp + ( sd.months * 30 days );
         
         address _consumer = sd.consumer;
 
@@ -800,16 +618,19 @@ contract Nexus is Ownable {
         sd.dspServiceData[msg.sender].ioMegaBytesLimit += sd.ioMegaBytes;
         sd.dspServiceData[msg.sender].storageMegaBytesLimit += sd.storageMegaBytes;
         
-        uint dapps = calcServiceDapps(sd.imageName, sd.ioMegaBytes, sd.storageMegaBytes, msg.sender, true);
+        uint dapps = calcServiceDapps(
+            sd.imageName,
+            sd.ioMegaBytes,
+            sd.storageMegaBytes,
+            msg.sender,
+            true
+        );
 
         useGas(
             _consumer,
             dapps,
             msg.sender
         );
-
-        require(!sd.done[uint(founds)], "already done");
-        sd.done[uint(founds)] = true;
 
         emit ServiceRunning(
             _consumer, 
@@ -822,22 +643,27 @@ contract Nexus is Ownable {
     /**
      * @dev handle job error
      */
-    function jobError(uint jobID, string calldata  stdErr, string calldata outputFS) public {
-        JobData storage jd = jobs[lastJobID];
-        address[] storage dsps = providers[jd.consumer];
-        require(dsps.length > 0,"no dsps selected for consumer");
-        address _dsp = msg.sender;
-        int founds = -1;
+    function jobError(
+        uint jobID,
+        string calldata  stdErr,
+        string calldata outputFS
+    ) public {
+        JobData storage jd = jobs[jobID];
 
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == _dsp){
-                founds = int(i);
-                break;
-            }
-        }
-        
-        require(founds > -1, "dsp not found");
-        require(!jd.done[uint(founds)], "already done");
+        address[] storage dsps = providers[jd.owner];
+        require(dsps.length > 0,"no dsps selected for consumer");
+
+        uint founds = validateDspCaller(dsps,msg.sender);
+
+        require(!jd.done[founds], "dsp already completed");
+
+        uint dapps = calculatePaymentAmount(0,jd.imageName,msg.sender);
+
+        useGas(
+            jd.consumer,
+            dapps,
+            msg.sender
+        );
 
         jd.done[uint(founds)] = true;
         
@@ -847,11 +673,54 @@ contract Nexus is Ownable {
     /**
      * @dev handle service error
      */
-    function serviceError(uint jobID, string calldata  stdErr, string calldata outputFS) public {
-        ServiceData storage sd = services[lastJobID];
+    function serviceError(serviceErrorArgs calldata args) public {
+        ServiceData storage sd = services[args.jobID];
 
         address[] storage dsps = providers[sd.consumer];
         require(dsps.length > 0,"no dsps selected for consumer");
+        
+        uint founds = validateDspCaller(dsps,msg.sender);
+
+        require(!sd.done[uint(founds)], "dsp already completed");
+        
+        uint dapps = calcServiceDapps(
+            sd.imageName,
+            args.ioMegaBytesUsed,
+            args.storageMegaBytesUsed,
+            msg.sender,
+            true
+        );
+
+        useGas(
+            sd.consumer,
+            dapps,
+            msg.sender
+        );
+
+        sd.done[uint(founds)] = true;
+        
+        emit ServiceError(
+            sd.consumer,
+            msg.sender,
+            args.stdErr,
+            args.outputFS,
+            args.jobID
+        );
+    }
+    
+    /**
+     * @dev complete service
+     */
+    function serviceComplete(serviceCompleteArgs calldata args) public {
+        ServiceData storage sd = services[args.jobID];
+
+        require(sd.started == true, "service not started");
+        require(sd.endDate <= block.timestamp, "service time remaining");
+
+        address[] storage dsps = providers[sd.consumer];
+        require(dsps.length > 0,"no dsps selected for consumer");
+        
+        validateDspCaller(dsps,msg.sender);
 
         address _dsp = msg.sender;
         int founds = -1;
@@ -863,36 +732,101 @@ contract Nexus is Ownable {
             }
         }
 
-        require(!sd.done[uint(founds)], "already done");
+        require(!sd.done[uint(founds)], "dsp already completed");
+        
+        uint dapps = calcServiceDapps(
+            sd.imageName,
+            args.ioMegaBytesUsed,
+            args.storageMegaBytesUsed,
+            msg.sender,
+            true
+        );
+
+        useGas(
+            sd.consumer,
+            dapps,
+            msg.sender
+        );
+
         sd.done[uint(founds)] = true;
         
-        validateDsp(dsps);
-        
-        emit ServiceError(sd.consumer, msg.sender, stdErr, outputFS, jobID);
+        emit ServiceComplete(
+            sd.consumer,
+            msg.sender,
+            args.outputFS,
+            args.jobID
+        );
     }
 
     /**
-     * @dev require min io/storage met
+     * @dev extend service duration
      */
-    function validateMin(
-        uint ioMegaBytes, 
-        uint storageMegaBytes, 
+    function extendService(
+        uint serviceId, 
         string calldata imageName, 
         uint months, 
+        uint ioMb, 
+        uint storageMb 
+    ) external {
+        validateConsumer(msg.sender);
+        
+        ServiceData storage sd = services[serviceId];
+
+        require(compareStrings(imageName, sd.imageName),"image missmatch");
+        require(sd.endDate > block.timestamp, "no service time remaining");
+
+        address[] storage dsps = providers[msg.sender];
+        require(dsps.length > 0,"no dsps selected for consumer");
+
+        // require service not completed
+        // if service completed by dsp, do not charge
+
+        for(uint i=0;i<dsps.length;i++) {
+            bool include_base = months == 0 ? false : true;
+            
+            uint dapps = calcServiceDapps(
+                imageName,
+                ioMb,
+                storageMb,
+                dsps[i],
+                include_base
+            );
+
+            if(include_base) {
+                dapps *= months;
+                validateMin(ioMb, storageMb, imageName, months, dsps[i]);
+                sd.endDate = sd.endDate + ( months * 30 days );
+            }
+
+            buyGasFor(
+                dapps,
+                msg.sender,
+                dsps[i]
+            );
+
+            sd.dspServiceData[dsps[i]].ioMegaBytesLimit += ioMb;
+            sd.dspServiceData[dsps[i]].storageMegaBytesLimit += storageMb;
+
+            emit ServiceExtended(
+                msg.sender, 
+                dsps[i], 
+                serviceId, 
+                sd.dspServiceData[dsps[i]].ioMegaBytesLimit, 
+                sd.dspServiceData[dsps[i]].storageMegaBytesLimit, 
+                sd.endDate
+            );
+        }
+    }
+
+    /**
+    * @notice calculates the maximum payment for a given gas limit
+    */
+    function getMaxPaymentForGas(
+        uint256 gasLimit, 
+        string memory imageName, 
         address dsp
-    ) private view {
-        require(
-            ioMegaBytes 
-            >= 
-            dspApprovedImages[dsp][imageName].minIoMegaBytes * months
-            ,"min io bytes not met"
-        );
-        require(
-            storageMegaBytes 
-            >= 
-            dspApprovedImages[dsp][imageName].minStorageMegaBytes * months
-            ,"min storage bytes not met"
-        );
+    ) external view returns (uint256 maxPayment) {
+        return calculatePaymentAmount(gasLimit, imageName, dsp);
     }
     
     /**
@@ -1033,19 +967,158 @@ contract Nexus is Ownable {
     }
     
     /**
-     * @dev validates dsp is authorized for job or service
+     * @dev ensures returned data hash is universally accepted
      */
-    function validateDsp(address[] memory dsps) private view {
+    function submitResEntry(uint jobID,bytes32 dataHash, address[] memory dsps) private returns (bool) {
+        JobData storage jd = jobs[jobID];
+        address _dsp = msg.sender;
         int founds = -1;
-        
+        bool inconsistent = false;
+
         for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == msg.sender){
+            if(jd.done[i]){
+                if(jd.dataHash[i] != dataHash){
+                    inconsistent = true;
+                }
+            }
+            if(dsps[i] == _dsp){
                 founds = int(i);
                 break;
             }
         }
 
         require(founds > -1, "dsp not found");
+        require(!jd.done[uint(founds)], "dsp already completed");
+
+        jd.done[uint(founds)] = true;
+        jd.resultsCount++;
+        jd.dataHash[uint(founds)] = dataHash;
+
+        return inconsistent;
+    }
+    
+    /**
+     * @dev calculate fee
+     */
+    function calculatePaymentAmount(
+        uint gas,
+        string memory imageName,
+        address dsp
+    ) private view returns (uint) {
+
+        uint jobDapps = calcJobDapps(imageName,dsp);
+        uint gasWei = getFeedData(); // 99000000000 fast gas price of 1 gas in wei
+        uint dappEth = getDappEth(); // how much 18,ETH for 1 4,DAPP
+        // 99000000000 * 80000 = 7.92E15 ((7.92E15/1e18)*$3,980) = $31.52 for gas for base * 20% fee
+        // 5,051.2821 DAPP for $39.40
+        gas += JOB_GAS_OVERHEAD;
+        uint weiForGas = gasWei * gas; 
+        // 7.92E15 * 1e9 = 7.92E24
+        // 7.92E24 * 1,200,000,000 = 9.504E33
+        // 9.504E33 / 1989696218183 = 4.776608566E21
+        // add 0
+        // 4.776608566E21 + 0 = 4.776608566E21
+        uint total = weiForGas * 1e9 * (PPB_BASE + s_config.paymentPremiumPPB) / dappEth;
+        total /= 1e14;
+        total += jobDapps;
+        // require(total <= LINK_TOTAL_SUPPLY, "payment greater than all LINK");
+        return total;
+    }
+
+    /**
+     * @dev calculate job fee
+     */
+    function calcJobDapps(string memory imageName, address dsp) private view returns (uint) {
+        return getDappUsd() * ( dspApprovedImages[dsp][imageName].jobFee / usdtPrecision );
+    }
+
+    /**
+     * @dev calculate service fee
+     */
+    function calcServiceDapps(
+        string memory imageName, 
+        uint ioMegaBytes, 
+        uint storageMegaBytes, 
+        address dsp, 
+        bool include_base
+    ) private view returns (uint) {
+        // base fee per hour * 24 hours * 30 days for monthly rate
+        uint dappUsd = getDappUsd();
+
+        uint baseFee = dspApprovedImages[dsp][imageName].baseFee;
+        uint storageFee = dspApprovedImages[dsp][imageName].storageFee;
+        uint ioFee = dspApprovedImages[dsp][imageName].ioFee;
+
+        baseFee = include_base ? baseFee * 24 * 30 * dappUsd : 0;
+        storageFee = storageFee * storageMegaBytes * dappUsd;
+        ioFee = ioFee * ioMegaBytes * dappUsd;
+        // ((100000 * 24 * 30) / 1e6) * 1249348) = 89,953,056 -> 4 dec adjusted -> 8,995.3056 DAPP ~ $72
+        return ( baseFee + storageFee + ioFee ) / usdtPrecision;
+    }
+
+    /**
+    * @notice use max of transaction gas price and adjusted price
+    */
+    function adjustGasPrice(uint256 gasWei, bool useTxGasPrice) private view returns (uint256 adjustedPrice) {
+        adjustedPrice = gasWei * s_config.gasCeilingMultiplier;
+        if (useTxGasPrice && tx.gasprice < adjustedPrice) {
+            adjustedPrice = tx.gasprice;
+        }
+    }
+
+    /**
+    * @dev calls target address with exactly gasAmount gas and data as calldata
+    * or reverts if at least gasAmount gas is not available
+    */
+    function callWithExactGas(
+        uint256 gasAmount,
+        address target,
+        bytes memory data
+    ) private returns (bool success) {
+        assembly {
+        let g := gas()
+        // Compute g -= CUSHION and check for underflow
+        if lt(g, CUSHION) {
+            revert(0, 0)
+        }
+        g := sub(g, CUSHION)
+        // if g - g//64 <= gasAmount, revert
+        // (we subtract g//64 because of EIP-150)
+        if iszero(gt(sub(g, div(g, 64)), gasAmount)) {
+            revert(0, 0)
+        }
+        // solidity calls check that a contract actually exists at the destination, so we do the same
+        if iszero(extcodesize(target)) {
+            revert(0, 0)
+        }
+        // call and return whether we succeeded. ignore return data
+        success := call(gasAmount, target, 0, add(data, 0x20), mload(data), 0, 0)
+        }
+        return success;
+    }
+
+    /**
+     * @dev require min io/storage met
+     */
+    function validateMin(
+        uint ioMegaBytes, 
+        uint storageMegaBytes, 
+        string calldata imageName, 
+        uint months, 
+        address dsp
+    ) private view {
+        require(
+            ioMegaBytes 
+            >= 
+            dspApprovedImages[dsp][imageName].minIoMegaBytes * months
+            ,"min io bytes not met"
+        );
+        require(
+            storageMegaBytes 
+            >= 
+            dspApprovedImages[dsp][imageName].minStorageMegaBytes * months
+            ,"min storage bytes not met"
+        );
     }
 
     /**
@@ -1060,11 +1133,29 @@ contract Nexus is Ownable {
             require(consumer == msg.sender, "consumer not sender");
         }
     }
+    
+    /**
+     * @dev validates dsp is authorized for job or service
+     */
+    function validateDspCaller(address[] memory dsps, address dsp) private view returns(uint) {
+        int founds = -1;
+        
+        for (uint i=0; i<dsps.length; i++) {
+            if(dsps[i] == dsp){
+                founds = int(i);
+                break;
+            }
+        }
+
+        require(founds > -1, "dsp not found");
+
+        return uint(founds);
+    }
 
     /**
      * @dev require all dsps be active
      */
-    function validateDsps(address[] memory dsps) private view {
+    function validateActiveDsps(address[] memory dsps) private view {
         require(dsps.length > 0, "no dsps selected");
         for (uint i=0; i<dsps.length; i++) {
             require(registeredDSPs[dsps[i]].active, "dsp not active");
@@ -1182,6 +1273,22 @@ contract Nexus is Ownable {
             services[id].dspServiceData[dsp].ioMegaBytesLimit,
             services[id].dspServiceData[dsp].storageMegaBytesLimit
         );
+    }
+    
+    /**
+     * @dev use DAPP gas, vroom
+     */
+    function useGas(
+        address _consumer,
+        uint _amountToUse,
+        address _dsp
+    ) internal {
+        require(_amountToUse <= dspData[_consumer][_dsp].amount, "not enough dapp gas");
+
+        dspData[_consumer][_dsp].amount -= _amountToUse;
+        registeredDSPs[_dsp].claimableDapp += _amountToUse;
+
+        emit UsedGas(_consumer, _dsp, _amountToUse);
     }
     
     /**

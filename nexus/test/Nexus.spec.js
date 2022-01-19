@@ -40,6 +40,15 @@ describe("Nexus", function() {
     // start docker compose unit tests
   });
 
+  /*
+
+    Todo tests
+    - setConfig
+    - getMaxPaymentForGas
+    - jobServiceCompleted
+
+  */
+
   it("Get config", async function() {
     const config = await nexusContract.connect(dsp1).getConfig();
 
@@ -330,7 +339,7 @@ describe("Nexus", function() {
     const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     
     // ensure get base payment for job
-    // expect(postDspBal).is.above(preDspBal);
+    expect(postDspBal).is.above(preDspBal);
 
     // ensure job not completed
   });
@@ -340,7 +349,7 @@ describe("Nexus", function() {
   });
 
   it("Run service - error", async function() {
-    // const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
     await nexusContract.queueService({
       owner: addr1.address,
@@ -352,11 +361,17 @@ describe("Nexus", function() {
       months: 1
     });
 
-    await nexusContract.connect(dsp1).serviceError(5,"big error","");
+    await nexusContract.connect(dsp1).serviceError({
+      jobID: 5,
+      stdErr: "big error",
+      outputFS: "",
+      ioMegaBytesUsed: 1,
+      storageMegaBytesUsed: 1
+    });
 
-    // const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     
-    // expect(postDspBal).is.above(preDspBal);
+    expect(postDspBal).is.above(preDspBal);
 
     // ensure service not running
   });
@@ -407,6 +422,50 @@ describe("Nexus", function() {
     expect(postDspEnDate).to.equal(preDspEnDate);
     expect(postDspIoLimit).is.above(preDspIoLimit);
     expect(postDspStorageLimit).is.above(preDspStorageLimit);
+  });
+
+  it("Run service - complete", async function() {
+    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+
+    await nexusContract.queueService({
+      owner: addr1.address,
+      imageName: "wasi-service",
+      ioMegaBytes: 1,
+      storageMegaBytes: 1,
+      inputFS: "",
+      args: ["target/wasm32-wasi/release/test"],
+      months: 1
+    });
+    await nexusContract.connect(dsp1).serviceCallback(6,8001);
+
+    let failed = false;
+    try {
+      await nexusContract.connect(dsp1).serviceComplete({
+        jobID: 6,
+        outputFS: "",
+        ioMegaBytesUsed: 1,
+        storageMegaBytesUsed: 1
+      });
+    } catch(e) {
+      failed = true;
+    }
+
+    expect(failed).to.equal(true);
+
+    await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
+
+    await nexusContract.connect(dsp1).serviceComplete({
+      jobID: 6,
+      outputFS: "",
+      ioMegaBytesUsed: 1,
+      storageMegaBytesUsed: 1
+    });
+
+    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    
+    expect(postDspBal).is.above(preDspBal);
+
+    // ensure service not running
   });
 
   it("Claim dsp dapp", async function() {
