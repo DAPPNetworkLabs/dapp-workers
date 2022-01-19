@@ -143,9 +143,8 @@ async function getConsumerDAPPGas(consumer){
     return 0;
 }
 
-async function isPending(jobID){
-    // todo: check on chain
-    return true;
+async function isPending(jobID, isJob){
+    return await callTrx("jobServiceCompleted", jobID, dspAccount.address, isJob);
 }
 
 async function getDAPPPriceInEth(){
@@ -189,10 +188,10 @@ const getInfo = async(jobId,type) => {
 
 function subscribe(theContract: any) {
     console.log('subscribing');
-    theContract.events["RunJob"]({
+    theContract.events["QueueJob"]({
         fromBlock: 0
     }, async function (error, result) {
-        console.log('run job hit');
+        console.log('QueueJob hit');
         if (error) {
             console.log(error);
             return;
@@ -210,34 +209,44 @@ function subscribe(theContract: any) {
         
         let jobInfo = await getInfo(jobID, jobType);
         jobInfo = {
+            consumer: jobInfo[fidx++],
             owner: jobInfo[fidx++],
-            callback: jobInfo[fidx++],
-            resultsCount: jobInfo[fidx++],
             imageName: jobInfo[fidx++],
-            gasLimit: jobInfo[fidx++],
-            requireConsistent: jobInfo[fidx++]
+            jobID: jobInfo[fidx++],
+            inputFS: jobInfo[fidx++],
+            args: jobInfo[fidx++]
         }
         console.log("jobInfo");
         console.log(jobInfo);
         
+        // add read function to tell whether dsp done with jobv
+
         /*
         
-            - get job info
-            - check if DSP paid to perform job
-            - check if already processed
-            - check if consumer has enough gas, if not run job error
-            - run docker job, if error run job error with output
-            - run job callback without of docker job
+            - check if already processed jobID, replay
+                if not, ensure DSP selected by owner
+                    if so, continue
+                    if not, do not process
+            - check if DSP selected by owner
+            - check if consumer balance sufficient
+                if insufficient, check if enough to cover base
+                    if enough, run job error
+                    if not, do nothing and log as processed
+            - run docker job
+                if error run job error with output
+            - run job callback with output of docker job
         
         */
-
-        // const dappGasRemaining = await getConsumerDAPPGas(consumer);
         
 
-        // // check if already processed (in case not caught up with events)
-        //  if(!await isPending(jobID)){
-        //      return;
-        //  }
+        // check if already processed (in case not caught up with events)
+        console.log('isPending');
+        console.log(await isPending(jobID, true));
+        if(!await isPending(jobID, true)){
+            return;
+        }
+
+        // const dappGasRemaining = await getConsumerDAPPGas(consumer);
         // // todo: resolve image from registry
         // const account_dsp = dspAccount;
         // const dockerImage = await getDockerImage(jobImage, account_dsp.address,jobType);
@@ -283,6 +292,7 @@ function subscribe(theContract: any) {
         const obj={
             consumer:returnValues[fidx++],
             outputFS:returnValues[fidx++],
+            outputHash:returnValues[fidx++],
             inconsistent:returnValues[fidx++],
             jobID:returnValues[fidx++]
         }
@@ -293,10 +303,10 @@ function subscribe(theContract: any) {
         // console.log(`got final results`,obj);
     });
 
-    theContract.events["RunService"]({
+    theContract.events["QueueService"]({
         fromBlock: "earliest"
     }, async function (error, result) {
-        console.log('RunService hit');
+        console.log('QueueService hit');
         if (error) {
             console.log(error);
             return;

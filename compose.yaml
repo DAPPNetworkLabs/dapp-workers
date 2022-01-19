@@ -65,12 +65,13 @@ services:
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
       - ETH_ADDR=ws://eth:8545
+    command: ["/app/nexus/wait-for-it.sh", "--timeout=5", "eth:8545", "--", "npx", "hardhat", "test", "--network", "tests"]
     profiles:
       - debug   
     depends_on:
       - "eth"
     links:
-        - eth
+      - eth
   orchestrator:
     image: orchestrator
     build: services/orchestrator
@@ -80,14 +81,16 @@ services:
       - COMPOSE_PROFILES
       - NODE_OPTIONS=--openssl-legacy-provider
       - ADDRESS=0x1af5e6689288F69BBAE9E41fC6BE1C82d008935f
+    command: ["/app/orchestrator/wait-for-it.sh", "--timeout=5", "eth:8545", "--", "node", "./dist/index.js"]
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./nexus:/nexus
     depends_on:
       - "eth"
+      - "nexus"
     links:
-        - eth
+      - eth
   dspportal:
     image: dspportal
     build: uis/jobs
@@ -96,7 +99,7 @@ services:
     depends_on:
       - "eth"
     links:
-        - eth
+      - eth
   faucet:
     image: faucet
     build: services/faucet
@@ -112,7 +115,7 @@ services:
     depends_on:
       - "eth"
     links:
-        - eth
+      - eth
   db:
     image: postgres
     profiles:

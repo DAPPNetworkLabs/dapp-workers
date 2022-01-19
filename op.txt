@@ -1,0 +1,363 @@
+pngWriterTest
+renderNFTs
+serviceTest
+Sending build context to Docker daemon  524.4kBSending build context to Docker daemon  1.573MBSending build context to Docker daemon  2.622MBSending build context to Docker daemon  3.671MBSending build context to Docker daemon   4.72MBSending build context to Docker daemon  5.768MBSending build context to Docker daemon  6.817MBSending build context to Docker daemon  7.342MBSending build context to Docker daemon   8.39MBSending build context to Docker daemon  9.439MBSending build context to Docker daemon  10.49MBSending build context to Docker daemon  12.06MBSending build context to Docker daemon  13.11MBSending build context to Docker daemon  14.16MBSending build context to Docker daemon  15.21MBSending build context to Docker daemon  16.26MBSending build context to Docker daemon  17.31MBSending build context to Docker daemon  18.35MBSending build context to Docker daemon   19.4MBSending build context to Docker daemon  20.45MBSending build context to Docker daemon   21.5MBSending build context to Docker daemon  22.55MBSending build context to Docker daemon   23.6MBSending build context to Docker daemon  24.65MBSending build context to Docker daemon   25.7MBSending build context to Docker daemon  26.74MBSending build context to Docker daemon  27.79MBSending build context to Docker daemon  28.84MBSending build context to Docker daemon  29.89MBSending build context to Docker daemon  30.94MBSending build context to Docker daemon  31.99MBSending build context to Docker daemon  33.04MBSending build context to Docker daemon  34.09MBSending build context to Docker daemon  35.14MBSending build context to Docker daemon  36.18MBSending build context to Docker daemon  37.23MBSending build context to Docker daemon  38.28MBSending build context to Docker daemon  39.33MBSending build context to Docker daemon  40.38MBSending build context to Docker daemon   40.9MBSending build context to Docker daemon  41.95MBSending build context to Docker daemon     43MBSending build context to Docker daemon  44.05MBSending build context to Docker daemon   45.1MBSending build context to Docker daemon   45.6MB
+Step 1/10 : FROM node:16-alpine AS builder
+ ---> 23990429c0d7
+Step 2/10 : WORKDIR /app
+ ---> Using cache
+ ---> 7f2e1edcefe2
+Step 3/10 : COPY . .
+ ---> Using cache
+ ---> 5f1bbadf0347
+Step 4/10 : RUN npm rebuild node-sass
+ ---> Using cache
+ ---> 01c9f1b0d77e
+Step 5/10 : RUN yarn run build
+ ---> Using cache
+ ---> f0d403085353
+Step 6/10 : FROM node:16-alpine
+ ---> 23990429c0d7
+Step 7/10 : RUN yarn global add serve
+ ---> Using cache
+ ---> 45ccc00ac824
+Step 8/10 : WORKDIR /app
+ ---> Using cache
+ ---> 0d5df4bd2018
+Step 9/10 : COPY --from=builder /app/build .
+ ---> Using cache
+ ---> 86379f1b2d93
+Step 10/10 : CMD ["serve", "-p", "80", "-s", "."]
+ ---> Using cache
+ ---> 76c1ebd13b5d
+Successfully built 76c1ebd13b5d
+Successfully tagged dspportal:latest
+Sending build context to Docker daemon     623B
+Step 1/6 : FROM golang:1.16.7-buster
+ ---> b64f642e7506
+Step 2/6 : RUN apt-get update -y &&     apt-get install -y curl xz-utils fuse libssl-dev ca-certificates fuse &&     rm -rf /var/apt/lists/* &&      curl https://wasmtime.dev/install.sh -sSf | bash &&     apt-get remove --purge
+ ---> Using cache
+ ---> f4db38ebca0b
+Step 3/6 : RUN wget https://dist.ipfs.io/go-ipfs/v0.9.1/go-ipfs_v0.9.1_linux-amd64.tar.gz &&     tar -xvzf go-ipfs_v0.9.1_linux-amd64.tar.gz &&     cd go-ipfs &&     bash install.sh &&     cd .. &&     rm -rf go-ipfs &&     rm go-ipfs_v0.9.1_linux-amd64.tar.gz
+ ---> Using cache
+ ---> 5d455720f0c8
+Step 4/6 : RUN ipfs init
+ ---> Using cache
+ ---> 5bbfce4410eb
+Step 5/6 : ADD entrypoint.sh /
+ ---> Using cache
+ ---> 925017101ee7
+Step 6/6 : ENTRYPOINT [ "/entrypoint.sh" ]
+ ---> Using cache
+ ---> 4575b3c1b263
+Successfully built 4575b3c1b263
+Successfully tagged runner:latest
+Sending build context to Docker daemon  524.4kBSending build context to Docker daemon  1.573MBSending build context to Docker daemon  2.622MBSending build context to Docker daemon  3.671MBSending build context to Docker daemon   4.72MBSending build context to Docker daemon  5.768MBSending build context to Docker daemon  6.817MBSending build context to Docker daemon  7.342MBSending build context to Docker daemon   8.39MBSending build context to Docker daemon  9.439MBSending build context to Docker daemon  10.49MBSending build context to Docker daemon  11.54MBSending build context to Docker daemon  12.59MBSending build context to Docker daemon  14.16MBSending build context to Docker daemon  15.21MBSending build context to Docker daemon  16.26MBSending build context to Docker daemon  17.31MBSending build context to Docker daemon  18.35MBSending build context to Docker daemon   19.4MBSending build context to Docker daemon  20.45MBSending build context to Docker daemon   21.5MBSending build context to Docker daemon  22.55MBSending build context to Docker daemon   23.6MBSending build context to Docker daemon  24.65MBSending build context to Docker daemon   25.7MBSending build context to Docker daemon  26.74MBSending build context to Docker daemon  27.79MBSending build context to Docker daemon  28.84MBSending build context to Docker daemon  29.89MBSending build context to Docker daemon  30.94MBSending build context to Docker daemon  31.99MBSending build context to Docker daemon  33.04MBSending build context to Docker daemon  34.09MBSending build context to Docker daemon  35.13MBSending build context to Docker daemon  36.18MBSending build context to Docker daemon  37.23MBSending build context to Docker daemon  38.28MBSending build context to Docker daemon  39.33MBSending build context to Docker daemon  40.38MBSending build context to Docker daemon  41.43MBSending build context to Docker daemon  42.48MBSending build context to Docker daemon  43.53MBSending build context to Docker daemon  44.57MBSending build context to Docker daemon  45.62MBSending build context to Docker daemon  46.67MBSending build context to Docker daemon  47.72MBSending build context to Docker daemon  48.77MBSending build context to Docker daemon  49.82MBSending build context to Docker daemon  50.87MBSending build context to Docker daemon  51.92MBSending build context to Docker daemon  52.96MBSending build context to Docker daemon  54.01MBSending build context to Docker daemon  55.06MBSending build context to Docker daemon  56.11MBSending build context to Docker daemon  57.16MBSending build context to Docker daemon  58.21MBSending build context to Docker daemon  59.26MBSending build context to Docker daemon  60.31MBSending build context to Docker daemon  61.35MBSending build context to Docker daemon  61.81MB
+Step 1/7 : FROM node:alpine
+ ---> d0ea4d2aa898
+Step 2/7 : WORKDIR /app/orchestrator
+ ---> Running in 7c77e8e8cd90
+Removing intermediate container 7c77e8e8cd90
+ ---> 1b0353a75655
+Step 3/7 : COPY package.json .
+ ---> cf95dc50b643
+Step 4/7 : RUN npm install    && npm install typescript -g
+ ---> Running in c5ff7bdd8031
+[91mnpm WARN deprecated multibase@0.6.1: This module has been superseded by the multiformats module
+[0m[91mnpm WARN deprecated multicodec@0.5.7: This module has been superseded by the multiformats module
+[0m[91mnpm WARN deprecated mkdirp-promise@5.0.1: This package is broken and no longer maintained. 'mkdirp' itself supports promises now, please switch to that.
+[0m[91mnpm WARN deprecated querystring@0.2.0: The querystring API is considered Legacy. new code should use the URLSearchParams API instead.
+[0m[91mnpm WARN deprecated har-validator@5.1.5: this library is no longer supported
+[0m[91mnpm WARN deprecated cids@0.7.5: This module has been superseded by the multiformats module
+[0m[91mnpm WARN deprecated eth-sig-util@2.5.4: Deprecated in favor of '@metamask/eth-sig-util'
+[0m[91mnpm WARN deprecated request@2.88.2: request has been deprecated, see https://github.com/request/request/issues/3142
+[0m[91mnpm WARN deprecated ganache@6.4.5: ganache-cli is in the process of being renamed to ganache, but the transition is not yet complete. Did you mean to install ganache-cli or a pre-release version of ganache?
+[0m[91mnpm WARN deprecated multicodec@1.0.4: This module has been superseded by the multiformats module
+[0m[91mnpm WARN deprecated uuid@3.3.2: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+[0m[91mnpm WARN deprecated multibase@0.7.0: This module has been superseded by the multiformats module
+[0m[91mnpm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+[0m[91mnpm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+[0m[91mnpm WARN deprecated debug@3.2.6: Debug versions >=3.2.0 <3.2.7 || >=4 <4.3.1 have a low-severity ReDos regression when used in a Node.js environment. It is recommended you upgrade to 3.2.7 or 4.3.1. (https://github.com/visionmedia/debug/issues/797)
+[0m
+added 1037 packages, and audited 1038 packages in 1m
+
+124 packages are looking for funding
+  run `npm fund` for details
+
+12 vulnerabilities (3 low, 9 moderate)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+[91mnpm notice 
+npm notice New patch version of npm available! 8.3.0 -> 8.3.1
+npm notice Changelog: <https://github.com/npm/cli/releases/tag/v8.3.1>
+npm notice Run `npm install -g npm@8.3.1` to update!
+npm notice 
+[0m
+added 1 package, and audited 2 packages in 1s
+
+found 0 vulnerabilities
+Removing intermediate container c5ff7bdd8031
+ ---> f7de342ae869
+Step 5/7 : COPY . .
+ ---> ca1aea66b78b
+Step 6/7 : RUN tsc
+ ---> Running in e3bf4e961c90
+Removing intermediate container e3bf4e961c90
+ ---> 5ae23e6a3831
+Step 7/7 : RUN chmod +x /app/orchestrator/wait-for-it.sh
+ ---> Running in 8eada4b59a6b
+Removing intermediate container 8eada4b59a6b
+ ---> 372a1e5424e1
+Successfully built 372a1e5424e1
+Successfully tagged orchestrator:latest
+Sending build context to Docker daemon     501B
+Step 1/7 : FROM rust:1.55
+ ---> 85a8e7ff6b81
+Step 2/7 : RUN wget https://dist.ipfs.io/go-ipfs/v0.9.1/go-ipfs_v0.9.1_linux-amd64.tar.gz &&     tar -xvzf go-ipfs_v0.9.1_linux-amd64.tar.gz &&     cd go-ipfs &&     bash install.sh &&     cd .. &&     rm -rf go-ipfs &&     rm go-ipfs_v0.9.1_linux-amd64.tar.gz
+ ---> Using cache
+ ---> 4275ffa9d08c
+Step 3/7 : RUN rustup target add wasm32-wasi
+ ---> Using cache
+ ---> 45b8fb9fe6cf
+Step 4/7 : RUN ipfs init
+ ---> Using cache
+ ---> cee915ec0b14
+Step 5/7 : ADD entrypoint.sh /
+ ---> Using cache
+ ---> 4c458bc337e2
+Step 6/7 : ENTRYPOINT [ "/entrypoint.sh" ]
+ ---> Using cache
+ ---> 9ca0651adb10
+Step 7/7 : CMD [ "QmQ7qVyX1BSyPqa3hwzmGkDQWeSMDxodkccnkysyXRvDHz", "hello" ]
+ ---> Using cache
+ ---> 0c1badb56729
+Successfully built 0c1badb56729
+Successfully tagged rust-compiler:latest
+Sending build context to Docker daemon  226.8kB
+Step 1/10 : FROM node
+ ---> 14777a723ec4
+Step 2/10 : RUN wget https://dist.ipfs.io/go-ipfs/v0.9.1/go-ipfs_v0.9.1_linux-amd64.tar.gz &&     tar -xvzf go-ipfs_v0.9.1_linux-amd64.tar.gz &&     cd go-ipfs &&     /bin/bash install.sh &&     cd .. &&     rm -rf go-ipfs &&     rm go-ipfs_v0.9.1_linux-amd64.tar.gz
+ ---> Using cache
+ ---> 3e67516b679e
+Step 3/10 : RUN ipfs init
+ ---> Using cache
+ ---> 1e51803e6d12
+Step 4/10 : WORKDIR /usr/yourapplication-name
+ ---> Using cache
+ ---> dff70ba9911f
+Step 5/10 : COPY package.json .
+ ---> Using cache
+ ---> 76792a69d5bf
+Step 6/10 : RUN npm install    && npm install typescript -g
+ ---> Using cache
+ ---> 2246a0c82d94
+Step 7/10 : COPY . .
+ ---> Using cache
+ ---> 7bbb81fd6410
+Step 8/10 : RUN tsc
+ ---> Using cache
+ ---> f876b710b85c
+Step 9/10 : ADD entrypoint.sh /
+ ---> Using cache
+ ---> fb0c58902941
+Step 10/10 : ENTRYPOINT [ "/entrypoint.sh" ]
+ ---> Using cache
+ ---> ae3cb4a2af70
+Successfully built ae3cb4a2af70
+Successfully tagged wasi-service:latest
+Sending build context to Docker daemon     266B
+Step 1/1 : FROM wasienv/wasienv:latest
+ ---> 7553a70cb77a
+Successfully built 7553a70cb77a
+Successfully tagged wasienv-compiler:latest
+Sending build context to Docker daemon  524.4kBSending build context to Docker daemon  1.049MBSending build context to Docker daemon  1.573MBSending build context to Docker daemon  2.098MBSending build context to Docker daemon  2.622MBSending build context to Docker daemon  3.671MBSending build context to Docker daemon   4.72MBSending build context to Docker daemon  5.768MBSending build context to Docker daemon  6.817MBSending build context to Docker daemon  7.866MBSending build context to Docker daemon  8.915MBSending build context to Docker daemon  9.964MBSending build context to Docker daemon  11.01MBSending build context to Docker daemon  12.06MBSending build context to Docker daemon  13.11MBSending build context to Docker daemon  14.16MBSending build context to Docker daemon  15.21MBSending build context to Docker daemon  16.26MBSending build context to Docker daemon  17.31MBSending build context to Docker daemon  18.35MBSending build context to Docker daemon  18.88MBSending build context to Docker daemon   19.4MBSending build context to Docker daemon  20.45MBSending build context to Docker daemon   21.5MBSending build context to Docker daemon  23.08MBSending build context to Docker daemon   23.6MBSending build context to Docker daemon  24.65MBSending build context to Docker daemon  25.18MBSending build context to Docker daemon   25.7MBSending build context to Docker daemon  26.75MBSending build context to Docker daemon   27.8MBSending build context to Docker daemon  28.32MBSending build context to Docker daemon  29.37MBSending build context to Docker daemon  30.42MBSending build context to Docker daemon  31.47MBSending build context to Docker daemon  32.52MBSending build context to Docker daemon  33.57MBSending build context to Docker daemon  35.15MBSending build context to Docker daemon  35.68MBSending build context to Docker daemon  36.73MBSending build context to Docker daemon  37.78MBSending build context to Docker daemon  38.82MBSending build context to Docker daemon  39.87MBSending build context to Docker daemon  40.92MBSending build context to Docker daemon  41.97MBSending build context to Docker daemon  43.02MBSending build context to Docker daemon  44.07MBSending build context to Docker daemon  45.12MBSending build context to Docker daemon  46.17MBSending build context to Docker daemon  47.21MBSending build context to Docker daemon  48.26MBSending build context to Docker daemon  49.31MBSending build context to Docker daemon  50.36MBSending build context to Docker daemon  51.41MBSending build context to Docker daemon  52.46MBSending build context to Docker daemon  53.51MBSending build context to Docker daemon  54.56MBSending build context to Docker daemon   55.6MBSending build context to Docker daemon  56.65MBSending build context to Docker daemon   57.7MBSending build context to Docker daemon  58.75MBSending build context to Docker daemon   59.8MBSending build context to Docker daemon  60.85MBSending build context to Docker daemon   61.9MBSending build context to Docker daemon  62.95MBSending build context to Docker daemon     64MBSending build context to Docker daemon  65.04MBSending build context to Docker daemon  66.09MBSending build context to Docker daemon  67.14MBSending build context to Docker daemon  68.19MBSending build context to Docker daemon  69.24MBSending build context to Docker daemon  70.29MBSending build context to Docker daemon  71.34MBSending build context to Docker daemon  72.39MBSending build context to Docker daemon  72.91MBSending build context to Docker daemon  73.43MBSending build context to Docker daemon  74.48MBSending build context to Docker daemon  74.73MB
+Step 1/5 : FROM node:16-alpine
+ ---> 23990429c0d7
+Step 2/5 : WORKDIR /app/nexus
+ ---> Using cache
+ ---> 34a13ae64038
+Step 3/5 : COPY . .
+ ---> 2dbd5818dafa
+Step 4/5 : RUN npm i
+ ---> Running in 62f99fcc8ddb
+[91mnpm[0m[91m WARN[0m[91m old lockfile 
+[0m[91mnpm [0m[91mWARN[0m[91m old lockfile The package-lock.json file was created with an old version of npm,
+npm[0m[91m [0m[91mWARN [0m[91mold lockfile so supplemental metadata must be fetched from the registry.
+npm[0m[91m [0m[91mWARN [0m[91mold lockfile[0m[91m 
+npm WARN old lockfile[0m[91m This is a one-time fix-up, please be patient...
+npm WARN[0m[91m old lockfile 
+[0m
+up to date, audited 1730 packages in 19s
+
+125 packages are looking for funding
+  run `npm fund` for details
+
+64 vulnerabilities (9 low, 29 moderate, 26 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+[91mnpm notice 
+npm notice New minor version of npm available! 8.1.2 -> 8.3.1
+npm notice Changelog: <https://github.com/npm/cli/releases/tag/v8.3.1>
+npm notice Run `npm install -g npm@8.3.1` to update!
+npm notice 
+[0mRemoving intermediate container 62f99fcc8ddb
+ ---> 3b7bc53fad9f
+Step 5/5 : RUN chmod +x /app/nexus/wait-for-it.sh
+ ---> Running in 6ca54a13c650
+Removing intermediate container 6ca54a13c650
+ ---> ae58e4c0392b
+Successfully built ae58e4c0392b
+Successfully tagged nexus:latest
+Sending build context to Docker daemon  524.4kBSending build context to Docker daemon  1.573MBSending build context to Docker daemon  2.622MBSending build context to Docker daemon  3.671MBSending build context to Docker daemon   4.72MBSending build context to Docker daemon  5.768MBSending build context to Docker daemon  6.817MBSending build context to Docker daemon  7.342MBSending build context to Docker daemon  7.866MBSending build context to Docker daemon   8.39MBSending build context to Docker daemon  9.439MBSending build context to Docker daemon  10.49MBSending build context to Docker daemon  11.54MBSending build context to Docker daemon  12.59MBSending build context to Docker daemon  14.16MBSending build context to Docker daemon  15.21MBSending build context to Docker daemon  16.26MBSending build context to Docker daemon  17.31MBSending build context to Docker daemon  18.35MBSending build context to Docker daemon   19.4MBSending build context to Docker daemon  20.45MBSending build context to Docker daemon   21.5MBSending build context to Docker daemon  22.55MBSending build context to Docker daemon   23.6MBSending build context to Docker daemon  24.65MBSending build context to Docker daemon   25.7MBSending build context to Docker daemon  26.74MBSending build context to Docker daemon  27.79MBSending build context to Docker daemon  28.84MBSending build context to Docker daemon  29.89MBSending build context to Docker daemon  30.42MBSending build context to Docker daemon  30.94MBSending build context to Docker daemon  31.99MBSending build context to Docker daemon  33.04MBSending build context to Docker daemon  34.09MBSending build context to Docker daemon  35.13MBSending build context to Docker daemon  36.18MBSending build context to Docker daemon  37.23MBSending build context to Docker daemon  38.28MBSending build context to Docker daemon  39.33MBSending build context to Docker daemon  40.38MBSending build context to Docker daemon  41.43MBSending build context to Docker daemon  42.48MBSending build context to Docker daemon  43.53MBSending build context to Docker daemon  44.57MBSending build context to Docker daemon  45.62MBSending build context to Docker daemon  46.67MBSending build context to Docker daemon  47.72MBSending build context to Docker daemon  48.77MBSending build context to Docker daemon  49.82MBSending build context to Docker daemon  50.87MBSending build context to Docker daemon  51.92MBSending build context to Docker daemon  52.96MBSending build context to Docker daemon  54.01MBSending build context to Docker daemon  55.06MBSending build context to Docker daemon  56.11MBSending build context to Docker daemon  57.16MBSending build context to Docker daemon  58.21MBSending build context to Docker daemon  59.26MBSending build context to Docker daemon  60.31MBSending build context to Docker daemon  61.35MBSending build context to Docker daemon  61.81MB
+Step 1/7 : FROM node:alpine
+ ---> d0ea4d2aa898
+Step 2/7 : WORKDIR /app/orchestrator
+ ---> Using cache
+ ---> 1b0353a75655
+Step 3/7 : COPY package.json .
+ ---> Using cache
+ ---> cf95dc50b643
+Step 4/7 : RUN npm install    && npm install typescript -g
+ ---> Using cache
+ ---> f7de342ae869
+Step 5/7 : COPY . .
+ ---> Using cache
+ ---> ca1aea66b78b
+Step 6/7 : RUN tsc
+ ---> Using cache
+ ---> 5ae23e6a3831
+Step 7/7 : RUN chmod +x /app/orchestrator/wait-for-it.sh
+ ---> Using cache
+ ---> 372a1e5424e1
+Successfully built 372a1e5424e1
+Successfully tagged orchestrator:latest
+Sending build context to Docker daemon   33.3kB
+Step 1/5 : FROM node:16-alpine
+ ---> 23990429c0d7
+Step 2/5 : WORKDIR /app
+ ---> Using cache
+ ---> 7f2e1edcefe2
+Step 3/5 : COPY . .
+ ---> Using cache
+ ---> 10af03bab595
+Step 4/5 : RUN npm i
+ ---> Using cache
+ ---> 95f39f1d0b1e
+Step 5/5 : CMD ["npx", "hardhat", "node"]
+ ---> Using cache
+ ---> f797d5e881a3
+Successfully built f797d5e881a3
+Successfully tagged eth:latest
+Sending build context to Docker daemon  524.4kBSending build context to Docker daemon  1.049MBSending build context to Docker daemon  1.573MBSending build context to Docker daemon  2.622MBSending build context to Docker daemon  3.671MBSending build context to Docker daemon   4.72MBSending build context to Docker daemon  5.768MBSending build context to Docker daemon  6.817MBSending build context to Docker daemon  7.866MBSending build context to Docker daemon  8.915MBSending build context to Docker daemon  9.439MBSending build context to Docker daemon  10.49MBSending build context to Docker daemon  12.06MBSending build context to Docker daemon  13.11MBSending build context to Docker daemon  14.16MBSending build context to Docker daemon  15.21MBSending build context to Docker daemon  16.26MBSending build context to Docker daemon  17.31MBSending build context to Docker daemon  18.35MBSending build context to Docker daemon   19.4MBSending build context to Docker daemon  20.45MBSending build context to Docker daemon   21.5MBSending build context to Docker daemon  22.55MBSending build context to Docker daemon   23.6MBSending build context to Docker daemon  24.65MBSending build context to Docker daemon   25.7MBSending build context to Docker daemon  27.27MBSending build context to Docker daemon  28.32MBSending build context to Docker daemon  29.37MBSending build context to Docker daemon  30.42MBSending build context to Docker daemon  31.46MBSending build context to Docker daemon  32.51MBSending build context to Docker daemon  33.56MBSending build context to Docker daemon  34.61MBSending build context to Docker daemon  35.66MBSending build context to Docker daemon  36.71MBSending build context to Docker daemon  37.76MBSending build context to Docker daemon  38.81MBSending build context to Docker daemon  39.85MBSending build context to Docker daemon   40.9MBSending build context to Docker daemon  41.95MBSending build context to Docker daemon     43MBSending build context to Docker daemon  44.05MBSending build context to Docker daemon   45.1MBSending build context to Docker daemon   45.6MB
+Step 1/10 : FROM node:16-alpine AS builder
+ ---> 23990429c0d7
+Step 2/10 : WORKDIR /app
+ ---> Using cache
+ ---> 7f2e1edcefe2
+Step 3/10 : COPY . .
+ ---> Using cache
+ ---> 5f1bbadf0347
+Step 4/10 : RUN npm rebuild node-sass
+ ---> Using cache
+ ---> 01c9f1b0d77e
+Step 5/10 : RUN yarn run build
+ ---> Using cache
+ ---> f0d403085353
+Step 6/10 : FROM node:16-alpine
+ ---> 23990429c0d7
+Step 7/10 : RUN yarn global add serve
+ ---> Using cache
+ ---> 45ccc00ac824
+Step 8/10 : WORKDIR /app
+ ---> Using cache
+ ---> 0d5df4bd2018
+Step 9/10 : COPY --from=builder /app/build .
+ ---> Using cache
+ ---> 86379f1b2d93
+Step 10/10 : CMD ["serve", "-p", "80", "-s", "."]
+ ---> Using cache
+ ---> 76c1ebd13b5d
+Successfully built 76c1ebd13b5d
+Successfully tagged dspportal:latest
+Attaching to dapp-workers-dspportal-1, dapp-workers-eth-1, dapp-workers-nexus-1, dapp-workers-orchestrator-1, ipfs0
+ipfs0                        | Changing user to ipfs
+ipfs0                        | ipfs version 0.11.0
+ipfs0                        | Found IPFS fs-repo at /data/ipfs
+ipfs0                        | Initializing daemon...
+ipfs0                        | go-ipfs version: 0.11.0-67220ed
+ipfs0                        | Repo version: 11
+ipfs0                        | System version: amd64/linux
+ipfs0                        | Golang version: go1.16.7
+ipfs0                        | 2022/01/19 21:27:27 failed to sufficiently increase receive buffer size (was: 208 kiB, wanted: 2048 kiB, got: 416 kiB). See https://github.com/lucas-clemente/quic-go/wiki/UDP-Receive-Buffer-Size for details.
+dapp-workers-nexus-1         | env: can't execute 'bash': No such file or directory
+ipfs0                        | Swarm listening on /ip4/127.0.0.1/tcp/4001
+ipfs0                        | Swarm listening on /ip4/127.0.0.1/udp/4001/quic
+ipfs0                        | Swarm listening on /ip4/172.18.0.2/tcp/4001
+ipfs0                        | Swarm listening on /ip4/172.18.0.2/udp/4001/quic
+ipfs0                        | Swarm listening on /p2p-circuit
+ipfs0                        | Swarm announcing /ip4/127.0.0.1/tcp/4001
+ipfs0                        | Swarm announcing /ip4/127.0.0.1/udp/4001/quic
+ipfs0                        | Swarm announcing /ip4/172.18.0.2/tcp/4001
+ipfs0                        | Swarm announcing /ip4/172.18.0.2/udp/4001/quic
+ipfs0                        | Swarm announcing /ip4/24.50.232.205/udp/24993/quic
+ipfs0                        | API server listening on /ip4/0.0.0.0/tcp/5001
+ipfs0                        | WebUI: http://0.0.0.0:5001/webui
+ipfs0                        | Gateway (readonly) server listening on /ip4/0.0.0.0/tcp/8080
+ipfs0                        | Daemon is ready
+dapp-workers-dspportal-1     | INFO: Accepting connections at http://localhost:80
+dapp-workers-nexus-1 exited with code 127
+dapp-workers-orchestrator-1  | env: can't execute 'bash': No such file or directory
+dapp-workers-orchestrator-1 exited with code 127
+dapp-workers-eth-1           | Started HTTP and WebSocket JSON-RPC server at http://0.0.0.0:8545/
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Accounts
+dapp-workers-eth-1           | ========
+dapp-workers-eth-1           | Account #0: 0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #1: 0x21dfa04241ca05320e9dcd529f15f6f55115bbc3 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #2: 0xa4c88d10e3080ed44076e24f5db9d8b472cc5b83 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #3: 0x845a35dcc68a249243cb08e16ce0889f9cba4d67 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #4: 0x6a313c74e27cb90f4d78c232f9690736b84c880c (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #5: 0x827d50766cd82e9f08b71ad24c232289f5062a04 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #6: 0x96d24a10babf583138ac535fae60cce71edf6109 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #7: 0xe782a3f86953c2b3b15f3bec2d8c000f29145cb5 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #8: 0xfd0b4b00be57a0f85f1e90aa1284fd3e6b3c9e52 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #9: 0xcd2017bfc0b29168bad29006419203df0c73dff9 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #10: 0x35107224a38ce2dafda1e4ea0ae0d88e0e62de89 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #11: 0xdc8976258c09178575375207be3cc343d380dda5 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #12: 0x2cb3ee150afceb02ca4c6ef8d4a366369386bf17 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #13: 0xf5dd2df6c4716b2eeb21b2f73217c47afb947780 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #14: 0x67be08b0562a1501410ecc0abfbc8899d31b965d (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #15: 0x29114255a9472106fca74adf36f14c1089133d0e (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #16: 0xe256b93b5a8fd84e05a53c8a7c35fac999c08e45 (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #17: 0xa9cf4b1b3456137ef3a8ffc7c85ab0b16c25c99e (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #18: 0x1ce1a686193e06499e971be0f16a13634716628b (10000 ETH)
+dapp-workers-eth-1           | 
+dapp-workers-eth-1           | Account #19: 0x7ffab5e5775847eafd3180599ac4da3b740546dd (10000 ETH)
+dapp-workers-eth-1           | 

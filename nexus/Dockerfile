@@ -1,5 +1,7 @@
 FROM node:16-alpine
-WORKDIR /app
+WORKDIR /app/nexus
 COPY . .
 RUN npm i
-CMD ["npx", "hardhat", "test", "--network", "tests"]
+# ADD wait-for-it.sh /
+RUN chmod +x /app/nexus/wait-for-it.sh
+# ENTRYPOINT [ "/wait-for-it.sh", "--timeout=5", "eth:8545", "--", "npx", "hardhat", "test", "--network", "tests" ]

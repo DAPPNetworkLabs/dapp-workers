@@ -7,3 +7,4 @@
 **/artifacts
 **/build
 *.config.json
+NOTES.md
