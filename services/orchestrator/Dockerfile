@@ -7,4 +7,5 @@ COPY . .
 RUN tsc
 # ADD wait-for-it.sh /
 RUN chmod +x /app/orchestrator/wait-for-it.sh
+RUN apk update && apk add bash
 # ENTRYPOINT [ "/wait-for-it.sh", "--timeout=5", "eth:8545", "--", "node", "./dist/index.js" ]
