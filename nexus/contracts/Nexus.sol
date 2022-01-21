@@ -343,11 +343,31 @@ contract Nexus is Ownable {
         if(isJob) {
             JobData storage jd = jobs[id];
             address[] storage dsps = providers[jd.owner];
-            return jd.done[validateDspCaller(dsps,dsp)];
+            int founds = -1;
+            
+            for (uint i=0; i<dsps.length; i++) {
+                if(dsps[i] == dsp){
+                    founds = int(i);
+                    break;
+                }
+            }
+
+            if(founds == -1) return false;
+            return jd.done[uint(founds)];
         } else {
             ServiceData storage sd = services[id];
             address[] storage dsps = providers[sd.owner];
-            return sd.done[validateDspCaller(dsps,dsp)];
+            int founds = -1;
+            
+            for (uint i=0; i<dsps.length; i++) {
+                if(dsps[i] == dsp){
+                    founds = int(i);
+                    break;
+                }
+            }
+
+            if(founds == -1) return false;
+            return sd.done[uint(founds)];
         }
     }
     
@@ -1136,7 +1156,7 @@ contract Nexus is Ownable {
     /**
      * @dev validates dsp is authorized for job or service
      */
-    function validateDspCaller(address[] memory dsps, address dsp) private view returns(uint) {
+    function validateDspCaller(address[] memory dsps, address dsp) private pure returns(uint) {
         int founds = -1;
         
         for (uint i=0; i<dsps.length; i++) {
