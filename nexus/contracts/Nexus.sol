@@ -676,7 +676,7 @@ contract Nexus is Ownable {
     function serviceError(serviceErrorArgs calldata args) public {
         ServiceData storage sd = services[args.jobID];
 
-        address[] storage dsps = providers[sd.consumer];
+        address[] storage dsps = providers[sd.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
         
         uint founds = validateDspCaller(dsps,msg.sender);
@@ -717,7 +717,7 @@ contract Nexus is Ownable {
         require(sd.started == true, "service not started");
         require(sd.endDate <= block.timestamp, "service time remaining");
 
-        address[] storage dsps = providers[sd.consumer];
+        address[] storage dsps = providers[sd.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
         
         validateDspCaller(dsps,msg.sender);
@@ -1005,7 +1005,6 @@ contract Nexus is Ownable {
         string memory imageName,
         address dsp
     ) private view returns (uint) {
-
         uint jobDapps = calcJobDapps(imageName,dsp);
         uint gasWei = getFeedData(); // 99000000000 fast gas price of 1 gas in wei
         uint dappEth = getDappEth(); // how much 18,ETH for 1 4,DAPP

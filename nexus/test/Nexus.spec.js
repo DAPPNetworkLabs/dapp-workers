@@ -7,7 +7,7 @@ const bancorNetwork = "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0";
 const fastGasFeed = "0x169e633a2d1e6c10dd91238ba11c4a708dfef37c";
 const paymentPremiumPPB = 200000000;
 const stalenessSeconds = 86400;
-const fallbackGasPrice = 200;
+const fallbackGasPrice = 200000000000;
 const gasCeilingMultiplier = 2;
 
 describe("Nexus", function() {
@@ -18,6 +18,15 @@ describe("Nexus", function() {
 
   before(async function() {
     [owner, addr1, addr2, addr3, dsp1, dsp2, ...addrs] = await ethers.getSigners();
+
+    if(process.env.PRIVATE_KEY) {
+      dsp1 = new ethers.Wallet(process.env.PRIVATE_KEY,dsp1.provider);
+      // 10000 ETH
+      await network.provider.send("hardhat_setBalance", [
+        dsp1.address,
+        "0x10000000000000000000000",
+      ]);
+    }
 
     const dappTokenFactory = await ethers.getContractFactory("DappToken", addr1);
     const nexusTokenFactory = await ethers.getContractFactory("Nexus", addr1);
@@ -30,26 +39,29 @@ describe("Nexus", function() {
       fastGasFeed,
       paymentPremiumPPB,
       stalenessSeconds,
-      fallbackGasPrice,
+      100,
       gasCeilingMultiplier
     );
     consumerContract = await consumerTokenFactory.deploy(nexusContract.address);
 
     console.log(`nexus contract: ${nexusContract.address}`);
-
-    // start docker compose unit tests
   });
 
   /*
 
     Todo tests
-    - setConfig
-    - getMaxPaymentForGas
     - jobServiceCompleted
 
   */
 
-  it("Get config", async function() {
+  it("Set get config", async function() {
+    await nexusContract.setConfig(
+      paymentPremiumPPB,
+      gasCeilingMultiplier,
+      fallbackGasPrice,
+      stalenessSeconds
+    );
+
     const config = await nexusContract.connect(dsp1).getConfig();
 
     expect(config.paymentPremiumPPB).to.equal(paymentPremiumPPB);
@@ -283,6 +295,12 @@ describe("Nexus", function() {
     // ensure job ran
   });
 
+  it("Run is job complete", async function() {
+    const isCocmplete = await nexusContract.jobServiceCompleted(1,dsp1.address,true);
+
+    expect(isCocmplete).to.equal(true);
+  });
+
   it("Run job with callback", async function() {
     const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
@@ -424,6 +442,12 @@ describe("Nexus", function() {
     expect(postDspStorageLimit).is.above(preDspStorageLimit);
   });
 
+  it("Get get max payment for gas", async function() {
+    const data = await nexusContract.getMaxPaymentForGas("1000000","wasmrunner",dsp1.address);
+    
+    expect(data).is.above(1000000000);
+  });
+
   it("Run service - complete", async function() {
     const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
@@ -466,6 +490,13 @@ describe("Nexus", function() {
     expect(postDspBal).is.above(preDspBal);
 
     // ensure service not running
+  });
+
+  // test relies on above increase time to assume the feed is stale
+  it("Get get max payment for gas with fallback time", async function() {
+    const data = await nexusContract.getMaxPaymentForGas("1000000","wasmrunner",dsp1.address);
+    
+    expect(data).is.above(1000000000);
   });
 
   it("Claim dsp dapp", async function() {
