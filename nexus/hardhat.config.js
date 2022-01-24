@@ -28,13 +28,20 @@ module.exports = {
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${config.alchemyKey}`
       },
-      allowUnlimitedContractSize: true
+      allowUnlimitedContractSize: true,
+      timeout: 120000
     },
     tests: {
       url: `${'http://eth:8545'}`,
       accounts: {
         mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
-      }
+      },
+      timeout: 120000
     }
+  },
+  mocha: {
+    timeout: 120000,
+    retries: 2,
+    bail: true,
   }
 };

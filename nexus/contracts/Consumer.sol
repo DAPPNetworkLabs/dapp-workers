@@ -20,7 +20,7 @@ contract Consumer {
     function queueJob(address owner) external {
         string[] memory arr = new string[](1);
         arr[0] = "target/wasm32-wasi/release/test";
-        nexus.queueJob(INexus.queueJobArgs(owner,"wasmrunner","",true,1000000,false,arr));
+        nexus.queueJob(INexus.queueJobArgs(owner,"runner","",true,1000000,false,arr));
     }
 
     function _dspcallback(string calldata outputFS, string  calldata outputHash) external {
