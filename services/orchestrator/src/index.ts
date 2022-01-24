@@ -14,24 +14,24 @@ const Web3 = require('web3');
 let abi = require('/nexus/abi/contracts/Nexus.sol/Nexus.json');
 // abi = JSON.stringify(abi);
 
-// provider.on('error', e => console.log('WS Error', e));
-// function socketError(e){
-//     console.log('WS closed');
-//     console.log('Attempting to reconnect...');
-//     const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR);
+provider.on('error', e => console.log('WS Error', e));
+function socketError(e){
+    console.log('WS closed');
+    console.log('Attempting to reconnect...');
+    const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR);
 
-//     provider.on('connect', function () {
-//         console.log('WSS Reconnected');
-//     });
-//     provider.on('end', socketError);
-//     provider.on('close', socketError);
+    provider.on('connect', function () {
+        console.log('WSS Reconnected');
+    });
+    provider.on('end', socketError);
+    provider.on('close', socketError);
 
-//     web3.setProvider(provider);
-//     if(theContract)
-//         subscribe(theContract);
-// }
-// provider.on('end', socketError);
-// provider.on('close', socketError);
+    web3.setProvider(provider);
+    if(theContract)
+        subscribe(theContract);
+}
+provider.on('end', socketError);
+provider.on('close', socketError);
 
 export const address = process.env.ADDRESS;
 const fromBlock = 0; // load and save to file

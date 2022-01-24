@@ -101,6 +101,8 @@ services:
       - "eth"
     links:
       - eth
+    volumes:
+      - ./services/orchestrator:/services/orchestrator
   orchestrator:
     image: orchestrator
     build: services/orchestrator

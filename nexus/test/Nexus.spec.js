@@ -3,12 +3,23 @@ const { expect } = require("chai");
 const { network, ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
 
+const fs = require('fs');
+const path = require('path');
+
 const bancorNetwork = "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0";
 const fastGasFeed = "0x169e633a2d1e6c10dd91238ba11c4a708dfef37c";
 const paymentPremiumPPB = 200000000;
 const stalenessSeconds = 86400;
 const fallbackGasPrice = 200000000000;
 const gasCeilingMultiplier = 2;
+
+function loadfsRoot(fsrootName){
+  if(process.env.PRIVATE_KEY) {
+    return fs.readFileSync(path.resolve('/services/orchestrator', `fsroots/${fsrootName}.ipfs`)).toString().trim();
+  } else {
+    return fs.readFileSync(path.resolve('../services/orchestrator', `fsroots/${fsrootName}.ipfs`)).toString().trim();
+  }
+}
 
 describe("Nexus", function() {
   this.timeout(100000);
@@ -162,10 +173,37 @@ describe("Nexus", function() {
   });
 
   it("Queue job", async function() {
+    // await nexusContract.approveImage("rust-compiler","hash");
+    // await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,1,1);
+
+    // let outputFS;
+    // await nexusContract.queueJob({
+    //   owner: addr1.address,
+    //   imageName: "rust-compiler",
+    //   inputFS: loadfsRoot("pngWriterTest"),
+    //   callback: false,
+    //   gasLimit: 1000000,
+    //   requiresConsistent: false,
+    //   args: []
+    // });
+    
+    // await nexusContract.once("QueueJob", (
+    //     consumer,
+    //     owner,
+    //     imageName,
+    //     id,
+    //     inputFS,
+    //     args
+    //   ) => {
+    //     console.log(inputFS);
+    //     outputFS = inputFS
+    //   }
+    // );
+
     await nexusContract.queueJob({
       owner: addr1.address,
       imageName: "runner",
-      inputFS: "",
+      inputFS: loadfsRoot("pngWriterTest"),
       callback: false,
       gasLimit: 1000000,
       requiresConsistent: false,
