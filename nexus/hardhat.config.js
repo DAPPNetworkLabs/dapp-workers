@@ -28,8 +28,7 @@ module.exports = {
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${config.alchemyKey}`
       },
-      allowUnlimitedContractSize: true,
-      timeout: 120000
+      allowUnlimitedContractSize: true
     },
     tests: {
       url: `${'http://eth:8545'}`,
@@ -38,10 +37,5 @@ module.exports = {
       },
       timeout: 120000
     }
-  },
-  mocha: {
-    timeout: 120000,
-    retries: 2,
-    bail: true,
   }
 };

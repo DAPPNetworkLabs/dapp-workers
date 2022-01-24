@@ -1,5 +1,8 @@
 FROM golang:1.16.7-buster
 
+ARG IPFS_HOST=$IPFS_HOST
+ENV IPFS_HOST=$IPFS_HOST
+
 RUN apt-get update -y && \
     apt-get install -y curl xz-utils fuse libssl-dev ca-certificates fuse && \
     rm -rf /var/apt/lists/* &&  \

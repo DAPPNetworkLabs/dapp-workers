@@ -28,27 +28,55 @@ services:
     volumes:
       - keys:/keys
   runner:
+    env_file:
+    - .env
     image: runner
     profiles:
       - images
-    build: images/runner
+    build: 
+      context: images/runner
+      args: 
+        - IPFS_HOST=${IPFS_HOST:-default}
+    environment:
+      - IPFS_HOST=${IPFS_HOST:-default}
   rust-compiler:
+    env_file:
+    - .env
     image: rust-compiler
     profiles:
       - images
-    build: images/compiler/rust
+    build: 
+      context: images/compiler/rust
+      args: 
+        - IPFS_HOST=${IPFS_HOST:-default}
     labels:
       kompose.service.type: LoadBalancer
+    environment:
+      - IPFS_HOST=${IPFS_HOST:-default}
   wasienv-compiler:
+    env_file:
+    - .env
     profiles:
-      - images    
-    build: images/compiler/wasienv
+      - images
+    build: 
+      context: images/compiler/wasienv
+      args: 
+        - IPFS_HOST=${IPFS_HOST:-default}
     image: wasienv-compiler
+    environment:
+      - IPFS_HOST=${IPFS_HOST:-default}
   wasi-service:
+    env_file:
+    - .env
     profiles:
       - images    
-    build: images/wasi-service
-    image: wasi-service  
+    build: 
+      context: images/wasi-service
+      args: 
+        - IPFS_HOST=${IPFS_HOST:-default}
+    image: wasi-service
+    environment:
+      - IPFS_HOST=${IPFS_HOST:-default}
   eth:
     image: eth
     build: eth
