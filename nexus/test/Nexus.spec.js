@@ -199,10 +199,13 @@ describe("Nexus", function() {
     //     outputFS = inputFS
     //   }
     // );
-
+    
+    console.log(`loadfsRoot("pngWriterTest")`);
+    console.log(loadfsRoot("pngWriterTest"));
     await nexusContract.queueJob({
       owner: addr1.address,
       imageName: "runner",
+      // inputFS: "QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx",
       inputFS: loadfsRoot("pngWriterTest"),
       callback: false,
       gasLimit: 1000000,
