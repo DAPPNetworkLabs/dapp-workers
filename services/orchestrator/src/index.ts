@@ -276,19 +276,18 @@ function subscribe(theContract: any) {
 
         console.log("dispatchResult");
         console.log(dispatchResult);
+        const { outputFS } = dispatchResult;
+
+
+        const millis = Date.now() - start;
         // // todo: kill docker if running too long and fail with not enough gas
 
-        // // measure time
-        // const millis = Date.now() - start;
-        // // post results
-        // const { outputFS } = dispatchResult;
-
-        // const rcpt = await theContract.methods.jobCallback({
-        //     jobID:jobInfo.jobID, 
-        //     outputFS:outputFS,
-        //     outputHash:"output hash"
-        // }).call({from:dspAccount.address});
-        // console.log(`posted results`,jobInfo.consumer,job.jobImage);
+        const rcpt = await theContract.methods.jobCallback({
+            jobID:jobInfo.jobID, 
+            outputFS:outputFS,
+            outputHash:"hash"
+        }).call({from:dspAccount.address});
+        console.log(`posted results`,jobInfo.consumer,job.jobImage);
     });
     // theContract.events["JobDone"]({
     //     fromBlock: 0
