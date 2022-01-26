@@ -7,6 +7,7 @@ let nexusAbi = require('../abi/contracts/Nexus.sol/Nexus.json')
 
 const fs = require('fs');
 const path = require('path');
+const { hexValue } = require("ethers/lib/utils");
 
 const bancorNetwork = "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0";
 const fastGasFeed = "0x169e633a2d1e6c10dd91238ba11c4a708dfef37c";
@@ -29,10 +30,8 @@ function loadfsRoot(fsrootName){
 
 describe("Nexus", function() {
   this.timeout(1000000);
-  // const web3 = new Web3();
   let owner, addr1, addr2, addr3, dsp1, dsp2, addrs;
   let dappTokenContract, nexusContract, consumerContract;
-  // let web3Contract;
 
   before(async function() {
     [owner, addr1, addr2, addr3, dsp1, dsp2, ...addrs] = await ethers.getSigners();
@@ -54,32 +53,13 @@ describe("Nexus", function() {
     consumerContract = await consumerTokenFactory.deploy(nexusContract.address);
 
     if(process.env.PRIVATE_KEY) {
-      // const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR)
-      // const web3 = new Web3(provider);
-      // nexusAbi = require('/app/nexus/abi/contracts/Nexus.sol/Nexus.json');
-      // web3.setProvider(provider);
-      // web3Contract = new web3.eth.Contract(
-      //     nexusAbi,
-      //     nexusContract.address,
-      //     {}
-      // );
-      // provider = new ethers.providers.Web3Provider(new Web3.providers.WebsocketProvider(process.env.ETH_ADDR));
       dsp1 = new ethers.Wallet(process.env.PRIVATE_KEY,dsp1.provider);
       // 10000 ETH
       await network.provider.send("hardhat_setBalance", [
         dsp1.address,
         "0x10000000000000000000000",
       ]);
-      // provider.on('error', e => console.log('WS Error', e));
-      // provider.on('connect', function () {
-      //     console.log('WSS Reconnected');
-      // });
-      // web3Contract = new ethers.Contract(nexusContract.address, JSON.stringify(nexusAbi), provider);
     }
-
-    // console.log(Object.keys(nexusContract.interface));
-    // console.log(nexusTokenFactory);
-    // console.log(nexusContract.interface);
 
     console.log(`nexus contract: ${nexusContract.address}`);
   });
@@ -199,58 +179,26 @@ describe("Nexus", function() {
   });
 
   it("Queue job", async function() {
-    // nexusContract.provider.on("pending", (tx) => {
-    //   console.log(`new pending trx`);
-    //   console.log(tx);
-    //   // Emitted when any new pending transaction is noticed
-    // });
     await nexusContract.approveImage("rust-compiler","hash");
     await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,1,1);
 
-    
-    let outputFSRes;
-
-    // web3Contract.events["Test"]({
-    //   fromBlock: 0
-    // }, async function (error, result) {
-    //   console.log("Test");
-    //   console.log(error);
-    //   console.log(result);
-    // });
-    // web3Contract.events["JobResult"]({
-    //     fromBlock: 0
-    // }, async function (error, result) {
-    //   console.log("JobResult");
-    //   console.log(error);
-    //   console.log(result);
-    //   // outputFSRes = result.outputFS;
-    // });
-    // web3Contract.events["QueueJob"]({
-    //     fromBlock: 0
-    // }, async function (error, result) {
-    //   console.log("QueueJob web3");
-    //   console.log(error);
-    //   console.log(result);
-    //   // outputFSRes = result.outputFS;
-    // });
-    
     nexusContract.on("QueueJob", (
-        consumer, 
-        owner, 
-        imageName, 
-        id,
-        inputFS,
-        args
-      ) => {
-        console.log("QueueJob nexus contract");
-        console.log(`consumer: ${consumer}`);
-        console.log(`owner: ${owner}`);
-        console.log(`imageName: ${imageName}`);
-        console.log(`id: ${id}`);
-        console.log(`inputFS: ${inputFS}`);
-        console.log(`args: ${args}`);
-      }
-    );
+      consumer, 
+      owner, 
+      imageName, 
+      id,
+      inputFS,
+      args
+    ) => {
+      console.log("QueueJob nexus contract");
+      console.log(`consumer: ${consumer}`);
+      console.log(`owner: ${owner}`);
+      console.log(`imageName: ${imageName}`);
+      console.log(`id: ${id}`);
+      console.log(`inputFS: ${inputFS}`);
+      console.log(`args: ${args}`);
+    });
+    
     await nexusContract.queueJob({
       owner: addr1.address,
       imageName: "rust-compiler",
@@ -261,30 +209,29 @@ describe("Nexus", function() {
       args: []
     });
     
-    await nexusContract.once("JobResult", (
-        consumer, 
-        dsp, 
-        outputFS, 
-        outputHash,
-        dapps,
-        jobID
-      ) => {
-        console.log("JobResult nexus contract");
-        console.log(`outputFS: ${outputFS}`);
-        outputFSRes = outputFS;
-      }
-    );
+    let outputFSRes;
 
-    console.log(`waiting: ${outputFSRes}`);
+    const eventPromise = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            dsp, 
+            outputFS, 
+            outputHash,
+            dapps,
+            jobID
+          ) => {
+            resolve(outputFS);
+          }
+        );
+    });
 
-    await delay(60 * 1000 * 3);
-
-    console.log(`done waiting: ${outputFSRes}`);
+    await eventPromise.then(val => {
+      outputFSRes = val;
+    });
 
     await nexusContract.queueJob({
       owner: addr1.address,
       imageName: "runner",
-      // inputFS: "QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx",
       inputFS: outputFSRes,
       callback: false,
       gasLimit: 1000000,
