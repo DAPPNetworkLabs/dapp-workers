@@ -28,6 +28,8 @@ function loadfsRoot(fsrootName){
   }
 }
 
+let jobId = 1;
+
 describe("Nexus", function() {
   this.timeout(1000000);
   let owner, addr1, addr2, addr3, dsp1, dsp2, addrs;
@@ -50,7 +52,7 @@ describe("Nexus", function() {
       100,
       gasCeilingMultiplier
     );
-    consumerContract = await consumerTokenFactory.deploy(nexusContract.address);
+    consumerContract = await consumerTokenFactory.deploy(nexusContract.address, "hash");
 
     if(process.env.PRIVATE_KEY) {
       dsp1 = new ethers.Wallet(process.env.PRIVATE_KEY,dsp1.provider);
@@ -181,23 +183,6 @@ describe("Nexus", function() {
   it("Queue job", async function() {
     await nexusContract.approveImage("rust-compiler","hash");
     await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,1,1);
-
-    nexusContract.on("QueueJob", (
-      consumer, 
-      owner, 
-      imageName, 
-      id,
-      inputFS,
-      args
-    ) => {
-      console.log("QueueJob nexus contract");
-      console.log(`consumer: ${consumer}`);
-      console.log(`owner: ${owner}`);
-      console.log(`imageName: ${imageName}`);
-      console.log(`id: ${id}`);
-      console.log(`inputFS: ${inputFS}`);
-      console.log(`args: ${args}`);
-    });
     
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -239,14 +224,14 @@ describe("Nexus", function() {
       args: ["target/wasm32-wasi/release/test"]
     });
 
-    const job = await nexusContract.jobs(1);
+    const job = await nexusContract.jobs(jobId++);
 
     expect(job.consumer).to.equal(addr1.address);
     expect(job.callback).to.equal(false);
     expect(job.resultsCount.toString()).to.equal('1');
     expect(job.imageName).to.equal("rust-compiler");
 
-    const job2 = await nexusContract.jobs(2);
+    const job2 = await nexusContract.jobs(jobId++);
 
     expect(job2.consumer).to.equal(addr1.address);
     expect(job2.callback).to.equal(false);
@@ -254,22 +239,39 @@ describe("Nexus", function() {
     expect(job2.imageName).to.equal("runner");
   });
 
-  // it("Queue job with callback", async function() {
-  //   const dapps = ethers.utils.parseUnits("250000",4);
-  //   await dappTokenContract.mint(addr2.address, dapps);
-  //   await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
-  //   await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, dsp1.address);
-  //   await nexusContract.connect(addr2).setDsps([dsp1.address]);
+  it("Queue job with callback", async function() {
+    const dapps = ethers.utils.parseUnits("250000",4);
+    await dappTokenContract.mint(addr2.address, dapps);
+    await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
+    await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, dsp1.address);
+    await nexusContract.connect(addr2).setDsps([dsp1.address]);
 
-  //   await consumerContract.queueJob(addr2.address);
+    await consumerContract.queueJob(addr2.address, loadfsRoot("pngWriterTest"));
 
-  //   const job = await nexusContract.jobs(2);
+    const job = await nexusContract.jobs(jobId++);
 
-  //   expect(job.consumer).to.equal(consumerContract.address);
-  //   expect(job.callback).to.equal(true);
-  //   expect(job.resultsCount.toString()).to.equal('0');
-  //   expect(job.imageName).to.equal("runner");
-  // });
+    expect(job.consumer).to.equal(consumerContract.address);
+    expect(job.callback).to.equal(true);
+    expect(job.resultsCount.toString()).to.equal('0');
+    expect(job.imageName).to.equal("rust-compiler");
+    
+    const eventPromise = new Promise((resolve, reject) => {
+        consumerContract.once("UpdatedHash", (
+            newHash
+          ) => {
+            resolve(newHash);
+          }
+        );
+    });
+
+    await eventPromise.then(val => {
+      // console.log(`new hash: ${val}`)
+    });
+
+    const lastHash = await consumerContract.lastHash();
+
+    expect(lastHash).to.equal("QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx");
+  });
 
   // it("Queue service - try below min bytes", async function() {
   //   await nexusContract.approveImage("wasi-service","hash");
@@ -302,10 +304,12 @@ describe("Nexus", function() {
   //     months: 1
   //   });
 
-  //   const service = await nexusContract.services(3);
+  //   const service = await nexusContract.services(jobId++);
 
   //   expect(service.consumer).to.equal(addr1.address);
   //   expect(service.imageName).to.equal("wasi-service");
+
+  //   // ensure service running
   // });
 
   // it("Min job balance", async function() {
@@ -365,8 +369,6 @@ describe("Nexus", function() {
   //   const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     
   //   expect(postDspBal).is.above(preDspBal);
-
-  //   // ensure job ran
   // });
 
   // it("Run is job complete", async function() {
@@ -409,8 +411,6 @@ describe("Nexus", function() {
   //   }
 
   //   expect(failed).to.equal(true);
-
-  //   // ensure service running
   // });
 
   // it("Run job - error", async function() {

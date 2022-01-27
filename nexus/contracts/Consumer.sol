@@ -13,18 +13,23 @@ contract Consumer {
 
     INexus public nexus;
 
-    constructor(address _nexus) {
+    event UpdatedHash (
+        string newHash
+    );
+
+    constructor(address _nexus, string memory firstHash) {
         nexus = INexus(_nexus);
+        lastHash = firstHash;
     }
 
-    function queueJob(address owner) external {
-        string[] memory arr = new string[](1);
-        arr[0] = "target/wasm32-wasi/release/test";
-        nexus.queueJob(INexus.queueJobArgs(owner,"runner","",true,1000000,false,arr));
+    function queueJob(address owner, string calldata inputFS) external {
+        string[] memory arr = new string[](0);
+        nexus.queueJob(INexus.queueJobArgs(owner,"rust-compiler",inputFS,true,1000000,false,arr));
     }
 
     function _dspcallback(string calldata outputFS, string  calldata outputHash) external {
-        // use outputFS for logic...
-        lastHash = outputHash;
+        lastHash = outputFS;
+
+        emit UpdatedHash(lastHash);
     }
 }
