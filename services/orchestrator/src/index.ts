@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 import { getAccount } from './getAccount';
-import { web3,provider } from './web3global';
+import { web3, provider } from './web3global';
 import { postTrx } from './postTrx';
 import { callTrx } from './callTrx';
 
@@ -12,7 +12,7 @@ let abi = require('/nexus/abi/contracts/Nexus.sol/Nexus.json');
 // abi = JSON.stringify(abi);
 
 provider.on('error', e => console.log('WS Error', e));
-function socketError(e){
+function socketError(e) {
     console.log('WS closed');
     console.log('Attempting to reconnect...');
     const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR);
@@ -24,7 +24,7 @@ function socketError(e){
     provider.on('close', socketError);
 
     web3.setProvider(provider);
-    if(theContract)
+    if (theContract)
         subscribe(theContract);
 }
 provider.on('end', socketError);
@@ -40,22 +40,22 @@ const theContract = new web3.eth.Contract(
 export { abi, address };
 let dspAccount;
 let ownerAccount;
-const run = ()=>{
-    dspAccount = getAccount();    
+const run = () => {
+    dspAccount = getAccount();
     subscribe(theContract);
 }
 
 run();
 
-async function isProcessed(jobID, isJob){
-    return await theContract.methods.jobServiceCompleted(jobID, dspAccount.address, isJob).call({from:dspAccount.address});
+async function isProcessed(jobID, isJob) {
+    return await theContract.methods.jobServiceCompleted(jobID, dspAccount.address, isJob).call({ from: dspAccount.address });
 }
 
-async function validateBalance(consumer, gasLimit, imageName){
-    const dspData =  await theContract.methods.dspData(consumer,dspAccount.address).call({from:dspAccount.address});
-    const requiredAmount =  await theContract.methods.getMaxPaymentForGas(gasLimit, imageName, dspAccount.address).call({from:dspAccount.address});
+async function validateBalance(consumer, gasLimit, imageName) {
+    const dspData = await theContract.methods.dspData(consumer, dspAccount.address).call({ from: dspAccount.address });
+    const requiredAmount = await theContract.methods.getMaxPaymentForGas(gasLimit, imageName, dspAccount.address).call({ from: dspAccount.address });
 
-    if(dspData.amount >= requiredAmount) {
+    if (dspData.amount >= requiredAmount) {
         console.log(`validateBalance: true`);
         return true;
     } else {
@@ -64,11 +64,11 @@ async function validateBalance(consumer, gasLimit, imageName){
     }
 }
 
-const getInfo = async(jobId,type) => {
-    if(type=="job") {
-        return await theContract.methods.jobs(jobId).call({from:dspAccount.address});
-    } else if(type=="service") {
-        return await theContract.methods.services(jobId).call({from:dspAccount.address});
+const getInfo = async (jobId, type) => {
+    if (type == "job") {
+        return await theContract.methods.jobs(jobId).call({ from: dspAccount.address });
+    } else if (type == "service") {
+        return await theContract.methods.services(jobId).call({ from: dspAccount.address });
     }
 }
 
@@ -97,11 +97,11 @@ function subscribe(theContract: any) {
         const jobType = "job";
         console.log("jobInfo");
         console.log(jobInfo);
-        
+
         const job = await getInfo(jobInfo.jobID, jobType);
         console.log("job");
         console.log(job);
-        
+
         // add read function to tell whether dsp done with jobv
 
         /*
@@ -116,51 +116,47 @@ function subscribe(theContract: any) {
             - run job callback with output of docker job
         
         */
-        
+
 
         // check if already processed (in case not caught up with events)
-        if(await isProcessed(jobInfo.jobID, true)){
+        if (await isProcessed(jobInfo.jobID, true)) {
             console.log(`already processed job or dsp not selected: ${jobInfo.jobID}`)
             return;
         }
 
-        if(!await validateBalance(jobInfo.consumer, job.gasLimit, job.imageName)) {
+        if (!await validateBalance(jobInfo.consumer, job.gasLimit, job.imageName)) {
             console.log(`min balance not met: ${jobInfo.jobID}`)
             return;
         }
-        
-        const start = Date.now();
+
         let dispatchResult
-        try{
-            dispatchResult  = await dispatch(job.imageName, jobInfo.inputFS, jobInfo.args);
-        }
-        catch(e){
-            // todo: handle failure. 
-            const rcpterr = await postTrx("jobError", dspAccount, jobInfo.jobID, "error dispatching","");
-            console.log(e);
-            console.log(rcpterr);
-        }
+
+        // const p = new Promise((res, rej) => {
+        //     setTimeout(() => rej('docker container took too long'), killDelay);
+            try {
+                dispatchResult = await dispatch(job.imageName, jobInfo.inputFS, jobInfo.args);
+                // res('done');
+            }
+            catch (e) {
+                // todo: handle failure. 
+                await postTrx("jobError", dspAccount, jobInfo.jobID, "error dispatching", "");
+                console.log(e);
+                // rej(e);
+            }
+        // });
+
+        // await p.then();
 
         console.log("dispatchResult");
         console.log(dispatchResult);
         const { outputFS } = dispatchResult;
 
-
-        const millis = Date.now() - start;
-        // // todo: kill docker if running too long and fail with not enough gas
-
         const rcpt = await postTrx("jobCallback", dspAccount, {
-            jobID:jobInfo.jobID, 
-            outputFS:outputFS,
-            outputHash:"hash"
+            jobID: jobInfo.jobID,
+            outputFS: outputFS,
+            outputHash: "hash"
         });
-        // const rcpt = await theContract.methods.jobCallback({
-        //     jobID:jobInfo.jobID, 
-        //     outputFS:outputFS,
-        //     outputHash:"hash"
-        // }).sendTransaction({from:dspAccount.address});
-        console.log(`posted results`,jobInfo.consumer,job.jobImage, rcpt.transactionHash);
-        // console.log(rcpt);
+        console.log(`posted results`, jobInfo.consumer, job.jobImage, rcpt.transactionHash);
     });
 
     // theContract.events["QueueService"]({
@@ -171,7 +167,7 @@ function subscribe(theContract: any) {
     //         console.log(error);
     //         return;
     //     }
-        
+
     //     const returnValues = result.returnValues;
     //     let fidx = 0;
     //     const consumer = returnValues[fidx++];
@@ -183,7 +179,7 @@ function subscribe(theContract: any) {
     //     const jobID = returnValues[fidx++];
     //     // const months = returnValues[fidx++];
     //     const jobType = "service";
-        
+
     //     let serviceInfo = await getInfo(jobID, jobType);
     //     serviceInfo = {
     //         owner: serviceInfo[fidx++],
@@ -209,7 +205,7 @@ function subscribe(theContract: any) {
     //     // const gasPrice = await getGasPrice();
     //     // const gasForCallback = await getGasForCallback(jobType);
     //     // let dapps = (await EthGAS2DAPPs(gasForCallback * gasPrice));
-        
+
     //     // dapps += (await DAPPsFor(24 * 60));
     //     // // todo: check if user has enough dapp gas for one hour of service before starting
     //     // if(dappGasRemaining < dapps){

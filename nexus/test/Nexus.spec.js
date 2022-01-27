@@ -273,44 +273,44 @@ describe("Nexus", function() {
     expect(lastHash).to.equal("QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx");
   });
 
-  // it("Queue service - try below min bytes", async function() {
-  //   await nexusContract.approveImage("wasi-service","hash");
-  //   await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
+  it("Queue service - try below min bytes", async function() {
+    await nexusContract.approveImage("wasi-service","hash");
+    await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
 
-  //   let failed = false;
-  //   try {
-  //     await nexusContract.queueService({
-  //       owner: addr1.address,
-  //       imageName: "wasi-service",
-  //       ioMegaBytes: 0,
-  //       storageMegaBytes: 0,
-  //       inputFS: "",
-  //       args: ["target/wasm32-wasi/release/test"],
-  //       months: 1
-  //     });
-  //   } catch(e) {
-  //     failed = true;
-  //   }
+    let failed = false;
+    try {
+      await nexusContract.queueService({
+        owner: addr1.address,
+        imageName: "wasi-service",
+        ioMegaBytes: 0,
+        storageMegaBytes: 0,
+        inputFS: "",
+        args: ["target/wasm32-wasi/release/test"],
+        months: 1
+      });
+    } catch(e) {
+      failed = true;
+    }
 
-  //   expect(failed).to.equal(true);
+    expect(failed).to.equal(true);
 
-  //   await nexusContract.queueService({
-  //     owner: addr1.address,
-  //     imageName: "wasi-service",
-  //     ioMegaBytes: 1,
-  //     storageMegaBytes: 1,
-  //     inputFS: "",
-  //     args: ["target/wasm32-wasi/release/test"],
-  //     months: 1
-  //   });
+    await nexusContract.queueService({
+      owner: addr1.address,
+      imageName: "wasi-service",
+      ioMegaBytes: 1,
+      storageMegaBytes: 1,
+      inputFS: "",
+      args: ["target/wasm32-wasi/release/test"],
+      months: 1
+    });
 
-  //   const service = await nexusContract.services(jobId++);
+    const service = await nexusContract.services(jobId++);
 
-  //   expect(service.consumer).to.equal(addr1.address);
-  //   expect(service.imageName).to.equal("wasi-service");
+    expect(service.consumer).to.equal(addr1.address);
+    expect(service.imageName).to.equal("wasi-service");
 
-  //   // ensure service running
-  // });
+    // ensure service running
+  });
 
   // it("Min job balance", async function() {
   //   const min = await nexusContract.getMinBalance(1,"job",dsp1.address);

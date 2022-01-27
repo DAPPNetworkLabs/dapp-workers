@@ -1,6 +1,7 @@
 const Docker = require('dockerode');
 const Stream = require('stream')
 
+const killDelay = 1000 * 60 * 3; // 3m
 
   export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
     console.log("running ", dockerImage,ipfsInput, args);
@@ -19,14 +20,25 @@ const Stream = require('stream')
         next()
     }
 
-    // await docker.pull(dockerImage);
-    
+    let data;
 
-  
-    const data = await docker.run(dockerImage,  [ipfsInput, ...args],  [writableStream, writableStream2],{Tty:false,
-        AttachStdout: true,
-        AttachStderr: true
-        ,HostConfig: { AutoRemove: false}})        
+    console.log('before promise')
+    const p = new Promise((res, rej) => {
+      console.log('before timeout')
+      setTimeout(() => rej('docker container took too long'), killDelay);
+      console.log('before docker run')
+      res(docker.run(dockerImage,  [ipfsInput, ...args],  [writableStream, writableStream2],{Tty:false,
+          AttachStdout: true,
+          AttachStderr: true
+          ,HostConfig: { AutoRemove: false}}));
+      console.log('after docker run')
+    });
+    console.log('after promise declared')
+
+    await p.then(val => {
+      data = val
+    });
+    console.log('after promise')
     // var output = data[0];
     const container = data[1];
     // try{
