@@ -265,7 +265,7 @@ describe("Nexus", function() {
     });
 
     await eventPromise.then(val => {
-      // console.log(`new hash: ${val}`)
+      expect(val).to.equal("QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx");
     });
 
     const lastHash = await consumerContract.lastHash();
@@ -293,21 +293,75 @@ describe("Nexus", function() {
     }
 
     expect(failed).to.equal(true);
+    
+    await nexusContract.queueJob({
+      owner: addr1.address,
+      imageName: "rust-compiler",
+      inputFS: loadfsRoot("serviceTest"),
+      callback: false,
+      gasLimit: 1000000,
+      requiresConsistent: false,
+      args: []
+    });
+
+    jobId++;
+    
+    let outputFSRes;
+
+    const JobPromise = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            dsp, 
+            outputFS, 
+            outputHash,
+            dapps,
+            jobID
+          ) => {
+            resolve(outputFS);
+          }
+        );
+    });
+
+    await JobPromise.then(val => {
+      outputFSRes = val;
+    });
 
     await nexusContract.queueService({
       owner: addr1.address,
       imageName: "wasi-service",
       ioMegaBytes: 1,
       storageMegaBytes: 1,
-      inputFS: "",
+      inputFS: outputFSRes,
       args: ["target/wasm32-wasi/release/test"],
       months: 1
     });
 
-    const service = await nexusContract.services(jobId++);
+    const service = await nexusContract.services(jobId);
 
     expect(service.consumer).to.equal(addr1.address);
     expect(service.imageName).to.equal("wasi-service");
+    
+    const servicePromise = new Promise((resolve, reject) => {
+        nexusContract.once("ServiceRunning", (
+            consumer, 
+            dsp, 
+            serviceId, 
+            port
+          ) => {
+            resolve();
+          }
+        );
+    });
+
+    await servicePromise.then();
+
+    const port = await nexusContract.getPortForDSP(jobId++,dsp1.address);
+
+    expect(port).to.equal(8080);
+
+    const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
+
+    expect(endpoint).to.equal("https://dsp.address");
 
     // ensure service running
   });

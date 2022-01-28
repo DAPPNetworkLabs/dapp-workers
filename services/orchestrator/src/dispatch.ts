@@ -1,6 +1,8 @@
 const Docker = require('dockerode');
 const Stream = require('stream')
 
+let dockerMap = {};
+
 const killDelay = 1000 * 60 * 3; // 3m
 
   export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
@@ -22,36 +24,35 @@ const killDelay = 1000 * 60 * 3; // 3m
 
     let data;
 
-    console.log('before promise')
     const p = new Promise((res, rej) => {
-      console.log('before timeout')
-      setTimeout(() => rej('docker container took too long'), killDelay);
-      console.log('before docker run')
-      res(docker.run(dockerImage,  [ipfsInput, ...args],  [writableStream, writableStream2],{Tty:false,
+      setTimeout(() => {
+        console.log('first job timeout');
+        rej('docker container took too long');
+      }, killDelay);
+      docker.run(dockerImage,  [ipfsInput, ...args],  [writableStream, writableStream2],{Tty:false,
           AttachStdout: true,
           AttachStderr: true
-          ,HostConfig: { AutoRemove: false}}));
-      console.log('after docker run')
+          ,HostConfig: { AutoRemove: false}}).then((data) => {
+            res(data);
+          }).catch((e) => {
+            rej(e);
+          });
     });
-    console.log('after promise declared')
+
+    console.log('before running job promise')
 
     await p.then(val => {
       data = val
+    }).catch(e => {
+      throw e;
     });
-    console.log('after promise')
-    // var output = data[0];
+
+    console.log('after running job promise')
     const container = data[1];
-    // try{
-    //     await container.wait();
-    // }
-    // catch(e){
-    //     // already dead
-    // }
     await container.wait();
     await container.remove();
     if(data[0].StatusCode != 0){
         console.log("error",error);    
-        // throw error()
     }
     console.log("output",output);
     const lines = output.split("\n")
@@ -61,17 +62,6 @@ const killDelay = 1000 * 60 * 3; // 3m
 
 export async function dispatchService(dockerImage, ipfsInput, args): Promise<any> {
   const docker = new Docker();
-  // job types (according to dockers)
-  // compilers
-  //   solidity compiler
-  //   wasienv
-  //   rust
-  //   go
-  // runner:
-  //  wasm
-  //  evm
-  //  contract call
-  // history to ipfs
   console.log("running service", dockerImage,ipfsInput, args);
 
   const writableStream = new Stream.Writable()
@@ -85,6 +75,38 @@ export async function dispatchService(dockerImage, ipfsInput, args): Promise<any
   writableStream2._write = (chunk, encoding, next) => {
       error += chunk.toString();
       next()
+  }
+  console.log('before running docker')
+  
+  /**
+   * Get env list from running container
+   * @param container
+   */
+  async function runExec(container) {
+  
+    const options = {
+      // Cmd: ['bash', '-c', 'echo test $VAR'],
+      // Env: ['VAR=ttslkfjsdalkfj'],
+      AttachStdout: true,
+      AttachStderr: true
+    };
+  
+    await container.exec(options, function(err, exec) {
+      if (err) return;
+      exec.start(function(err, stream) {
+        if (err) return;
+  
+        container.modem.demuxStream(stream, process.stdout, process.stderr);
+  
+        exec.inspect(function(err, data) {
+          if (err) return;
+          console.log('container data');
+          console.log(data);
+          console.log('container');
+          console.log(container);
+        });
+      });
+    });
   }
 
   // await docker.pull(dockerImage);
@@ -104,38 +126,91 @@ export async function dispatchService(dockerImage, ipfsInput, args): Promise<any
   //       },
   //       AutoRemove: true}
   //     });
-    const data = docker.run(dockerImage,  [ipfsInput, ...args],  [process.stdout, process.stderr],{Tty:false,
-      AttachStdout: true,
-      AttachStderr: true,
-      ExposedPorts: {
-        "8080": {
-          
-        }
-      },
-      NetworkSettings:{
-        Ports: {
-          "8080": [{
-            HostIP: "0.0.0.0",
-           HostPort: "0"
-          }],
-        },
-      },
-      HostConfig : { 
 
-        PortBindings: {
-          "8080": [{
-            HostIP: "0.0.0.0",
-           HostPort: "0"
-          }],
+    let data;
+
+    const p = new Promise((res, rej) => {
+      setTimeout(() => {
+        console.log('first service timeout');
+        rej('docker container took too long');
+      }, killDelay);
+  
+      res(docker.createContainer({
+        Image: dockerImage,
+        Tty: true,
+        Cmd: [ipfsInput, ...args],
+        ExposedPorts: {
+          "8080": {
+            
+          }
         },
-        AutoRemove: true}
-      }
-        );
+        NetworkSettings:{
+          Ports: {
+            "8080": [{
+              HostIP: "0.0.0.0",
+              HostPort: "0"
+            }],
+          },
+        },
+        HostConfig : { 
+          PortBindings: {
+            "8080": [{
+              HostIP: "0.0.0.0",
+              HostPort: "0"
+            }],
+          },
+          AutoRemove: true
+        }
+      }, function(err, container) {
+
+        container.start({}, function(err, data) {
+          runExec(container);
+        });
+      }));
+      // res(docker.run(dockerImage,  [ipfsInput, ...args],  [process.stdout, process.stderr],{Tty:false,
+      //   AttachStdout: true,
+      //   AttachStderr: true,
+      //   ExposedPorts: {
+      //     "8080": {
+            
+      //     }
+      //   },
+      //   NetworkSettings:{
+      //     Ports: {
+      //       "8080": [{
+      //         HostIP: "0.0.0.0",
+      //        HostPort: "0"
+      //       }],
+      //     },
+      //   },
+      //   HostConfig : { 
+  
+      //     PortBindings: {
+      //       "8080": [{
+      //         HostIP: "0.0.0.0",
+      //        HostPort: "0"
+      //       }],
+      //     },
+      //     AutoRemove: true}
+      //   }
+      //     ));
+    });
+
+    await p.then(val => {
+      console.log(`after running service docker`)
+      console.log(val)
+      data = val
+    }).catch(e => {
+      console.log(`service docker e: ${e}`)
+    });
+
+    dockerMap[1] = data;
 
   // console.log("container",container);
   // await container.start();
-  const container = data[1];
+  // const container = data[1];
   // console.log("stdOut:",output, error,port);
   // todo: expose ports
-  return { port:0}
+  console.log('end dispatch service')
+  return { port:8080 }
 }

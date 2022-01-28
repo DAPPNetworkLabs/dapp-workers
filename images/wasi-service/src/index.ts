@@ -90,10 +90,6 @@ createMiddleware(swaggerFile, app, (err, middleware) => {
       app.listen(8080, () => {
         console.log('running at http://localhost:8080');
       });
-  
     })
-
-  // Start the app
-
 });
 

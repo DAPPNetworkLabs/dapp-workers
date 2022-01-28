@@ -51,15 +51,28 @@ async function isProcessed(jobID, isJob) {
     return await theContract.methods.jobServiceCompleted(jobID, dspAccount.address, isJob).call({ from: dspAccount.address });
 }
 
-async function validateBalance(consumer, gasLimit, imageName) {
+async function validateJobBalance(consumer, gasLimit, imageName) {
     const dspData = await theContract.methods.dspData(consumer, dspAccount.address).call({ from: dspAccount.address });
     const requiredAmount = await theContract.methods.getMaxPaymentForGas(gasLimit, imageName, dspAccount.address).call({ from: dspAccount.address });
 
-    if (dspData.amount >= requiredAmount) {
-        console.log(`validateBalance: true`);
+    if (Number(dspData.amount) >= Number(requiredAmount)) {
+        console.log(`validateJobBalance: true`);
         return true;
     } else {
-        console.log(`validateBalance: false`);
+        console.log(`validateJobBalance: false ${imageName} ${gasLimit} ${dspData.amount} ${requiredAmount} ${typeof(dspData.amount)} ${typeof(requiredAmount)} ${dspData.amount >= requiredAmount}`);
+        return false;
+    }
+}
+
+async function validateServiceBalance(consumer, serviceId) {
+    const dspData = await theContract.methods.dspData(consumer, dspAccount.address).call({ from: dspAccount.address });
+    const requiredAmount = await theContract.methods.getMinBalance(serviceId, "service", dspAccount.address).call({ from: dspAccount.address });
+
+    if (Number(dspData.amount) >= Number(requiredAmount)) {
+        console.log(`validateServiceBalance: true`);
+        return true;
+    } else {
+        console.log(`validateServiceBalance: false ${dspData.amount} ${requiredAmount} ${typeof(dspData.amount)} ${typeof(requiredAmount)} ${dspData.amount >= requiredAmount}`);
         return false;
     }
 }
@@ -102,8 +115,6 @@ function subscribe(theContract: any) {
         console.log("job");
         console.log(job);
 
-        // add read function to tell whether dsp done with jobv
-
         /*
         
             - DONE - check if already processed jobID, replay
@@ -124,28 +135,20 @@ function subscribe(theContract: any) {
             return;
         }
 
-        if (!await validateBalance(jobInfo.consumer, job.gasLimit, job.imageName)) {
-            console.log(`min balance not met: ${jobInfo.jobID}`)
+        if (!await validateJobBalance(jobInfo.consumer, job.gasLimit, job.imageName)) {
+            console.log(`min balance not met job: ${jobInfo.jobID}`)
             return;
         }
 
         let dispatchResult
 
-        // const p = new Promise((res, rej) => {
-        //     setTimeout(() => rej('docker container took too long'), killDelay);
-            try {
-                dispatchResult = await dispatch(job.imageName, jobInfo.inputFS, jobInfo.args);
-                // res('done');
-            }
-            catch (e) {
-                // todo: handle failure. 
-                await postTrx("jobError", dspAccount, jobInfo.jobID, "error dispatching", "");
-                console.log(e);
-                // rej(e);
-            }
-        // });
-
-        // await p.then();
+        try {
+            dispatchResult = await dispatch(job.imageName, jobInfo.inputFS, jobInfo.args);
+        }
+        catch (e) {
+            await postTrx("jobError", dspAccount, jobInfo.jobID, "error dispatching", "");
+            console.log(e);
+        }
 
         console.log("dispatchResult");
         console.log(dispatchResult);
@@ -159,79 +162,88 @@ function subscribe(theContract: any) {
         console.log(`posted results`, jobInfo.consumer, job.jobImage, rcpt.transactionHash);
     });
 
-    // theContract.events["QueueService"]({
-    //     fromBlock: "earliest"
-    // }, async function (error, result) {
-    //     console.log('QueueService hit');
-    //     if (error) {
-    //         console.log(error);
-    //         return;
-    //     }
+    theContract.events["QueueService"]({
+        fromBlock: 0
+    }, async function (error, result) {
+        console.log('QueueService hit');
+        if (error) {
+            console.log(error);
+            return;
+        }
 
-    //     const returnValues = result.returnValues;
-    //     let fidx = 0;
-    //     const consumer = returnValues[fidx++];
-    //     // const jobImage = returnValues[fidx++];
-    //     // const inputFS = returnValues[fidx++];
-    //     // const ioMegaBytes = returnValues[fidx++];
-    //     // const storageMegaBytes = returnValues[fidx++];
-    //     // const args = returnValues[fidx++];
-    //     const jobID = returnValues[fidx++];
-    //     // const months = returnValues[fidx++];
-    //     const jobType = "service";
+        const returnValues = result.returnValues;
+        let fidx = 0;
+        const consumer = returnValues[fidx++];
+        const owner = returnValues[fidx++];
+        const imageName = returnValues[fidx++];
+        const ioMegaBytes = returnValues[fidx++];
+        const storageMegaBytes = returnValues[fidx++];
+        const id = returnValues[fidx++];
+        const inputFS = returnValues[fidx++];
+        const args = returnValues[fidx++];
 
-    //     let serviceInfo = await getInfo(jobID, jobType);
-    //     serviceInfo = {
-    //         owner: serviceInfo[fidx++],
-    //         imageName: serviceInfo[fidx++],
-    //         lastCalled: serviceInfo[fidx++],
-    //         endDate: serviceInfo[fidx++],
-    //         months: serviceInfo[fidx++],
-    //         ioMegaBytes: serviceInfo[fidx++],
-    //         storageMegaBytes: serviceInfo[fidx++]
-    //     }
-    //     console.log("serviceInfo");
-    //     console.log(serviceInfo);
+        const jobType = "service";
 
-    //     // const dappGasRemaining = await getConsumerDAPPGas(consumer);
+        const service = await getInfo(id, jobType);
+        console.log("service");
+        console.log(service);
 
-    //     // // check if already processed (in case not caught up with events)
-    //     //  if(!await isProcessed(jobID)){
-    //     //      return;
-    //     //  }
-    //     // // todo: resolve image from registry
-    //     // const account_dsp = dspAccount;
-    //     // const dockerImage = await getDockerImage(jobImage, account_dsp.address,jobType);
-    //     // const gasPrice = await getGasPrice();
-    //     // const gasForCallback = await getGasForCallback(jobType);
-    //     // let dapps = (await EthGAS2DAPPs(gasForCallback * gasPrice));
+        if (await isProcessed(id, false)) {
+            console.log(`already processed job or dsp not selected: ${id}`)
+            return;
+        }
 
-    //     // dapps += (await DAPPsFor(24 * 60));
-    //     // // todo: check if user has enough dapp gas for one hour of service before starting
-    //     // if(dappGasRemaining < dapps){
-    //     //     // todo: fail
-    //     //     const rcpterr = await postTrx("serviceError", account_dsp, jobID, "", dapps.toFixed());
-    //     // }
-    //     // let serviceResults;
-    //     // try{
-    //     //     serviceResults = await dispatchService(dockerImage, inputFS, args);
-    //     // }
-    //     // catch(e){
-    //     //     // todo: handle failure. 
-    //     //     const rcpterr = await postTrx("serviceError", account_dsp, jobID, "", dapps.toFixed());
-    //     //     console.log(e);
-    //     //     console.log(rcpterr);
-    //     // }
-    //     // // post results
-    //     // const servicercpt = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port);
-    //     // setInterval(async ()=>{
-    //     //     const servicercpt2 = await postTrx("serviceCallback", account_dsp, jobID, serviceResults.port, await DAPPsFor(24 * 60) + await EthGAS2DAPPs(gasForCallback * gasPrice));
-    //     //     console.log(`posting alive`,consumer,jobImage);    
-    //     //     // todo: kill if not enough gas
-    //     // },1000 * 60 * 60 * 24)
-    //     // // todo: set a timer to periodically post serviceCallback
-    //     // console.log(`posted service results`,consumer,jobImage, serviceResults.port,dapps.toFixed());
-    // });
+        if (!await validateServiceBalance(consumer, id)) {
+            console.log(`min balance not met service: ${id}`)
+            // TODO use actual values used
+            const ioMegaBytesUsed = 1;
+            const storageMegaBytesUsed = 1;
+            const rcpterr = await postTrx("serviceError", dspAccount, {
+                jobID: id,
+                stdErr: "service error",
+                outputFS: "service error",
+                ioMegaBytesUsed,
+                storageMegaBytesUsed
+            });
+            return;
+        }
+
+        /*
+        
+            - check if already processed jobID, replay
+                if not, ensure DSP selected by owner
+                    if so, continue
+                    if not, do not process
+            - check if consumer balance sufficient
+            - run docker job
+                if error run job error with output
+            - run job callback with output of docker job
+        
+        */
+
+        let serviceResults;
+        try{
+            console.log("dipatching service", imageName, inputFS, args);
+            serviceResults = await dispatchService(imageName, inputFS, args);
+        }
+        catch(e){
+            // todo: handle failure. 
+            const ioMegaBytesUsed = 1;
+            const storageMegaBytesUsed = 1;
+            const rcpterr = await postTrx("serviceError", dspAccount, {
+                jobID: id,
+                stdErr: "service error",
+                outputFS: "service error",
+                ioMegaBytesUsed,
+                storageMegaBytesUsed
+            });
+            console.log(e);
+            console.log(rcpterr);
+        }
+        // // post results
+        const servicercpt = await postTrx("serviceCallback", dspAccount, id, serviceResults.port);
+        console.log(`posted service results`,consumer,imageName, serviceResults.port);
+    });
 
     // theContract.events["ServiceRunning"]({
     //     fromBlock: 0
