@@ -86,6 +86,8 @@ const getInfo = async (jobId, type) => {
 // todo: subscribe to Kill
 
 function subscribe(theContract: any) {
+    console.log(theContract.events);
+    console.log(theContract.events.QueueJob);
     theContract.events["QueueJob"]({
         fromBlock: 0
     }, async function (error, result) {

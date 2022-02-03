@@ -136,14 +136,14 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
         ExposedPorts: {
           [`${port.toString()}/tcp`]: {}
         },
-        // HostConfig : { 
-        //   PortBindings: {
-        //     [`${port.toString()}/tcp`]: [{
-        //       HostPort: port.toString()
-        //     }],
-        //   },
-        //   AutoRemove: true
-        // }
+        HostConfig : { 
+          PortBindings: {
+            [`${port.toString()}/tcp`]: [{
+              HostPort: port.toString()
+            }],
+          },
+          AutoRemove: true
+        }
       }, function(err, container) {
         console.log('container');
         console.log(container);
@@ -168,7 +168,50 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
         rej('docker container took too long');
       }, killDelay);
       
-      // docker.run(dockerImage,  [ipfsInput, ...args],  [process.stdout, process.stderr],{
+      docker.run(dockerImage,  [ipfsInput, ...args],  [process.stdout, process.stderr],{
+        Tty:false,
+        AttachStdout: true,
+        AttachStderr: true,
+        ExposedPorts: {
+          [`${port.toString()}/tcp`]: {
+            
+          }
+        },
+        NetworkSettings:{
+          Ports: {
+            [`${port.toString()}/tcp`]: [{
+              HostIP: "0.0.0.0",
+              HostPort: port.toString()
+            }],
+          },
+        },
+        HostConfig : { 
+  
+          PortBindings: {
+            [`${port.toString()}/tcp`]: [{
+              HostIP: "0.0.0.0",
+              HostPort: port.toString()
+            }],
+          },
+          AutoRemove: true
+        }
+        }, function (err, data, container) {
+          console.log(err);
+          // console.log(data.StatusCode);
+          console.log(data);
+          console.log(container);
+          if(err) {
+            clearTimeout(timeout);
+            rej(err);
+          }
+          res(container.id);
+        }).then(function(data) {
+          clearTimeout(timeout);
+          res(data);
+          console.log('container removed');
+        });
+  
+      // res(docker.run(dockerImage,  [ipfsInput, ...args],  [process.stdout, process.stderr],{
       //   Tty:false,
       //   AttachStdout: true,
       //   AttachStderr: true,
@@ -181,7 +224,7 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
       //     Ports: {
       //       [`${port.toString()}/tcp`]: [{
       //         HostIP: "0.0.0.0",
-      //         HostPort: [`${port.toString()}/tcp`]
+      //         HostPort: port.toString()
       //       }],
       //     },
       //   },
@@ -190,53 +233,12 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
       //     PortBindings: {
       //       [`${port.toString()}/tcp`]: [{
       //         HostIP: "0.0.0.0",
-      //         HostPort: [`${port.toString()}/tcp`]
+      //         HostPort: port.toString()
       //       }],
       //     },
       //     AutoRemove: true}
-      //   }, function (err, data, container) {
-      //     console.log(err);
-      //     // console.log(data.StatusCode);
-      //     console.log(data);
-      //     console.log(container);
-      //     if(err) {
-      //       clearTimeout(timeout);
-      //       rej(err);
-      //     }
-      //     res(container.id);
-      //   }).then(function(data) {
-      //     clearTimeout(timeout);
-      //     res(data);
-      //     console.log('container removed');
-      //   });
-  
-      res(docker.run(dockerImage,  [ipfsInput, ...args],  [process.stdout, process.stderr],{Tty:false,
-        AttachStdout: true,
-        AttachStderr: true,
-        ExposedPorts: {
-          [`${port.toString()}/tcp`]: {
-            
-          }
-        },
-        NetworkSettings:{
-          Ports: {
-            [`${port.toString()}/tcp`]: [{
-              HostIP: "0.0.0.0",
-            HostPort: [`${port.toString()}/tcp`]
-            }],
-          },
-        },
-        HostConfig : { 
-  
-          PortBindings: {
-            [`${port.toString()}/tcp`]: [{
-              HostIP: "0.0.0.0",
-            HostPort: [`${port.toString()}/tcp`]
-            }],
-          },
-          AutoRemove: true}
-        }
-      ));
+      //   }
+      // ));
       // res(runAndClear(timeout))
     });
 
