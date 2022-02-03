@@ -87,7 +87,10 @@ createMiddleware(swaggerFile, app, (err, middleware) => {
           res.send(stdout);
         });
       });
-      app.listen(9000, () => {
+      app.get('/', function (req, res) {
+          res.send('foo');
+      });
+      app.listen(9000, '0.0.0.0', () => {
         console.log('running at http://localhost:9000');
       });
     })

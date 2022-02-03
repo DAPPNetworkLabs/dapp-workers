@@ -128,8 +128,47 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
 
     let data;
 
-    const runAndClear = async (timeoutInstance) => {
-      await docker.createContainer({
+    // const runAndClear = async (timeoutInstance) => {
+    //   await docker.createContainer({
+    //     Image: dockerImage,
+    //     Tty: true,
+    //     Cmd: [ipfsInput, ...args],
+    //     ExposedPorts: {
+    //       [`${port.toString()}/tcp`]: {}
+    //     },
+    //     HostConfig : { 
+    //       PortBindings: {
+    //         [`${port.toString()}/tcp`]: [{
+    //           HostPort: port.toString()
+    //         }],
+    //       },
+    //       AutoRemove: true
+    //     }
+    //   }, function(err, container) {
+    //     console.log('container');
+    //     console.log(container);
+    //     dockerMap[id] = container.ID;
+    //     console.log('container err');
+    //     console.log(err);
+    //     container.start(function(err, data) {
+    //       console.log('container data');
+    //       console.log(data);
+    //       console.log('container error');
+    //       console.log(err);
+    //       // runExec(container);
+    //     });
+    //     console.log(typeof(dockerMap) =="object" ? JSON.stringify(dockerMap) : dockerMap)
+    //   });
+    //   clearTimeout(timeoutInstance);
+    // }
+
+    const p = new Promise((res, rej) => {
+      const timeout = setTimeout(() => {
+        console.log('first service timeout');
+        rej('docker container took too long');
+      }, killDelay);
+      
+      docker.createContainer({
         Image: dockerImage,
         Tty: true,
         Cmd: [ipfsInput, ...args],
@@ -144,72 +183,60 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
           },
           AutoRemove: true
         }
-      }, function(err, container) {
-        console.log('container');
-        console.log(container);
-        dockerMap[id] = container.ID;
-        console.log('container err');
-        console.log(err);
-        container.start(function(err, data) {
-          console.log('container data');
-          console.log(data);
-          console.log('container error');
-          console.log(err);
-          // runExec(container);
-        });
-        console.log(typeof(dockerMap) =="object" ? JSON.stringify(dockerMap) : dockerMap)
-      });
-      clearTimeout(timeoutInstance);
-    }
-
-    const p = new Promise((res, rej) => {
-      const timeout = setTimeout(() => {
-        console.log('first service timeout');
-        rej('docker container took too long');
-      }, killDelay);
-      
-      docker.run(dockerImage,  [ipfsInput, ...args],  [process.stdout, process.stderr],{
-        Tty:false,
-        AttachStdout: true,
-        AttachStderr: true,
-        ExposedPorts: {
-          [`${port.toString()}/tcp`]: {
-            
-          }
-        },
-        NetworkSettings:{
-          Ports: {
-            [`${port.toString()}/tcp`]: [{
-              HostIP: "0.0.0.0",
-              HostPort: port.toString()
-            }],
-          },
-        },
-        HostConfig : { 
-  
-          PortBindings: {
-            [`${port.toString()}/tcp`]: [{
-              HostIP: "0.0.0.0",
-              HostPort: port.toString()
-            }],
-          },
-          AutoRemove: true
-        }
-        }, function (err, data, container) {
-          console.log(err);
-          // console.log(data.StatusCode);
-          console.log(data);
-          console.log(container);
+      }, function (err, container) {
+        console.log(`container: ${JSON.stringify(container)}`)
+          dockerMap[id] = container.id;
+        container.start(function (err, data) {
           if(err) {
+            console.log(err);
             clearTimeout(timeout);
             rej(err);
           }
-          res(container.id);
-        }).then(function(data) {
+          console.log(`container: ${typeof(data)=="object" ? JSON.stringify(data):data}`)
           clearTimeout(timeout);
           res(data);
-          console.log('container removed');
+        //...
         });
+      });
+      
+      // docker.run(dockerImage,  [ipfsInput, ...args],  [process.stdout, process.stderr],{
+      //   Tty:false,
+      //   AttachStdout: true,
+      //   AttachStderr: true,
+      //   ExposedPorts: {
+      //     [`${port.toString()}/tcp`]: {
+            
+      //     }
+      //   },
+      //   NetworkSettings:{
+      //     Ports: {
+      //       [`${port.toString()}/tcp`]: [{
+      //         HostIP: "0.0.0.0",
+      //         HostPort: port.toString()
+      //       }],
+      //     },
+      //   },
+      //   HostConfig : { 
+  
+      //     PortBindings: {
+      //       [`${port.toString()}/tcp`]: [{
+      //         HostIP: "0.0.0.0",
+      //         HostPort: port.toString()
+      //       }],
+      //     },
+      //     AutoRemove: true
+      //   }
+      //   }, function (err, data, container) {
+      //     console.log(err);
+      //     // console.log(data.StatusCode);
+      //     console.log(data);
+      //     console.log(container);
+      //     if(err) {
+      //       clearTimeout(timeout);
+      //       rej(err);
+      //     }
+      //     res(container.id);
+      //   });
   
       // res(docker.run(dockerImage,  [ipfsInput, ...args],  [process.stdout, process.stderr],{
       //   Tty:false,
