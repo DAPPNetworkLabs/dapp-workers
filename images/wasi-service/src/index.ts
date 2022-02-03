@@ -87,8 +87,8 @@ createMiddleware(swaggerFile, app, (err, middleware) => {
           res.send(stdout);
         });
       });
-      app.listen(8080, () => {
-        console.log('running at http://localhost:8080');
+      app.listen(9000, () => {
+        console.log('running at http://localhost:9000');
       });
     })
 });

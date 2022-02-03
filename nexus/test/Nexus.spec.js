@@ -2,6 +2,7 @@ const Web3 = require("web3");
 const { expect } = require("chai");
 const { network, ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
+const fetch =require('node-fetch');
 
 let nexusAbi = require('../abi/contracts/Nexus.sol/Nexus.json')
 
@@ -16,7 +17,7 @@ const stalenessSeconds = 86400;
 const fallbackGasPrice = 200000000000;
 const gasCeilingMultiplier = 2;
 
-const delay = ms => new Promise(res => setTimeout(res, ms));
+const delay = s => new Promise(res => setTimeout(res, s * 1000));
 
 let provider;
 
@@ -99,12 +100,12 @@ describe("Nexus", function() {
   });
 
   it("Register DSP", async function() {
-    await nexusContract.connect(dsp1).regDSP("https://dsp.address");
+    await nexusContract.connect(dsp1).regDSP("https://orchestrator");
 
     const registeredDSPs = await nexusContract.registeredDSPs(dsp1.address);
 
     expect(registeredDSPs.active).to.equal(true);
-    expect(registeredDSPs.endpoint).to.equal("https://dsp.address");
+    expect(registeredDSPs.endpoint).to.equal("https://orchestrator");
     expect(registeredDSPs.claimableDapp.toString()).to.equal('0');
   });
 
@@ -357,11 +358,24 @@ describe("Nexus", function() {
 
     const port = await nexusContract.getPortForDSP(jobId++,dsp1.address);
 
-    expect(port).to.equal(8080);
+    expect(port).to.equal(9000);
 
     const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
 
-    expect(endpoint).to.equal("https://dsp.address");
+    expect(endpoint).to.equal("https://orchestrator");
+
+    await delay(20);
+
+    const response = await fetch(`${endpoint}:${port}`);
+    const body = await response.text();
+
+    console.log("service body");
+    console.log(body);
+    console.log(body.length);
+    console.log(typeof(body));
+    console.log(body != "");
+
+    // expect(body.length).to.equal(278505);
 
     // ensure service running
   });
@@ -654,13 +668,13 @@ describe("Nexus", function() {
   // it("Get dsp port", async function() {
   //   const port = await nexusContract.getPortForDSP(3,dsp1.address);
 
-  //   expect(port).to.equal(8001);
+  //   expect(port).to.equal(9000);
   // });
 
   // it("Get dsp endpoint", async function() {
   //   const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
 
-  //   expect(endpoint).to.equal("https://dsp.address");
+  //   expect(endpoint).to.equal("https://orchestrator");
   // });
 
   // it("Get dsp list", async function() {
@@ -679,6 +693,6 @@ describe("Nexus", function() {
   //     dspData.push(await nexusContract.registeredDSPs(dsps[i]));
   //   }
 
-  //   expect(dspData[0].endpoint).to.equal('https://dsp.address');
+  //   expect(dspData[0].endpoint).to.equal('https://orchestrator');
   // });
 });

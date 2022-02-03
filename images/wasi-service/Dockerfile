@@ -18,8 +18,6 @@ RUN npm install\
 COPY . .
 RUN tsc
 
-
-
 ADD entrypoint.sh /
 
 ENTRYPOINT [ "/entrypoint.sh" ]

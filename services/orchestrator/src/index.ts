@@ -56,7 +56,6 @@ async function validateJobBalance(consumer, gasLimit, imageName) {
     const requiredAmount = await theContract.methods.getMaxPaymentForGas(gasLimit, imageName, dspAccount.address).call({ from: dspAccount.address });
 
     if (Number(dspData.amount) >= Number(requiredAmount)) {
-        console.log(`validateJobBalance: true`);
         return true;
     } else {
         console.log(`validateJobBalance: false ${imageName} ${gasLimit} ${dspData.amount} ${requiredAmount} ${typeof(dspData.amount)} ${typeof(requiredAmount)} ${dspData.amount >= requiredAmount}`);
@@ -69,7 +68,6 @@ async function validateServiceBalance(consumer, serviceId) {
     const requiredAmount = await theContract.methods.getMinBalance(serviceId, "service", dspAccount.address).call({ from: dspAccount.address });
 
     if (Number(dspData.amount) >= Number(requiredAmount)) {
-        console.log(`validateServiceBalance: true`);
         return true;
     } else {
         console.log(`validateServiceBalance: false ${dspData.amount} ${requiredAmount} ${typeof(dspData.amount)} ${typeof(requiredAmount)} ${dspData.amount >= requiredAmount}`);
@@ -88,11 +86,9 @@ const getInfo = async (jobId, type) => {
 // todo: subscribe to Kill
 
 function subscribe(theContract: any) {
-    console.log('subscribing');
     theContract.events["QueueJob"]({
         fromBlock: 0
     }, async function (error, result) {
-        console.log('QueueJob hit');
         if (error) {
             console.log(error);
             return;
@@ -108,12 +104,8 @@ function subscribe(theContract: any) {
             args: returnValues[fidx++]
         }
         const jobType = "job";
-        console.log("jobInfo");
-        console.log(jobInfo);
 
         const job = await getInfo(jobInfo.jobID, jobType);
-        console.log("job");
-        console.log(job);
 
         /*
         
@@ -147,7 +139,7 @@ function subscribe(theContract: any) {
         }
         catch (e) {
             await postTrx("jobError", dspAccount, jobInfo.jobID, "error dispatching", "");
-            console.log(e);
+            console.log("jobError",e);
         }
 
         console.log("dispatchResult");
@@ -165,7 +157,6 @@ function subscribe(theContract: any) {
     theContract.events["QueueService"]({
         fromBlock: 0
     }, async function (error, result) {
-        console.log('QueueService hit');
         if (error) {
             console.log(error);
             return;
@@ -185,8 +176,6 @@ function subscribe(theContract: any) {
         const jobType = "service";
 
         const service = await getInfo(id, jobType);
-        console.log("service");
-        console.log(service);
 
         if (await isProcessed(id, false)) {
             console.log(`already processed job or dsp not selected: ${id}`)
@@ -223,8 +212,7 @@ function subscribe(theContract: any) {
 
         let serviceResults;
         try{
-            console.log("dipatching service", imageName, inputFS, args);
-            serviceResults = await dispatchService(imageName, inputFS, args);
+            serviceResults = await dispatchService(id, imageName, inputFS, args);
         }
         catch(e){
             // todo: handle failure. 
