@@ -1,7 +1,9 @@
 const Docker = require('dockerode');
 const Stream = require('stream');
 const fetch =require('node-fetch');
-import { execPromise } from './execPromise';
+import { execPromise } from './web3global';
+
+const kill = require('kill-port');
 
 
 let dockerMap = {};
@@ -67,6 +69,22 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
     return {stdOut:output,stderr: error, outputFS:outputfs,statusCode:data[0].StatusCode}
 }
 
+const dockerrm = async (name) => {
+  try {
+    await execPromise(`docker rm -f ${name}`,{});
+  }
+  catch (e) {
+
+  }
+};
+
+const killIfRunning = async (port) => {
+  try {
+    await kill(port);
+  }
+  catch (e) { }
+};
+
 export async function dispatchService(id, dockerImage, ipfsInput, args): Promise<any> {
   const docker = new Docker();
   console.log("running service", dockerImage,ipfsInput, args);
@@ -91,40 +109,7 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
    */
 
     let data;
-
-    // const runAndClear = async (timeoutInstance) => {
-    //   await docker.createContainer({
-    //     Image: dockerImage,
-    //     Tty: true,
-    //     Cmd: [ipfsInput, ...args],
-    //     ExposedPorts: {
-    //       [`${port.toString()}/tcp`]: {}
-    //     },
-    //     HostConfig : { 
-    //       PortBindings: {
-    //         [`${port.toString()}/tcp`]: [{
-    //           HostPort: port.toString()
-    //         }],
-    //       },
-    //       AutoRemove: true
-    //     }
-    //   }, function(err, container) {
-    //     console.log('container');
-    //     console.log(container);
-    //     dockerMap[id] = container.ID;
-    //     console.log('container err');
-    //     console.log(err);
-    //     container.start(function(err, data) {
-    //       console.log('container data');
-    //       console.log(data);
-    //       console.log('container error');
-    //       console.log(err);
-    //       // runExec(container);
-    //     });
-    //     console.log(typeof(dockerMap) =="object" ? JSON.stringify(dockerMap) : dockerMap)
-    //   });
-    //   clearTimeout(timeoutInstance);
-    // }
+    
     const timeout = setTimeout(() => {
       console.log('first service timeout');
     }, killDelay);
@@ -133,9 +118,10 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
     
     // docker run --name wasi-service-1 --rm -d --expose=9000 wasi-service /bin/bash ./entrypoint.sh QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM target/wasm32-wasi/release/test
     console.log(`docker run --name  ${dockerImage}-${id} --rm -d --expose=${port} ${dockerImage} /bin/bash ${[ipfsInput, ...args].join(' ')}`);
-    const res = await execPromise(`docker run --name  ${dockerImage}-${id} --rm -d --expose=${port} ${dockerImage} /bin/bash ${[ipfsInput, ...args].join(' ')}`);
+    const res = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name  ${dockerImage}-${id} --rm -d --expose=${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
     
     console.log(`exec Promise res: ${res}`);
+    dockerMap[id] = res;
     
     clearTimeout(timeout);
 

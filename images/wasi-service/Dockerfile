@@ -20,4 +20,4 @@ RUN tsc
 
 ADD entrypoint.sh /
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+# ENTRYPOINT [ "/entrypoint.sh" ]

@@ -8,6 +8,7 @@ function onData(printCB, printStream, outObj, key) {
     outObj[key] += line;
   };
 }
+
 export const execPromise = function(cmd, options) {
   return new Promise(function(resolve, reject) {
     if (options && options.unref) {
