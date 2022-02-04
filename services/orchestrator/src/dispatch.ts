@@ -1,5 +1,8 @@
 const Docker = require('dockerode');
-const Stream = require('stream')
+const Stream = require('stream');
+const fetch =require('node-fetch');
+import { execPromise } from './execPromise';
+
 
 let dockerMap = {};
 
@@ -86,45 +89,6 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
    * Get env list from running container
    * @param container
    */
-  async function runExec(container) {
-  
-    const options = {
-      Cmd: ["/bin/bash","entrypoint.sh", ipfsInput, ...args],
-      Env: [ipfsInput, ...args],
-      AttachStdout: true,
-      AttachStderr: true
-    };
-
-    console.log(options)
-  
-    await container.exec(options, function(err, exec) {
-      if (err) {
-        console.log(1);
-        console.log(err);
-        return
-      };
-      exec.start(function(err, stream) {
-        if (err) {
-          console.log(2);
-          console.log(err);
-          return
-        };
-  
-        container.modem.demuxStream(stream, process.stdout, process.stderr);
-  
-        exec.inspect(function(err, data) {
-          if (err) {
-            console.log(3);
-            console.log(err);
-            return
-          };
-          console.log('container data');
-          console.log(data);
-          dockerMap[id] = data.id;
-        });
-      });
-    });
-  }
 
     let data;
 
@@ -161,43 +125,63 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
     //   });
     //   clearTimeout(timeoutInstance);
     // }
+    const timeout = setTimeout(() => {
+      console.log('first service timeout');
+    }, killDelay);
+    
+    // await execPromise(`docker run --rm -ti -p 8000:80 -p 8443:443 --name pandorafms pandorafms/pandorafms:latest`);
+    
+    // docker run --name wasi-service-1 --rm -d --expose=9000 wasi-service /bin/bash ./entrypoint.sh QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM target/wasm32-wasi/release/test
+    console.log(`docker run --name  ${dockerImage}-${id} --rm -d --expose=${port} ${dockerImage} /bin/bash ${[ipfsInput, ...args].join(' ')}`);
+    const res = await execPromise(`docker run --name  ${dockerImage}-${id} --rm -d --expose=${port} ${dockerImage} /bin/bash ${[ipfsInput, ...args].join(' ')}`);
+    
+    console.log(`exec Promise res: ${res}`);
+    
+    clearTimeout(timeout);
 
-    const p = new Promise((res, rej) => {
-      const timeout = setTimeout(() => {
-        console.log('first service timeout');
-        rej('docker container took too long');
-      }, killDelay);
+    // const p = new Promise((res, rej) => {
+    //   const timeout = setTimeout(() => {
+    //     console.log('first service timeout');
+    //     rej('docker container took too long');
+    //   }, killDelay);
       
-      docker.createContainer({
-        Image: dockerImage,
-        Tty: true,
-        Cmd: [ipfsInput, ...args],
-        ExposedPorts: {
-          [`${port.toString()}/tcp`]: {}
-        },
-        HostConfig : { 
-          PortBindings: {
-            [`${port.toString()}/tcp`]: [{
-              HostPort: port.toString()
-            }],
-          },
-          AutoRemove: true
-        }
-      }, function (err, container) {
-        console.log(`container: ${JSON.stringify(container)}`)
-          dockerMap[id] = container.id;
-        container.start(function (err, data) {
-          if(err) {
-            console.log(err);
-            clearTimeout(timeout);
-            rej(err);
-          }
-          console.log(`container: ${typeof(data)=="object" ? JSON.stringify(data):data}`)
-          clearTimeout(timeout);
-          res(data);
-        //...
-        });
-      });
+    //   await execPromise();
+      
+      // docker.createContainer({
+      //   Image: dockerImage,
+      //   Tty: true,
+      //   Cmd: [ipfsInput, ...args],
+      //   ExposedPorts: {
+      //     [`${port.toString()}/tcp`]: {}
+      //   },
+      //   HostConfig : { 
+      //     PortBindings: {
+      //       [`${port.toString()}/tcp`]: [{
+      //         HostPort: port.toString()
+      //       }],
+      //     },
+      //     AutoRemove: true
+      //   }
+      // }, function (err, container) {
+      //   console.log(`container: ${JSON.stringify(container)}`)
+      //     dockerMap[id] = container.id;
+      //     console.log('starting container');
+      //     container.start();
+      //     console.log('waiting on container');
+      //     container.wait();
+      //     console.log('done waiting on container');
+      //   // container.start(function (err, data) {
+      //   //   if(err) {
+      //   //     console.log(err);
+      //   //     clearTimeout(timeout);
+      //   //     rej(err);
+      //   //   }
+      //   //   console.log(`container: ${typeof(data)=="object" ? JSON.stringify(data):data}`)
+      //   //   clearTimeout(timeout);
+      //   //   res(data);
+      //   // //...
+      //   // });
+      // });
       
       // docker.run(dockerImage,  [ipfsInput, ...args],  [process.stdout, process.stderr],{
       //   Tty:false,
@@ -267,15 +251,77 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
       //   }
       // ));
       // res(runAndClear(timeout))
-    });
+  
+    // const options = {
+    //   Cmd: ["bash","entrypoint.sh", ipfsInput, ...args],
+    //   Env: [ipfsInput, ...args],
+    //   AttachStdout: true,
+    //   AttachStderr: true,
+    //     ExposedPorts: {
+    //       [`${port.toString()}/tcp`]: {}
+    //     },
+    //     HostConfig : { 
+    //       PortBindings: {
+    //         [`${port.toString()}/tcp`]: [{
+    //           HostPort: port.toString()
+    //         }],
+    //       },
+    //       AutoRemove: true
+    //     }
+    // };
 
-    await p.then(val => {
-      console.log(`after running service docker`)
-      console.log(val)
-      data = val
-    }).catch(e => {
-      console.log(`service docker e: ${e}`)
-    });
+    // console.log(options)
+  
+    //   docker.createContainer({
+    //     Image: dockerImage,
+    //     Tty: true,
+    //     Cmd: ['/bin/bash']
+    //   }, function(err, container) {
+    //     container.start({}, function(err, data) {
+    //       container.exec(options, function(err, exec) {
+    //         if (err) {
+    //           console.log(1);
+    //           console.log(err);
+    //           clearTimeout(timeout);
+    //           rej(err);
+    //         };
+    //         exec.start(function(err, stream) {
+    //           if (err) {
+    //             console.log(2);
+    //             console.log(err);
+    //             clearTimeout(timeout);
+    //             rej(err);
+    //           };
+        
+    //           container.modem.demuxStream(stream, process.stdout, process.stderr);
+        
+    //           exec.inspect(function(err, data) {
+    //             if (err) {
+    //               console.log(3);
+    //               console.log(err);
+    //               clearTimeout(timeout);
+    //               rej(err);
+    //             };
+    //             console.log('container data');
+    //             console.log(data);
+    //             dockerMap[id] = data.id;
+    //             clearTimeout(timeout);
+    //           });
+    //         });
+    //       });
+    //     });
+    //     container.wait();
+    //     res('done');
+    //   });
+    // });
+
+    // await p.then(val => {
+    //   console.log(`after running service docker`)
+    //   console.log(val)
+    //   data = val
+    // }).catch(e => {
+    //   console.log(`service docker e: ${e}`)
+    // });
 
   // console.log("container",container);
   // await container.start();
@@ -283,5 +329,17 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
   // console.log("stdOut:",output, error,port);
   // todo: expose ports
   console.log('end dispatch service')
+
+  // const response = await fetch(`http://0.0.0.0:9000`, {method: 'GET'});
+  // const body = await response.text();
+
+  // console.log("service body");
+  // console.log(body);
+
+  // const response2 = await fetch(`http://orchestrator:9000`, {method: 'GET'});
+  // const body2 = await response2.text();
+
+  // console.log("service body2");
+  // console.log(body2);
   return { port:port++ }
 }
