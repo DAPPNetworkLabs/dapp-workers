@@ -11,7 +11,7 @@ RUN wget https://dist.ipfs.io/go-ipfs/v0.9.1/go-ipfs_v0.9.1_linux-amd64.tar.gz &
     rm go-ipfs_v0.9.1_linux-amd64.tar.gz
 RUN ipfs init
 
-WORKDIR /usr/yourapplication-name
+WORKDIR /usr/wasi-service
 COPY package.json .
 RUN npm install\
     && npm install typescript -g

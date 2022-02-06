@@ -105,6 +105,10 @@ services:
       - orchestrator
     volumes:
       - ./services/orchestrator:/services/orchestrator
+    # ports:
+    #   - 9000:9000
+    expose:
+      - "9000"
   orchestrator:
     image: orchestrator
     build: services/orchestrator
@@ -116,8 +120,10 @@ services:
       - ADDRESS=0x1af5e6689288F69BBAE9E41fC6BE1C82d008935f
     command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "node", "./dist/index.js"]
     privileged: true
-    expose:
-      - "9000"
+    # expose:
+    #   - "9000"
+    # ports:
+    #   - 9000:9000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./nexus:/nexus
