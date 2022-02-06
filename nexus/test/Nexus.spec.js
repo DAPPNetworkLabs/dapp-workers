@@ -100,12 +100,12 @@ describe("Nexus", function() {
   });
 
   it("Register DSP", async function() {
-    await nexusContract.connect(dsp1).regDSP("http://localhost");
+    await nexusContract.connect(dsp1).regDSP("http://wasi-service-5");
 
     const registeredDSPs = await nexusContract.registeredDSPs(dsp1.address);
 
     expect(registeredDSPs.active).to.equal(true);
-    expect(registeredDSPs.endpoint).to.equal("http://localhost");
+    expect(registeredDSPs.endpoint).to.equal("http://wasi-service-5");
     expect(registeredDSPs.claimableDapp.toString()).to.equal('0');
   });
 
@@ -678,7 +678,7 @@ describe("Nexus", function() {
   // it("Get dsp endpoint", async function() {
   //   const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
 
-  //   expect(endpoint).to.equal("http://localhost");
+  //   expect(endpoint).to.equal("http://wasi-service-5");
   // });
 
   // it("Get dsp list", async function() {
@@ -697,6 +697,6 @@ describe("Nexus", function() {
   //     dspData.push(await nexusContract.registeredDSPs(dsps[i]));
   //   }
 
-  //   expect(dspData[0].endpoint).to.equal('http://localhost');
+  //   expect(dspData[0].endpoint).to.equal('http://wasi-service-5');
   // });
 });

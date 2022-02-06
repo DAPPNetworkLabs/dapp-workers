@@ -116,7 +116,7 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
     
     // await execPromise(`docker run --rm -ti -p 8000:80 -p 8443:443 --name pandorafms pandorafms/pandorafms:latest`);
     // docker run -v /var/run/docker.sock:/var/run/docker.sock --name  wasi-service-1 --rm -p 9000:9000 wasi-service /bin/bash entrypoint.sh QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM target/wasm32-wasi/release/test
-    const res = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name  ${dockerImage}-${id} --rm -d -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+    const res = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name  ${dockerImage}-${id} --rm -d --net=dapp-workers_default -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
     
     console.log(`exec Promise res: ${res}`);
     dockerMap[id] = res;

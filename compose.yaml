@@ -187,3 +187,5 @@ volumes:
     external: false       
   nexus:
     external: false    
+networks:
+  bridge:
