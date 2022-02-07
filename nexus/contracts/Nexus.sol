@@ -18,14 +18,14 @@ contract Nexus is Ownable {
     IBancorNetwork public bancorNetwork;
     AggregatorV3Interface public immutable FAST_GAS_FEED;
 
-    address dappToken = 0x939B462ee3311f8926c047D2B576C389092b1649;
-    address dappBntToken = 0x33A23d447De16a8Ff802c9Fcc917465Df01A3977;
-    address bntToken = 0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C;
-    address ethBntToken = 0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533;
-    address ethToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address immutable dappToken = 0x939B462ee3311f8926c047D2B576C389092b1649;
+    address immutable dappBntToken = 0x33A23d447De16a8Ff802c9Fcc917465Df01A3977;
+    address immutable bntToken = 0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C;
+    address immutable ethBntToken = 0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533;
+    address immutable ethToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    address usdtToken = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-    address usdtBntToken = 0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306;
+    address immutable usdtToken = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    address immutable usdtBntToken = 0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306;
 
     uint256 private constant CUSHION = 5_000;
     uint256 private constant JOB_GAS_OVERHEAD = 80_000;
@@ -1026,21 +1026,17 @@ contract Nexus is Ownable {
         address dsp
     ) private view returns (uint) {
         uint jobDapps = calcJobDapps(imageName,dsp);
-        uint gasWei = getFeedData(); // 99000000000 fast gas price of 1 gas in wei
-        uint dappEth = getDappEth(); // how much 18,ETH for 1 4,DAPP
-        // 99000000000 * 80000 = 7.92E15 ((7.92E15/1e18)*$3,980) = $31.52 for gas for base * 20% fee
-        // 5,051.2821 DAPP for $39.40
+        uint gasWei = getFeedData();
+        uint dappEth = getDappEth();
+        
         gas += JOB_GAS_OVERHEAD;
-        uint weiForGas = gasWei * gas; 
-        // 7.92E15 * 1e9 = 7.92E24
-        // 7.92E24 * 1,200,000,000 = 9.504E33
-        // 9.504E33 / 1989696218183 = 4.776608566E21
-        // add 0
-        // 4.776608566E21 + 0 = 4.776608566E21
+        
+        uint weiForGas = gasWei * gas;
+        
         uint total = weiForGas * 1e9 * (PPB_BASE + s_config.paymentPremiumPPB) / dappEth;
         total /= 1e14;
         total += jobDapps;
-        // require(total <= LINK_TOTAL_SUPPLY, "payment greater than all LINK");
+        
         return total;
     }
 
