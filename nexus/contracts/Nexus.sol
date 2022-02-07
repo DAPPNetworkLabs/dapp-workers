@@ -292,7 +292,7 @@ contract Nexus is Ownable {
         Todo
         - jobServiceCompleted for service return if completed or error'd out
     
-    /*
+    */
 
     constructor (
         address _tokenContract,
