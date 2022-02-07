@@ -16,16 +16,16 @@ contract Nexus is Ownable {
     
     IERC20 public token;
     IBancorNetwork public bancorNetwork;
-    AggregatorV3Interface public immutable FAST_GAS_FEED;
+    AggregatorV3Interface public FAST_GAS_FEED;
 
-    address immutable dappToken = 0x939B462ee3311f8926c047D2B576C389092b1649;
-    address immutable dappBntToken = 0x33A23d447De16a8Ff802c9Fcc917465Df01A3977;
-    address immutable bntToken = 0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C;
-    address immutable ethBntToken = 0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533;
-    address immutable ethToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address dappToken = 0x939B462ee3311f8926c047D2B576C389092b1649;
+    address dappBntToken = 0x33A23d447De16a8Ff802c9Fcc917465Df01A3977;
+    address bntToken = 0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C;
+    address ethBntToken = 0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533;
+    address ethToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    address immutable usdtToken = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-    address immutable usdtBntToken = 0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306;
+    address usdtToken = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    address usdtBntToken = 0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306;
 
     uint256 private constant CUSHION = 5_000;
     uint256 private constant JOB_GAS_OVERHEAD = 80_000;
