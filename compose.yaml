@@ -105,10 +105,6 @@ services:
       - orchestrator
     volumes:
       - ./services/orchestrator:/services/orchestrator
-    # ports:
-    #   - 9000:9000
-    expose:
-      - "9000"
   orchestrator:
     image: orchestrator
     build: services/orchestrator
@@ -118,12 +114,11 @@ services:
       - COMPOSE_PROFILES
       - NODE_OPTIONS=--openssl-legacy-provider
       - ADDRESS=0x1af5e6689288F69BBAE9E41fC6BE1C82d008935f
+      - DATABASE_URL="postgres://user:pass@example.com:5432/dbname"
+      - DATABASE_NODE_ENV="production"
+      - DATABASE_TIMEOUT=10000
     command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "node", "./dist/index.js"]
     privileged: true
-    # expose:
-    #   - "9000"
-    # ports:
-    #   - 9000:9000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./nexus:/nexus
@@ -156,7 +151,7 @@ services:
       - "eth"
     links:
       - eth
-  db:
+  postgres:
     image: postgres 
     ports:
       - 5432:5432
