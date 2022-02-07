@@ -114,7 +114,7 @@ services:
       - COMPOSE_PROFILES
       - NODE_OPTIONS=--openssl-legacy-provider
       - ADDRESS=0x1af5e6689288F69BBAE9E41fC6BE1C82d008935f
-      - DATABASE_URL="postgres://user:pass@example.com:5432/dbname"
+      - DATABASE_URL=postgres://user:password@postgres:5432/orchestrator
       - DATABASE_NODE_ENV="production"
       - DATABASE_TIMEOUT=10000
     command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "node", "./dist/index.js"]
@@ -156,7 +156,9 @@ services:
     ports:
       - 5432:5432
     environment:
+      POSTGRES_USER: user
       POSTGRES_PASSWORD: password
+      POSTGRES_DB: orchestrator
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
        - pg-data:/var/lib/postgresql/data/pgdata
