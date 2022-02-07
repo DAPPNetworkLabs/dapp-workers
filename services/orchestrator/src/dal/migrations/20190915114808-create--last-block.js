@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('ServiceRequests', {
+    return queryInterface.createTable('LastBlock', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -9,12 +9,9 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       key: {
-        type: Sequelize.INTEGER
+        type: Sequelize.string
       },
-      io_usage: {
-        type: Sequelize.INTEGER
-      },
-      storage_usage: {
+      last_block: {
         type: Sequelize.INTEGER
       },
       createdAt: {
@@ -28,6 +25,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('ServiceRequests');
+    return queryInterface.dropTable('LastBlock');
   }
 };

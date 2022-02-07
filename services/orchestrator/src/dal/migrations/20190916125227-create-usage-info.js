@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('LastBlock', {
+    return queryInterface.createTable('UsageInfo', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -11,7 +11,10 @@ module.exports = {
       key: {
         type: Sequelize.INTEGER
       },
-      last_block: {
+      io_usage: {
+        type: Sequelize.INTEGER
+      },
+      storage_usage: {
         type: Sequelize.INTEGER
       },
       createdAt: {
@@ -25,6 +28,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('LastBlock');
+    return queryInterface.dropTable('UsageInfo');
   }
 };

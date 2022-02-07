@@ -1,6 +1,6 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  const UsageinFo = sequelize.define('UsageinFo', {
+  const UsageInfo = sequelize.define('UsageInfo', {
     key: { type: DataTypes.INTEGER, unique: true },
     io_usage: DataTypes.INTEGER,
     storage_usage: DataTypes.INTEGER
@@ -9,5 +9,5 @@ module.exports = (sequelize, DataTypes) => {
     version: true,
     timestamps: true,
   });
-  return UsageinFo;
+  return UsageInfo;
 };
