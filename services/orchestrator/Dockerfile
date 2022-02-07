@@ -28,21 +28,3 @@ RUN apt-get update && apt-get install \
     lsb-release
 RUN curl -fsSL https://get.docker.com -o get-docker.sh
 RUN sh get-docker.sh
-
-
-# FROM node:alpine
-# WORKDIR /app/orchestrator
-# COPY package.json .
-# RUN npm install\
-#     && npm install typescript -g
-# COPY . .
-# RUN tsc
-# RUN chmod +x /app/orchestrator/wait-for-it.sh
-# RUN apk update && apk add bash
-# RUN apt-get update && apt-get install \
-#     ca-certificates \
-#     curl \
-#     gnupg \
-#     lsb-release
-# RUN curl -fsSL https://get.docker.com -o get-docker.sh
-# RUN sh get-docker.sh

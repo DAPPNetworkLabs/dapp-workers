@@ -157,9 +157,7 @@ services:
     links:
       - eth
   db:
-    image: postgres
-    profiles:
-      - donotstart    
+    image: postgres 
     ports:
       - 5432:5432
     environment:

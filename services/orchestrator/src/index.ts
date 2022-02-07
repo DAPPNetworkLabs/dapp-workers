@@ -107,21 +107,7 @@ function subscribe(theContract: any) {
 
         const job = await getInfo(jobInfo.jobID, jobType);
 
-        /*
-        
-            - DONE - check if already processed jobID, replay
-                if not, ensure DSP selected by owner
-                    if so, continue
-                    if not, do not process
-            - DONE - check if consumer balance sufficient
-            - run docker job
-                if error run job error with output
-            - run job callback with output of docker job
-        
-        */
 
-
-        // check if already processed (in case not caught up with events)
         if (await isProcessed(jobInfo.jobID, true)) {
             console.log(`already processed job or dsp not selected: ${jobInfo.jobID}`)
             return;
@@ -185,6 +171,7 @@ function subscribe(theContract: any) {
         if (!await validateServiceBalance(consumer, id)) {
             console.log(`min balance not met service: ${id}`)
             // TODO use actual values used
+            // TODO ensure DAPP gas sufficient to cover gas of trx
             const ioMegaBytesUsed = 1;
             const storageMegaBytesUsed = 1;
             const rcpterr = await postTrx("serviceError", dspAccount, {
@@ -233,27 +220,23 @@ function subscribe(theContract: any) {
         console.log(`posted service results`,consumer,imageName, serviceResults.port);
     });
 
-    // theContract.events["ServiceRunning"]({
-    //     fromBlock: 0
-    // }, async function (error, result) {
-    //     console.log('ServiceRunning hit');
-    //     if (error) {
-    //         console.log("event error",error);
-    //         return;
-    //     }
+    theContract.events["ServiceComplete"]({
+        fromBlock: 0
+    }, async function (error, result) {
+        console.log('ServiceComplete hit');
+        if (error) {
+            console.log("event error",error);
+            return;
+        }
+    });
 
-    //     // const returnValues = result.returnValues;
-    //     // let fidx = 0;        
-    //     // const obj={
-    //     //     consumer: returnValues[fidx++],
-    //     //     dsp: returnValues[fidx++],
-    //     //     jobID: returnValues[fidx++],
-    //     //     port: returnValues[fidx++]
-    //     // }
-    //     // if(pendingJobs[obj.jobID]){
-    //     //     await pendingJobs[obj.jobID](obj);
-    //     //     delete pendingJobs[obj.jobID];
-    //     // }
-    //     // console.log(`got final results`,obj);
-    // });
+    theContract.events["ServiceError"]({
+        fromBlock: 0
+    }, async function (error, result) {
+        console.log('ServiceError hit');
+        if (error) {
+            console.log("event error",error);
+            return;
+        }
+    });
 }
