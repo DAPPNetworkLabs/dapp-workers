@@ -13,7 +13,10 @@ if (process.env.DATABASE_URL && process.env.DATABASE_URL !== "false") {
 }
 var config = require(__dirname + '/../config/config.js')[env];
 
-let db = {};
+let db = {
+  sequelize:{},
+  Sequelize: {}
+};
 
 console.log(`starting db: env - ${env}, dialect - ${config.dialect}`);
 var sequelize;
@@ -41,6 +44,7 @@ fs
   });
 
 Object.keys(db).forEach(modelName => {
+  console.log(`setting up ${modelName}`)
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
@@ -78,8 +82,8 @@ function addTimeoutProxy(obj, timeout, objName) {
   return new Proxy(obj, handler);
 }
 
-db[sequelize] = addTimeoutProxy(sequelize, dbTimeout, 'sequelize');
-db[Sequelize] = addTimeoutProxy(Sequelize, dbTimeout, 'Sequelize');
+db.sequelize = addTimeoutProxy(sequelize, dbTimeout, 'sequelize');
+db.Sequelize = addTimeoutProxy(Sequelize, dbTimeout, 'Sequelize');
 
 module.exports = db;
 

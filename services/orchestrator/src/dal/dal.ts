@@ -28,13 +28,14 @@ async function createLastBlock(lastBlackNum) {
 
 async function createUsageInfo(key) {
   await sync();
-  const res = await model_db.unique.findOne({
+  const res = await model_db.UsageInfo.findOne({
     where: { key }
   });
+  console.log('after findOne')
   while (true) {
     if (!res) {
       try {
-        return model_db.unique.create({ key, io_usage:0, storage_usage:0 });
+        return model_db.UsageInfo.create({ key, io_usage:0, storage_usage:0 });
       }
       catch (e) {
         if (e.name === 'SequelizeOptimisticLockError')
@@ -48,7 +49,7 @@ async function createUsageInfo(key) {
 
 async function getUsageInfo(key) {
   await sync();
-  return model_db.unique.findOne({
+  return model_db.UsageInfo.findOne({
     where: { key }
   });
 }

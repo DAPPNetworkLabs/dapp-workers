@@ -366,8 +366,6 @@ describe("Nexus", function() {
     expect(port).to.equal(9000);
 
     const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
-    
-    console.log(endpoint);
 
     expect(endpoint).to.equal(`${endpoint}`);
     
@@ -376,156 +374,229 @@ describe("Nexus", function() {
     const response = await fetch(`${endpoint}:${port}`, {method: 'GET'});
     const body = await response.text();
 
-    console.log("service body");
-    console.log(body);
-    console.log(body.length);
-    console.log(typeof(body));
-    console.log(body != "");
-
     expect(body).to.equal("foo");
-
-    // ensure service running
   });
 
-  it("Min job balance", async function() {
-    const min = await nexusContract.getMinBalance(2,"job",dsp1.address);
+  // it("Min job balance", async function() {
+  //   const min = await nexusContract.getMinBalance(2,"job",dsp1.address);
 
-    // console.log(min.toString());
-    // 76,349.8769 * 0.00730 $/DAPP = $557.35
+  //   // console.log(min.toString());
+  //   // 76,349.8769 * 0.00730 $/DAPP = $557.35
     
-    expect(min).is.above(400000000);
-  });
-
-  it("Min job balance with callback", async function() {
-    const min = await nexusContract.getMinBalance(3,"job",dsp1.address);
-
-    // console.log(min.toString());
-    // 76,349.8769 * 0.00730 $/DAPP = $557.35
-    
-    expect(min).is.above(400000000);
-  });
-
-  it("Min service balance", async function() {
-    const min = await nexusContract.getMinBalance(5,"service",dsp1.address);
-
-    // console.log(min.toString());
-    // 9,315.0201 * 0.00730 $/DAPP = $68.00
-
-    expect(min).is.above(50000000);
-  });
-
-  it("Set dsps", async function() {
-    await nexusContract.connect(dsp2).regDSP("endpoint");
-
-    const dapps = ethers.utils.parseUnits("800000",4);
-    await dappTokenContract.mint(addr1.address, dapps);
-    await dappTokenContract.approve(nexusContract.address, dapps);
-    await nexusContract.buyGasFor(dapps, addr1.address, dsp2.address);
-
-    await nexusContract.setDsps([dsp1.address,dsp2.address]);
-
-    const dsps = await nexusContract.getDspAddresses();
-
-    expect(JSON.stringify(dsps)).to.equal(JSON.stringify([dsp1.address,dsp2.address]));
-    
-    await nexusContract.setDsps([dsp1.address]);
-    await nexusContract.connect(dsp2).deprecateDSP();
-  });
-
-  // it("Run job", async function() {
-  //   const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
-    
-  //   console.log('callback')
-    
-  //   await nexusContract.connect(dsp1).jobCallback({
-  //     jobID: 1,
-  //     outputFS: "",
-  //     outputHash: "hash"
-  //   });
-    
-  //   console.log('after callback')
-
-  //   const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
-    
-  //   expect(postDspBal).is.above(preDspBal);
+  //   expect(min).is.above(400000000);
   // });
 
-  it("Run is job complete", async function() {
-    const isCocmplete1 = await nexusContract.jobServiceCompleted(1,dsp1.address,true);
-    const isCocmplete2 = await nexusContract.jobServiceCompleted(2,dsp1.address,true);
+  // it("Min job balance with callback", async function() {
+  //   const min = await nexusContract.getMinBalance(3,"job",dsp1.address);
 
-    expect(isCocmplete1).to.equal(true);
-    expect(isCocmplete2).to.equal(true);
-  });
+  //   // console.log(min.toString());
+  //   // 76,349.8769 * 0.00730 $/DAPP = $557.35
+    
+  //   expect(min).is.above(400000000);
+  // });
 
-  // it("Confirm job with callback ran", async function() {
+  // it("Min service balance", async function() {
+  //   const min = await nexusContract.getMinBalance(5,"service",dsp1.address);
+
+  //   // console.log(min.toString());
+  //   // 9,315.0201 * 0.00730 $/DAPP = $68.00
+
+  //   expect(min).is.above(50000000);
+  // });
+
+  // it("Set dsps", async function() {
+  //   await nexusContract.connect(dsp2).regDSP("endpoint");
+
+  //   const dapps = ethers.utils.parseUnits("800000",4);
+  //   await dappTokenContract.mint(addr1.address, dapps);
+  //   await dappTokenContract.approve(nexusContract.address, dapps);
+  //   await nexusContract.buyGasFor(dapps, addr1.address, dsp2.address);
+
+  //   await nexusContract.setDsps([dsp1.address,dsp2.address]);
+
+  //   const dsps = await nexusContract.getDspAddresses();
+
+  //   expect(JSON.stringify(dsps)).to.equal(JSON.stringify([dsp1.address,dsp2.address]));
+    
+  //   await nexusContract.setDsps([dsp1.address]);
+  //   await nexusContract.connect(dsp2).deprecateDSP();
+  // });
+
+  // // it("Run job", async function() {
+  // //   const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    
+  // //   console.log('callback')
+    
+  // //   await nexusContract.connect(dsp1).jobCallback({
+  // //     jobID: 1,
+  // //     outputFS: "",
+  // //     outputHash: "hash"
+  // //   });
+    
+  // //   console.log('after callback')
+
+  // //   const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    
+  // //   expect(postDspBal).is.above(preDspBal);
+  // // });
+
+  // it("Run is job complete", async function() {
+  //   const isCocmplete1 = await nexusContract.jobServiceCompleted(1,dsp1.address,true);
+  //   const isCocmplete2 = await nexusContract.jobServiceCompleted(2,dsp1.address,true);
+
+  //   expect(isCocmplete1).to.equal(true);
+  //   expect(isCocmplete2).to.equal(true);
+  // });
+
+  // // it("Confirm job with callback ran", async function() {
+  // //   // const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+
+  // //   // await nexusContract.connect(dsp1).jobCallback({
+  // //   //   jobID: 2,
+  // //   //   outputFS: "",
+  // //   //   outputHash: "hash"
+  // //   // });
+
+  // //   // const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+
+  // //   const lastHash = await consumerContract.lastHash();
+    
+  // //   // expect(postDspBal).is.above(preDspBal);
+  // //   expect(lastHash.toString()).to.equal('QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx');
+  // // });
+
+  // it("Try double run service", async function() {
   //   // const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
-  //   // await nexusContract.connect(dsp1).jobCallback({
-  //   //   jobID: 2,
-  //   //   outputFS: "",
-  //   //   outputHash: "hash"
-  //   // });
+  //   // await nexusContract.connect(dsp1).serviceCallback(5,9000);
 
   //   // const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
-
-  //   const lastHash = await consumerContract.lastHash();
     
   //   // expect(postDspBal).is.above(preDspBal);
-  //   expect(lastHash.toString()).to.equal('QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx');
+
+  //   let failed = false;
+  //   try {
+  //     await nexusContract.connect(dsp1).serviceCallback(5,9000);
+  //   } catch(e) {
+  //     failed = true;
+  //   }
+
+  //   expect(failed).to.equal(true);
+    
+  //   // const isCocmplete1 = await nexusContract.jobServiceCompleted(5,dsp1.address,false);
+  //   // expect(isCocmplete1).to.equal(true);
   // });
-
-  it("Try double run service", async function() {
-    // const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
-
-    // await nexusContract.connect(dsp1).serviceCallback(5,9000);
-
-    // const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
-    
-    // expect(postDspBal).is.above(preDspBal);
-
-    let failed = false;
-    try {
-      await nexusContract.connect(dsp1).serviceCallback(5,9000);
-    } catch(e) {
-      console.log(e);
-      failed = true;
-    }
-
-    expect(failed).to.equal(true);
-    
-    // const isCocmplete1 = await nexusContract.jobServiceCompleted(5,dsp1.address,false);
-    // expect(isCocmplete1).to.equal(true);
-  });
   
-  // it("Run job - error", async function() {
-  //   const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+  // // it("Run job - error", async function() {
+  // //   const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
-  //   await nexusContract.queueJob({
-  //     owner: addr1.address,
-  //     imageName: "runner",
-  //     inputFS: "",
-  //     callback: false,
-  //     gasLimit: 1000000,
-  //     requiresConsistent: false,
-  //     args: ["target/wasm32-wasi/release/test"]
-  //   });
+  // //   await nexusContract.queueJob({
+  // //     owner: addr1.address,
+  // //     imageName: "runner",
+  // //     inputFS: "",
+  // //     callback: false,
+  // //     gasLimit: 1000000,
+  // //     requiresConsistent: false,
+  // //     args: ["target/wasm32-wasi/release/test"]
+  // //   });
 
-  //   // await nexusContract.connect(dsp1).jobError(4,"big error","newhash");
+  // //   // await nexusContract.connect(dsp1).jobError(4,"big error","newhash");
 
-  //   // const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+  // //   // const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     
-  //   // // ensure get base payment for job
-  //   // expect(postDspBal).is.above(preDspBal);
+  // //   // // ensure get base payment for job
+  // //   // expect(postDspBal).is.above(preDspBal);
 
-  //   // ensure job not completed
+  // //   // ensure job not completed
+  // // });
+
+  // it("Run job with callback - error", async function() {
+    
   // });
 
-  it("Run job with callback - error", async function() {
-    
-  });
+  // // it("Run service - error", async function() {
+  // //   const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
-  // it("Run service - error", async function() {
+  // //   await nexusContract.queueService({
+  // //     owner: addr1.address,
+  // //     imageName: "wasi-service",
+  // //     ioMegaBytes: 1,
+  // //     storageMegaBytes: 1,
+  // //     inputFS: "",
+  // //     args: ["target/wasm32-wasi/release/test"],
+  // //     months: 1
+  // //   });
+
+  // //   await nexusContract.connect(dsp1).serviceError({
+  // //     jobID: 5,
+  // //     stdErr: "big error",
+  // //     outputFS: "",
+  // //     ioMegaBytesUsed: 1,
+  // //     storageMegaBytesUsed: 1
+  // //   });
+
+  // //   const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    
+  // //   expect(postDspBal).is.above(preDspBal);
+
+  // //   // ensure service not running
+  // // });
+
+  // it("Extend service", async function() {
+  //   const preDspEnDate = (await nexusContract.services(5)).endDate;
+  //   const preDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
+  //   const preDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
+
+  //   const dapps = ethers.utils.parseUnits("200000",4);
+  //   await dappTokenContract.approve(nexusContract.address, dapps);
+  //   await nexusContract.extendService(
+  //     5,
+  //     "wasi-service",
+  //     1,
+  //     1,
+  //     1
+  //   );
+
+  //   const postDspEnDate = (await nexusContract.services(5)).endDate;
+  //   const postDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
+  //   const postDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
+    
+  //   expect(postDspEnDate).is.above(preDspEnDate);
+  //   expect(postDspIoLimit).is.above(preDspIoLimit);
+  //   expect(postDspStorageLimit).is.above(preDspStorageLimit);
+  // });
+
+  // it("Extend service same month", async function() {
+  //   const preDspEnDate = (await nexusContract.services(5)).endDate;
+  //   const preDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
+  //   const preDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
+
+  //   const dapps = ethers.utils.parseUnits("200000",4);
+  //   await dappTokenContract.approve(nexusContract.address, dapps);
+  //   await nexusContract.extendService(
+  //     5,
+  //     "wasi-service",
+  //     0,
+  //     1,
+  //     1
+  //   );
+
+  //   const postDspEnDate = (await nexusContract.services(5)).endDate;
+  //   const postDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
+  //   const postDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
+    
+  //   expect(postDspEnDate).to.equal(preDspEnDate);
+  //   expect(postDspIoLimit).is.above(preDspIoLimit);
+  //   expect(postDspStorageLimit).is.above(preDspStorageLimit);
+  // });
+
+  // it("Get get max payment for gas", async function() {
+  //   const data = await nexusContract.getMaxPaymentForGas("1000000","runner",dsp1.address);
+    
+  //   expect(data).is.above(100000000);
+  // });
+
+  // it("Run service - complete", async function() {
   //   const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
   //   await nexusContract.queueService({
@@ -537,10 +608,42 @@ describe("Nexus", function() {
   //     args: ["target/wasm32-wasi/release/test"],
   //     months: 1
   //   });
+    
+  //   let id;
+    
+  //   const servicePromise = new Promise((resolve, reject) => {
+  //       nexusContract.once("ServiceRunning", (
+  //           consumer, 
+  //           dsp, 
+  //           serviceId, 
+  //           port
+  //         ) => {
+  //           id = serviceId
+  //           resolve();
+  //         }
+  //       );
+  //   });
 
-  //   await nexusContract.connect(dsp1).serviceError({
-  //     jobID: 5,
-  //     stdErr: "big error",
+  //   await servicePromise.then();
+    
+  //   let failed = false;
+  //   try {
+  //     await nexusContract.connect(dsp1).serviceComplete({
+  //       jobID: id,
+  //       outputFS: "",
+  //       ioMegaBytesUsed: 1,
+  //       storageMegaBytesUsed: 1
+  //     });
+  //   } catch(e) {
+  //     failed = true;
+  //   }
+
+  //   expect(failed).to.equal(true);
+
+  //   await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
+
+  //   await nexusContract.connect(dsp1).serviceComplete({
+  //     jobID: id,
   //     outputFS: "",
   //     ioMegaBytesUsed: 1,
   //     storageMegaBytesUsed: 1
@@ -553,185 +656,65 @@ describe("Nexus", function() {
   //   // ensure service not running
   // });
 
-  it("Extend service", async function() {
-    const preDspEnDate = (await nexusContract.services(5)).endDate;
-    const preDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
-    const preDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
-
-    const dapps = ethers.utils.parseUnits("200000",4);
-    await dappTokenContract.approve(nexusContract.address, dapps);
-    await nexusContract.extendService(
-      5,
-      "wasi-service",
-      1,
-      1,
-      1
-    );
-
-    const postDspEnDate = (await nexusContract.services(5)).endDate;
-    const postDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
-    const postDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
+  // // test relies on above increase time to assume the feed is stale
+  // it("Get get max payment for gas with fallback time", async function() {
+  //   const data = await nexusContract.getMaxPaymentForGas("1000000","runner",dsp1.address);
     
-    expect(postDspEnDate).is.above(preDspEnDate);
-    expect(postDspIoLimit).is.above(preDspIoLimit);
-    expect(postDspStorageLimit).is.above(preDspStorageLimit);
-  });
+  //   expect(data).is.above(1000000000);
+  // });
 
-  it("Extend service same month", async function() {
-    const preDspEnDate = (await nexusContract.services(5)).endDate;
-    const preDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
-    const preDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
+  // it("Claim dsp dapp", async function() {
+  //   const preDspBal = await dappTokenContract.balanceOf(dsp1.address);
 
-    const dapps = ethers.utils.parseUnits("200000",4);
-    await dappTokenContract.approve(nexusContract.address, dapps);
-    await nexusContract.extendService(
-      5,
-      "wasi-service",
-      0,
-      1,
-      1
-    );
+  //   await nexusContract.connect(dsp1).claim();
 
-    const postDspEnDate = (await nexusContract.services(5)).endDate;
-    const postDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
-    const postDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
+  //   const postDspBal = await dappTokenContract.balanceOf(dsp1.address);
     
-    expect(postDspEnDate).to.equal(preDspEnDate);
-    expect(postDspIoLimit).is.above(preDspIoLimit);
-    expect(postDspStorageLimit).is.above(preDspStorageLimit);
-  });
+  //   expect(postDspBal).is.above(preDspBal);
+  // });
 
-  it("Get get max payment for gas", async function() {
-    const data = await nexusContract.getMaxPaymentForGas("1000000","runner",dsp1.address);
+  // it("Get image approved for dsp", async function() {
+  //   const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"runner");
     
-    expect(data).is.above(100000000);
-  });
+  //   expect(approved).to.equal(true);
+  // });
 
-  it("Run service - complete", async function() {
-    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+  // it("Unapprove image for dsp", async function() {
+  //   await nexusContract.connect(dsp1).unapproveDockerForDSP("runner");
 
-    await nexusContract.queueService({
-      owner: addr1.address,
-      imageName: "wasi-service",
-      ioMegaBytes: 1,
-      storageMegaBytes: 1,
-      inputFS: "",
-      args: ["target/wasm32-wasi/release/test"],
-      months: 1
-    });
+  //   const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"runner");
     
-    console.log(3);
-    console.log(`Last job id: ${await nexusContract.lastJobID}`);
-    
-    let id;
-    
-    const servicePromise = new Promise((resolve, reject) => {
-        nexusContract.once("ServiceRunning", (
-            consumer, 
-            dsp, 
-            serviceId, 
-            port
-          ) => {
-            console.log(`promise service id: ${serviceId}`)
-            id = serviceId
-            resolve();
-          }
-        );
-    });
+  //   expect(approved).to.equal(false);
+  // });
 
-    await servicePromise.then();
-    
-    console.log(4);
+  // it("Get dsp port", async function() {
+  //   const port = await nexusContract.getPortForDSP(5,dsp1.address);
 
-    let failed = false;
-    try {
-      await nexusContract.connect(dsp1).serviceComplete({
-        jobID: id,
-        outputFS: "",
-        ioMegaBytesUsed: 1,
-        storageMegaBytesUsed: 1
-      });
-    } catch(e) {
-      failed = true;
-    }
+  //   expect(port).to.equal(9000);
+  // });
 
-    expect(failed).to.equal(true);
+  // it("Get dsp endpoint", async function() {
+  //   const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
 
-    await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
+  //   expect(endpoint).to.equal("http://wasi-service-5");
+  // });
 
-    await nexusContract.connect(dsp1).serviceComplete({
-      jobID: id,
-      outputFS: "",
-      ioMegaBytesUsed: 1,
-      storageMegaBytesUsed: 1
-    });
+  // it("Get dsp list", async function() {
+  //   const dsps = await nexusContract.getDspAddresses();
 
-    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
-    
-    expect(postDspBal).is.above(preDspBal);
+  //   const expectedResult = [ dsp1.address,dsp2.address ];
 
-    // ensure service not running
-  });
+  //   expect(JSON.stringify(dsps)).to.equal(JSON.stringify(expectedResult));
+  // });
 
-  // test relies on above increase time to assume the feed is stale
-  it("Get get max payment for gas with fallback time", async function() {
-    const data = await nexusContract.getMaxPaymentForGas("1000000","runner",dsp1.address);
-    
-    expect(data).is.above(1000000000);
-  });
+  // it("Get dsp data", async function() {
+  //   const dsps = await nexusContract.getDspAddresses();
 
-  it("Claim dsp dapp", async function() {
-    const preDspBal = await dappTokenContract.balanceOf(dsp1.address);
+  //   let dspData = [];
+  //   for(let i=0; i<dsps.length; i++) {
+  //     dspData.push(await nexusContract.registeredDSPs(dsps[i]));
+  //   }
 
-    await nexusContract.connect(dsp1).claim();
-
-    const postDspBal = await dappTokenContract.balanceOf(dsp1.address);
-    
-    expect(postDspBal).is.above(preDspBal);
-  });
-
-  it("Get image approved for dsp", async function() {
-    const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"runner");
-    
-    expect(approved).to.equal(true);
-  });
-
-  it("Unapprove image for dsp", async function() {
-    await nexusContract.connect(dsp1).unapproveDockerForDSP("runner");
-
-    const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"runner");
-    
-    expect(approved).to.equal(false);
-  });
-
-  it("Get dsp port", async function() {
-    const port = await nexusContract.getPortForDSP(5,dsp1.address);
-
-    expect(port).to.equal(9000);
-  });
-
-  it("Get dsp endpoint", async function() {
-    const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
-
-    expect(endpoint).to.equal("http://wasi-service-5");
-  });
-
-  it("Get dsp list", async function() {
-    const dsps = await nexusContract.getDspAddresses();
-
-    const expectedResult = [ dsp1.address,dsp2.address ];
-
-    expect(JSON.stringify(dsps)).to.equal(JSON.stringify(expectedResult));
-  });
-
-  it("Get dsp data", async function() {
-    const dsps = await nexusContract.getDspAddresses();
-
-    let dspData = [];
-    for(let i=0; i<dsps.length; i++) {
-      dspData.push(await nexusContract.registeredDSPs(dsps[i]));
-    }
-
-    expect(dspData[0].endpoint).to.equal('http://wasi-service-5');
-  });
+  //   expect(dspData[0].endpoint).to.equal('http://wasi-service-5');
+  // });
 });

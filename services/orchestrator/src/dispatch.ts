@@ -2,14 +2,6 @@ const Docker = require('dockerode');
 const Stream = require('stream');
 const fetch =require('node-fetch');
 import { execPromise } from './exec';
-// import { execPromise } from './web3global';
-// import {
-//   getLastBlock,
-//   createLastBlock,
-//   getUsageInfo,
-//   createUsageInfo,
-//   updateUsageInfo
-// } from './dal/dal';
 
 const { getLastBlock,createLastBlock,getUsageInfo,createUsageInfo,updateUsageInfo } = require('./dal/dal')
 
@@ -57,15 +49,11 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
       });
     });
 
-    console.log('before running job promise')
-
     await p.then(val => {
       data = val
     }).catch(e => {
       throw e;
     });
-
-    console.log('after running job promise')
     const container = data[1];
     await container.wait();
     await container.remove();
