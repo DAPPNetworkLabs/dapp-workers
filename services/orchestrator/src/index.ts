@@ -47,6 +47,7 @@ const theContract = new web3.eth.Contract(
 const intervalCallback = async () => {
     const jobs = await fetchAllUsageInfo();
     for(const el of jobs) {
+        console.log(`ids: ${el.id}`);
         const serviceInfo = await getInfo(el.id,"service");
         console.log(`cron service info: ${JSON.stringify(serviceInfo)}`)
         const res = await validateServiceBalance(serviceInfo.consumer, el.id);
@@ -66,11 +67,9 @@ let ownerAccount;
 const run = () => {
     dspAccount = getAccount();
     subscribe(theContract);
-    console.log('running interval callback')
     setInterval(() => {
         intervalCallback();
     }, 1000 * 30);
-    console.log('done running interval callback')
 }
 
 run();
