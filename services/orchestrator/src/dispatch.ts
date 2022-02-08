@@ -107,16 +107,16 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
     console.log('first service timeout');
   }, killDelay);
   
-  const res = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name  ${dockerImage}-${id} --rm -d --net=dapp-workers_default -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+  const dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name  ${dockerImage}-${id} --rm -d --net=dapp-workers_default -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
   
-  console.log(`exec Promise res: ${res}`);
+  console.log(`exec Promise res: ${dockerId}`);
   dockerMap[id] = {
-    dockerId: res,
+    dockerId,
     ioUsed: 0,
     storageUsed: 0
   };
   
-  await createUsageInfo(id);
+  await createUsageInfo(id, dockerId);
   
   clearTimeout(timeout);
   console.log('end dispatch service');

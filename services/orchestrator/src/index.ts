@@ -11,6 +11,12 @@ const Web3 = require('web3');
 let abi = require('/nexus/abi/contracts/Nexus.sol/Nexus.json');
 // abi = JSON.stringify(abi);
 
+const dal = require('./dal/models/index');
+const { fetchAllUsageInfo } = require('./dal/dal')
+import { execPromise } from './exec';
+
+let startup = true;
+
 provider.on('error', e => console.log('WS Error', e));
 function socketError(e) {
     console.log('WS closed');
@@ -37,12 +43,34 @@ const theContract = new web3.eth.Contract(
     address,
     {}
 );
+
+const intervalCallback = async () => {
+    const jobs = await fetchAllUsageInfo();
+    for(const el of jobs) {
+        const serviceInfo = await getInfo(el.id,"service");
+        console.log(`cron service info: ${JSON.stringify(serviceInfo)}`)
+        const res = await validateServiceBalance(serviceInfo.consumer, el.id);
+        console.log(`res for service: ${res}`);
+        if(res == true) {
+            
+        } else if (res == false) {
+            await execPromise(`docker stop ${el.dockerId}`,{});
+            await execPromise(`docker rm ${el.dockerId} -v`,{});
+        }
+    }
+}
+
 export { abi, address };
 let dspAccount;
 let ownerAccount;
 const run = () => {
     dspAccount = getAccount();
     subscribe(theContract);
+    console.log('running interval callback')
+    setInterval(() => {
+        intervalCallback();
+    }, 1000 * 30);
+    console.log('done running interval callback')
 }
 
 run();
@@ -83,72 +111,7 @@ const getInfo = async (jobId, type) => {
     }
 }
 
-// todo: subscribe to Kill
-
-function subscribe(theContract: any) {
-    theContract.events["QueueJob"]({
-        fromBlock: 0
-    }, async function (error, result) {
-        if (error) {
-            console.log(error);
-            return;
-        }
-        const returnValues = result.returnValues;
-        let fidx = 0;
-        const jobInfo = {
-            consumer: returnValues[fidx++],
-            owner: returnValues[fidx++],
-            imageName: returnValues[fidx++],
-            jobID: returnValues[fidx++],
-            inputFS: returnValues[fidx++],
-            args: returnValues[fidx++]
-        }
-        const jobType = "job";
-
-        const job = await getInfo(jobInfo.jobID, jobType);
-
-
-        if (await isProcessed(jobInfo.jobID, true)) {
-            console.log(`already processed job or dsp not selected: ${jobInfo.jobID}`)
-            return;
-        }
-
-        if (!await validateJobBalance(jobInfo.consumer, job.gasLimit, job.imageName)) {
-            console.log(`min balance not met job: ${jobInfo.jobID}`)
-            return;
-        }
-
-        let dispatchResult
-
-        try {
-            dispatchResult = await dispatch(job.imageName, jobInfo.inputFS, jobInfo.args);
-        }
-        catch (e) {
-            await postTrx("jobError", dspAccount, jobInfo.jobID, "error dispatching", "");
-            console.log("jobError",e);
-        }
-
-        console.log("dispatchResult");
-        console.log(dispatchResult);
-        const { outputFS } = dispatchResult;
-
-        const rcpt = await postTrx("jobCallback", dspAccount, {
-            jobID: jobInfo.jobID,
-            outputFS: outputFS,
-            outputHash: "hash"
-        });
-        console.log(`posted results`, jobInfo.consumer, job.jobImage, rcpt.transactionHash);
-    });
-
-    theContract.events["QueueService"]({
-        fromBlock: 0
-    }, async function (error, result) {
-        if (error) {
-            console.log(error);
-            return;
-        }
-
-        const returnValues = result.returnValues;
+const runService = async (returnValues) => {
         let fidx = 0;
         const consumer = returnValues[fidx++];
         const owner = returnValues[fidx++];
@@ -218,6 +181,74 @@ function subscribe(theContract: any) {
         // // post results
         const servicercpt = await postTrx("serviceCallback", dspAccount, id, serviceResults.port);
         console.log(`posted service results`,consumer,imageName, serviceResults.port);
+}
+
+// todo: subscribe to Kill
+
+function subscribe(theContract: any) {
+    theContract.events["QueueJob"]({
+        fromBlock: 0
+    }, async function (error, result) {
+        if (error) {
+            console.log(error);
+            return;
+        }
+        const returnValues = result.returnValues;
+        let fidx = 0;
+        const jobInfo = {
+            consumer: returnValues[fidx++],
+            owner: returnValues[fidx++],
+            imageName: returnValues[fidx++],
+            jobID: returnValues[fidx++],
+            inputFS: returnValues[fidx++],
+            args: returnValues[fidx++]
+        }
+        const jobType = "job";
+
+        const job = await getInfo(jobInfo.jobID, jobType);
+
+
+        if (await isProcessed(jobInfo.jobID, true)) {
+            console.log(`already processed job or dsp not selected: ${jobInfo.jobID}`)
+            return;
+        }
+
+        if (!await validateJobBalance(jobInfo.consumer, job.gasLimit, job.imageName)) {
+            console.log(`min balance not met job: ${jobInfo.jobID}`)
+            return;
+        }
+
+        let dispatchResult
+
+        try {
+            dispatchResult = await dispatch(job.imageName, jobInfo.inputFS, jobInfo.args);
+        }
+        catch (e) {
+            await postTrx("jobError", dspAccount, jobInfo.jobID, "error dispatching", "");
+            console.log("jobError",e);
+        }
+
+        console.log("dispatchResult");
+        console.log(dispatchResult);
+        const { outputFS } = dispatchResult;
+
+        const rcpt = await postTrx("jobCallback", dspAccount, {
+            jobID: jobInfo.jobID,
+            outputFS: outputFS,
+            outputHash: "hash"
+        });
+        console.log(`posted results`, jobInfo.consumer, job.jobImage, rcpt.transactionHash);
+    });
+
+    theContract.events["QueueService"]({
+        fromBlock: 0
+    }, async function (error, result) {
+        if (error) {
+            console.log(error);
+            return;
+        }
+
+        await runService(result.returnValues);
     });
 
     theContract.events["ServiceComplete"]({

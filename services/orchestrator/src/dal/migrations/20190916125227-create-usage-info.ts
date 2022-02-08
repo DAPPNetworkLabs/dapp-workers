@@ -11,6 +11,9 @@ module.exports = {
       key: {
         type: Sequelize.INTEGER
       },
+      dockerId: {
+        type: Sequelize.STRING
+      },
       io_usage: {
         type: Sequelize.INTEGER
       },

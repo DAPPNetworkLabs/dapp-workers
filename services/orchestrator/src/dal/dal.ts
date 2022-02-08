@@ -26,7 +26,7 @@ async function createLastBlock(lastBlackNum) {
   }
 }
 
-async function createUsageInfo(key) {
+async function createUsageInfo(key, dockerId) {
   await sync();
   const res = await model_db.UsageInfo.findOne({
     where: { key }
@@ -34,7 +34,7 @@ async function createUsageInfo(key) {
   while (true) {
     if (!res) {
       try {
-        return model_db.UsageInfo.create({ key, io_usage:0, storage_usage:0 });
+        return model_db.UsageInfo.create({ key, dockerId, io_usage:0, storage_usage:0 });
       }
       catch (e) {
         if (e.name === 'SequelizeOptimisticLockError')
@@ -73,11 +73,21 @@ async function updateUsageInfo(key, io_usage, storage_usage) {
   }
 }
 
+async function fetchAllUsageInfo() {
+  await sync();
+  var res = await model_db.UsageInfo.findAll();
+  if (!res) {
+    return;
+  }
+  return res;
+}
+
 module.exports = {
   getLastBlock,
   createLastBlock,
   getUsageInfo,
   createUsageInfo,
-  updateUsageInfo
+  updateUsageInfo,
+  fetchAllUsageInfo
 };
 
