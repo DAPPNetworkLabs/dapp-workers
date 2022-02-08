@@ -70,7 +70,6 @@ describe("Nexus", function() {
   /*
 
     Todo tests
-    - run service complete
     - jobServiceCompleted service
     - errors job
     - errors services
@@ -622,6 +621,9 @@ describe("Nexus", function() {
     });
     
     console.log(3);
+    console.log(`Last job id: ${await nexusContract.lastJobID}`);
+    
+    let id;
     
     const servicePromise = new Promise((resolve, reject) => {
         nexusContract.once("ServiceRunning", (
@@ -630,6 +632,8 @@ describe("Nexus", function() {
             serviceId, 
             port
           ) => {
+            console.log(`promise service id: ${serviceId}`)
+            id = serviceId
             resolve();
           }
         );
@@ -642,7 +646,7 @@ describe("Nexus", function() {
     let failed = false;
     try {
       await nexusContract.connect(dsp1).serviceComplete({
-        jobID: 8,
+        jobID: id,
         outputFS: "",
         ioMegaBytesUsed: 1,
         storageMegaBytesUsed: 1
@@ -656,7 +660,7 @@ describe("Nexus", function() {
     await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
 
     await nexusContract.connect(dsp1).serviceComplete({
-      jobID: 8,
+      jobID: id,
       outputFS: "",
       ioMegaBytesUsed: 1,
       storageMegaBytesUsed: 1

@@ -35,9 +35,9 @@ export const execPromise = function(cmd, options) {
       var stdout = outObj.stdout;
       if (code === 0) { return resolve(stdout); }
       var err = new Error('exec failed');
-      err.stdout = stdout;
-      err.stderr = outObj.stderr;
-      err.code = code;
+    //   err.stdout = stdout;
+    //   err.stderr = outObj.stderr;
+    //   err.code = code;
       return reject(err);
     });
   });

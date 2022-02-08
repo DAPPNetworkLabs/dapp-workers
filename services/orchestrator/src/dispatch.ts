@@ -1,7 +1,17 @@
 const Docker = require('dockerode');
 const Stream = require('stream');
 const fetch =require('node-fetch');
-import { execPromise } from './web3global';
+import { execPromise } from './exec';
+// import { execPromise } from './web3global';
+// import {
+//   getLastBlock,
+//   createLastBlock,
+//   getUsageInfo,
+//   createUsageInfo,
+//   updateUsageInfo
+// } from './dal/dal';
+
+const { getLastBlock,createLastBlock,getUsageInfo,createUsageInfo,updateUsageInfo } = require('./dal/dal')
 
 const kill = require('kill-port');
 
@@ -112,9 +122,13 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
   const res = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name  ${dockerImage}-${id} --rm -d --net=dapp-workers_default -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
   
   console.log(`exec Promise res: ${res}`);
-  dockerMap[id].id = res;
-  dockerMap[id].ioUsed = 0;
-  dockerMap[id].storageUsed = 0;
+  dockerMap[id] = {
+    dockerId: res,
+    ioUsed: 0,
+    storageUsed: 0
+  };
+  
+  await createUsageInfo(id);
   
   clearTimeout(timeout);
   console.log('end dispatch service');

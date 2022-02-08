@@ -9,7 +9,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       key: {
-        type: Sequelize.string
+        type: Sequelize.STRING
       },
       last_block: {
         type: Sequelize.INTEGER

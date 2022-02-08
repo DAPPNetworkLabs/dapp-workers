@@ -4,8 +4,6 @@ var fs = require('fs');
 var path = require('path');
 var Sequelize = require('sequelize');
 var basename = path.basename(__filename);
-const { requireBox } = require('@liquidapps/box-utils');
-const logger = requireBox('log-extensions/helpers/logger');
 
 var env = process.env.DATABASE_NODE_ENV || 'development';
 const dbTimeout = process.env.DATABASE_TIMEOUT || '10000';
@@ -15,9 +13,9 @@ if (process.env.DATABASE_URL && process.env.DATABASE_URL !== "false") {
 }
 var config = require(__dirname + '/../config/config.js')[env];
 
-var db = {};
+let db = {};
 
-logger.info(`starting db: env - ${env}, dialect - ${config.dialect}`);
+console.log(`starting db: env - ${env}, dialect - ${config.dialect}`);
 var sequelize;
 try {
   if (config.use_env_variable) {
@@ -28,7 +26,7 @@ try {
   }
 }
 catch (e) {
-  logger.error(`error initing db: ${config.dialect} ${env} ${e.toString()}`);
+  console.log(`error initing db: ${config.dialect} ${env} ${e.toString()}`);
   throw e;
 }
 
@@ -38,7 +36,7 @@ fs
     return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
   })
   .forEach(file => {
-    var model = sequelize['import'](path.join(__dirname, file));
+    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes)
     db[model.name] = addTimeoutProxy(model, dbTimeout, model.name);
   });
 
@@ -58,13 +56,13 @@ function addTimeoutProxy(obj, timeout, objName) {
         return origMethod;
 
       return function (...args) {
-        // logger.debug(`${objName} with method ${propKey} calling`);
+        console.log(`${objName} with method ${propKey} calling`);
         const timedMethod = async function () {
           const beforeTime = Date.now();
           const result = await origMethod.apply(target, args);
           const totalTime = Date.now() - beforeTime;
           if (totalTime > 200)
-            logger.warn(`${objName} with method ${propKey} took ${totalTime} ms`);
+            console.log(`${objName} with method ${propKey} took ${totalTime} ms`);
 
           return result;
         }
@@ -80,8 +78,8 @@ function addTimeoutProxy(obj, timeout, objName) {
   return new Proxy(obj, handler);
 }
 
-db.sequelize = addTimeoutProxy(sequelize, dbTimeout, 'sequelize');
-db.Sequelize = addTimeoutProxy(Sequelize, dbTimeout, 'Sequelize');
+db[sequelize] = addTimeoutProxy(sequelize, dbTimeout, 'sequelize');
+db[Sequelize] = addTimeoutProxy(Sequelize, dbTimeout, 'Sequelize');
 
 module.exports = db;
 

@@ -1,4 +1,4 @@
-const db = require('./models');
+let model_db = require('./models');
 
 // gross syncing solution as sync() must be called in each method
 let synced = false;
@@ -7,13 +7,13 @@ async function sync() {
   if (synced)
     return;
 
-  await db.sequelize.sync();
+  await model_db.sequelize.sync();
   synced = true;
 }
 
 async function getLastBlock() {
   await sync();
-  return db.LastBlock.findOne({
+  return model_db.LastBlock.findOne({
     where: { key: 'LastBlock' }
   });
 }
@@ -22,19 +22,19 @@ async function createLastBlock(lastBlackNum) {
   await sync();
   const lastBlock = await getLastBlock();
   if (!lastBlock) {
-    await db.LastBlock.create({ key: 'LastBlock', last_block: lastBlackNum });
+    await model_db.LastBlock.create({ key: 'LastBlock', last_block: lastBlackNum });
   }
 }
 
 async function createUsageInfo(key) {
   await sync();
-  const res = await db.unique.findOne({
+  const res = await model_db.unique.findOne({
     where: { key }
   });
   while (true) {
     if (!res) {
       try {
-        return db.unique.create({ key, io_usage:0, storage_usage:0 });
+        return model_db.unique.create({ key, io_usage:0, storage_usage:0 });
       }
       catch (e) {
         if (e.name === 'SequelizeOptimisticLockError')
@@ -48,7 +48,7 @@ async function createUsageInfo(key) {
 
 async function getUsageInfo(key) {
   await sync();
-  return db.unique.findOne({
+  return model_db.unique.findOne({
     where: { key }
   });
 }
