@@ -20,6 +20,9 @@ module.exports = {
       storage_usage: {
         type: Sequelize.INTEGER
       },
+      stopped: {
+        type: Sequelize.BOOLEAN
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

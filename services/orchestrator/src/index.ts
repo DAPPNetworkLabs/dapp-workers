@@ -12,7 +12,7 @@ let abi = require('/nexus/abi/contracts/Nexus.sol/Nexus.json');
 // abi = JSON.stringify(abi);
 
 const dal = require('./dal/models/index');
-const { fetchAllUsageInfo } = require('./dal/dal')
+const { fetchAllUsageInfo, updateUsageInfo } = require('./dal/dal')
 import { execPromise } from './exec';
 
 let startup = true;
@@ -52,11 +52,11 @@ const intervalCallback = async () => {
         console.log(`cron service info: ${JSON.stringify(serviceInfo)}`)
         const res = await validateServiceBalance(serviceInfo.consumer, el.id);
         console.log(`res for service: ${res}`);
-        if(res == true) {
-            
-        } else if (res == false) {
+        console.log(`el: ${JSON.stringify(el)}`);
+        if (res == false && el.stopped == false) {
             await execPromise(`docker stop ${el.dockerId}`,{});
             await execPromise(`docker rm ${el.dockerId} -v`,{});
+            await updateUsageInfo(el.key,0,0,true);
         }
     }
 }
