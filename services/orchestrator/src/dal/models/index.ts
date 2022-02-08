@@ -44,7 +44,6 @@ fs
   });
 
 Object.keys(db).forEach(modelName => {
-  console.log(`setting up ${modelName}`)
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }

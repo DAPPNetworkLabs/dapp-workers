@@ -31,7 +31,6 @@ async function createUsageInfo(key) {
   const res = await model_db.UsageInfo.findOne({
     where: { key }
   });
-  console.log('after findOne')
   while (true) {
     if (!res) {
       try {
