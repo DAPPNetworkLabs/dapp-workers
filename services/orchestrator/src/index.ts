@@ -61,6 +61,13 @@ const intervalCallback = async () => {
     }
 }
 
+const usageCallback = async () => {
+    const jobs = await fetchAllUsageInfo();
+    for(const el of jobs) {
+        // call usage
+    }
+}
+
 export { abi, address };
 let dspAccount;
 let ownerAccount;
@@ -69,6 +76,7 @@ const run = () => {
     subscribe(theContract);
     setInterval(() => {
         intervalCallback();
+        usageCallback();
     }, 1000 * 30);
 }
 
