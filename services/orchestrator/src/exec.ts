@@ -34,10 +34,11 @@ export const execPromise = function(cmd, options) {
     childproc.on('exit', function(code) {
       var stdout = outObj.stdout;
       if (code === 0) { return resolve(stdout); }
-      var err = new Error('exec failed');
-    //   err.stdout = stdout;
-    //   err.stderr = outObj.stderr;
-    //   err.code = code;
+      console.log(`out: ${JSON.stringify(outObj)}\n${stdout}`);
+      let err: any = new Error('exec failed');
+      err.stdout = stdout;
+      err.stderr = outObj.stderr;
+      err.code = code;
       return reject(err);
     });
   });

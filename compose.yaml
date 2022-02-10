@@ -160,8 +160,8 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: orchestrator
       PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-       - pg-data:/var/lib/postgresql/data/pgdata
+    # volumes:
+    #   - pg-data:/var/lib/postgresql/data/pgdata
   rabbitmq:
     profiles:
       - donotstart    

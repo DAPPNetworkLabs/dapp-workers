@@ -44,27 +44,73 @@ const theContract = new web3.eth.Contract(
     {}
 );
 
-const intervalCallback = async () => {
-    const jobs = await fetchAllUsageInfo();
-    for(const el of jobs) {
-        console.log(`ids: ${el.id}`);
-        const serviceInfo = await getInfo(el.id,"service");
-        console.log(`cron service info: ${JSON.stringify(serviceInfo)}`)
-        const res = await validateServiceBalance(serviceInfo.consumer, el.id);
-        console.log(`res for service: ${res}`);
-        console.log(`el: ${JSON.stringify(el)}`);
-        if (res == false && el.stopped == false) {
-            await execPromise(`docker stop ${el.dockerId}`,{});
-            await execPromise(`docker rm ${el.dockerId} -v`,{});
-            await updateUsageInfo(el.key,0,0,true);
+const toMegaBytes = (item) => {
+    const sizes = [{name:'KB'},{name:'MB'},{name:'GB'},{name:'TB'}];
+    let size = '', base;
+    for(const index in sizes) {
+        if(item.slice(-2).toUpperCase() == sizes[index].name) {
+            size = sizes[index].name;
+            base = Number(item.slice(0,-2));
         }
+    }
+    if(size == '') {
+        size = "B";
+        base = Number(item.slice(0,-1));
+    }
+    
+    if(size == 'B') {
+        return base / 1000;
+    } else if(size == 'MB') {
+        return base;
+    } else if(size == 'KB') {
+        return base / 1000;
+    } else if(size == 'GB') {
+        return base * 1000;
+    } else if(size == 'TB') {
+        return base * 1000 * 1000;
+    } else {
+        throw new Error(`should not get here: ${size}, ${base}`);
     }
 }
 
-const usageCallback = async () => {
+const intervalCallback = async () => {
     const jobs = await fetchAllUsageInfo();
-    for(const el of jobs) {
-        // call usage
+    for(const index in jobs) {
+        const job = jobs[index];
+        console.log(`ids: ${job.id}`);
+        console.log(`docker id: ${job.dockerId}`);
+
+        let storageUsed: any = await execPromise(`docker ps --size --filter "id=${job.dockerId}" --format "{{.Size}}"`,{});
+        storageUsed = toMegaBytes(storageUsed.split(' ')[0]);
+
+        let ioInfo: any = await execPromise(`docker stats --no-stream "${job.dockerId}"" --format "{{.NetIO}}"`,{});
+
+        let inputUsage = toMegaBytes(ioInfo.split(' / ')[0])
+        let outputUsage = toMegaBytes(ioInfo.split(' / ')[1]);
+        
+        console.log(`inputUsage: ${inputUsage}`);
+        console.log(`outputUsage: ${outputUsage}`);
+        console.log(`storage used: ${storageUsed}MB`);
+        
+        /*
+        
+            - storage can be reset for total current usafe
+            - IO should not reset and should be added between DSP resets
+        
+        */
+        
+        job.io_usage = (inputUsage + outputUsage);
+        job.storage_usage = storageUsed;
+        
+        const serviceInfo = await getInfo(job.id,"service");
+        const valid = await validateServiceBalance(serviceInfo.consumer, job.id);
+        if (valid == false && job.stopped == false) {
+            await execPromise(`docker stop ${job.dockerId}`,{});
+            await execPromise(`docker rm ${job.dockerId} -v`,{});
+            await updateUsageInfo(job.key,0,0,true);
+        }
+        
+        await updateUsageInfo(job.id, job.io_usage, job.storage_usage, false);
     }
 }
 
@@ -76,7 +122,6 @@ const run = () => {
     subscribe(theContract);
     setInterval(() => {
         intervalCallback();
-        usageCallback();
     }, 1000 * 30);
 }
 
