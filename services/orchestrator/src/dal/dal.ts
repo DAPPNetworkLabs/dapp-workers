@@ -34,7 +34,7 @@ async function createUsageInfo(key, dockerId) {
   while (true) {
     if (!res) {
       try {
-        return model_db.UsageInfo.create({ key, dockerId, io_usage:0, storage_usage:0, stopped: false });
+        return model_db.UsageInfo.create({ key, dockerId, io_usage:0, storage_usage:0 });
       }
       catch (e) {
         if (e.name === 'SequelizeOptimisticLockError')
@@ -54,7 +54,7 @@ async function getUsageInfo(key) {
 }
 
 // pass in new fields to be set
-async function updateUsageInfo(key, io_usage, storage_usage, last_io_usage, stopped) {
+async function updateUsageInfo(key, io_usage, storage_usage, last_io_usage) {
   await sync();
   try {
     const usageInfo = await getUsageInfo(key);
@@ -64,7 +64,6 @@ async function updateUsageInfo(key, io_usage, storage_usage, last_io_usage, stop
     usageInfo.io_usage = io_usage;
     usageInfo.last_io_usage = last_io_usage;
     usageInfo.storage_usage = storage_usage;
-    usageInfo.stopped = stopped;
     await usageInfo.save();
     return true;
   }

@@ -94,7 +94,6 @@ const endService = async (job, msg, log) => {
     await execPromise(`docker stop ${job.dockerId}`,{});
     // await execPromise(`docker rm ${job.dockerId}`,{});
     // await execPromise(`docker rm ${job.dockerId} -v`,{});
-    // await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage,true);
     await completeService(
         job.key,
         msg, 
@@ -144,7 +143,7 @@ const intervalCallback = async () => {
         
         console.log(`limits: ${typeof(limits)=="object"?JSON.stringify(limits):limits}`)
         
-        console.log(job.key, job.io_usage, job.storage_usage, job.last_io_usage, job.stopped);
+        console.log(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
         
         if(job.io_usage > limits.ioMegaBytesLimit || job.storage_usage > limits.storageMegaBytesLimit) {
             await endService(job, "io/storage resource limit reached", `max io/storage limit reached for job id: ${job.key} | docker id: ${job.dockerId} | io usage: ${job.io_usage} | io limit: ${limits.ioMegaBytesLimit} | storage usage: ${job.storage_usage} | storage limit: ${limits.storageMegaBytesLimit}`);
@@ -152,7 +151,7 @@ const intervalCallback = async () => {
         
         const serviceInfo = await getInfo(job.key,"service");
         const valid = await validateServiceBalance(serviceInfo.consumer, job.key);
-        if (valid == false && job.stopped == false) {
+        if (valid == false) {
             await endService(job, "dapp gas limit reached", `dapp gas ran out for job id: ${job.key} | docker id: ${job.dockerId}`);
         }
         
@@ -160,7 +159,7 @@ const intervalCallback = async () => {
             await endService(job, "service time exceeded", `service time exceeded: ${job.key} | docker id: ${job.dockerId}`);
         }
         
-        await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage, false);
+        await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
     }
 }
 

@@ -95,4 +95,3 @@ createMiddleware(swaggerFile, app, (err, middleware) => {
       });
     })
 });
-
