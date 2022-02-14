@@ -729,6 +729,16 @@ contract Nexus is Ownable {
         );
     }
     
+    
+    /**
+     * @dev returns if service time done
+     */
+    function isServiceDone(uint id) external view returns (bool) {
+        ServiceData storage sd = services[id];
+        
+        return sd.endDate < block.timestamp;
+    }
+    
     /**
      * @dev complete service
      */
@@ -736,7 +746,7 @@ contract Nexus is Ownable {
         ServiceData storage sd = services[args.jobID];
 
         require(sd.started == true, "service not started");
-        require(sd.endDate <= block.timestamp, "service time remaining");
+        require(sd.endDate < block.timestamp, "service time remaining");
 
         address[] storage dsps = providers[sd.owner];
         require(dsps.length > 0,"no dsps selected for consumer");

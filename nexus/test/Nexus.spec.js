@@ -156,7 +156,7 @@ describe("Nexus", function() {
   });
 
   it("Update image", async function() {
-    await nexusContract.connect(dsp1).updateDockerImage("runner",100000,100000,100000,100000,1,1);
+    await nexusContract.connect(dsp1).updateDockerImage("runner",100000,100000,100000,100000,100,100);
 
     const dockerImage = await nexusContract.dspApprovedImages(dsp1.address,"runner");
 
@@ -164,8 +164,8 @@ describe("Nexus", function() {
     expect(dockerImage.baseFee.toString()).to.equal('100000');
     expect(dockerImage.storageFee.toString()).to.equal('100000');
     expect(dockerImage.ioFee.toString()).to.equal('100000');
-    expect(dockerImage.minStorageMegaBytes.toString()).to.equal('1');
-    expect(dockerImage.minIoMegaBytes.toString()).to.equal('1');
+    expect(dockerImage.minStorageMegaBytes.toString()).to.equal('100');
+    expect(dockerImage.minIoMegaBytes.toString()).to.equal('100');
   });
 
   it("Set consumer", async function() {
@@ -186,7 +186,7 @@ describe("Nexus", function() {
 
   it("Queue job", async function() {
     await nexusContract.approveImage("rust-compiler","hash");
-    await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,1,1);
+    await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -280,15 +280,15 @@ describe("Nexus", function() {
 
   it("Queue service - try below min bytes", async function() {
     await nexusContract.approveImage("wasi-service","hash");
-    await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
+    await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,100,100);
 
     let failed = false;
     try {
       await nexusContract.queueService({
         owner: addr1.address,
         imageName: "wasi-service",
-        ioMegaBytes: 0,
-        storageMegaBytes: 0,
+        ioMegaBytes: 10,
+        storageMegaBytes: 10,
         inputFS: "",
         args: ["target/wasm32-wasi/release/test"],
         months: 1
@@ -334,8 +334,8 @@ describe("Nexus", function() {
     await nexusContract.queueService({
       owner: addr1.address,
       imageName: "wasi-service",
-      ioMegaBytes: 1,
-      storageMegaBytes: 1,
+      ioMegaBytes: 100,
+      storageMegaBytes: 100,
       inputFS: outputFSRes,
       // inputFS: "QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx",
       args: ["target/wasm32-wasi/release/test"],
@@ -520,8 +520,8 @@ describe("Nexus", function() {
   //   await nexusContract.queueService({
   //     owner: addr1.address,
   //     imageName: "wasi-service",
-  //     ioMegaBytes: 1,
-  //     storageMegaBytes: 1,
+  //     ioMegaBytes: 100,
+  //     storageMegaBytes: 100,
   //     inputFS: "",
   //     args: ["target/wasm32-wasi/release/test"],
   //     months: 1
@@ -553,8 +553,8 @@ describe("Nexus", function() {
       5,
       "wasi-service",
       1,
-      1,
-      1
+      100,
+      100
     );
 
     const postDspEnDate = (await nexusContract.services(5)).endDate;
@@ -602,8 +602,8 @@ describe("Nexus", function() {
     await nexusContract.queueService({
       owner: addr1.address,
       imageName: "wasi-service",
-      ioMegaBytes: 1,
-      storageMegaBytes: 1,
+      ioMegaBytes: 100,
+      storageMegaBytes: 100,
       inputFS: "",
       args: ["target/wasm32-wasi/release/test"],
       months: 1
@@ -631,8 +631,8 @@ describe("Nexus", function() {
       await nexusContract.connect(dsp1).serviceComplete({
         jobID: id,
         outputFS: "",
-        ioMegaBytesUsed: 1,
-        storageMegaBytesUsed: 1
+        ioMegaBytesUsed: 100,
+        storageMegaBytesUsed: 100
       });
     } catch(e) {
       failed = true;
@@ -641,13 +641,28 @@ describe("Nexus", function() {
     expect(failed).to.equal(true);
 
     await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
-
-    await nexusContract.connect(dsp1).serviceComplete({
-      jobID: id,
-      outputFS: "",
-      ioMegaBytesUsed: 1,
-      storageMegaBytesUsed: 1
+    
+    const completePromise = new Promise((resolve, reject) => {
+        nexusContract.once("ServiceComplete", (
+            consumer, 
+            dsp, 
+            outputFS, 
+            jobID
+          ) => {
+            id = jobID
+            resolve();
+          }
+        );
     });
+
+    await completePromise.then();
+
+    // await nexusContract.connect(dsp1).serviceComplete({
+    //   jobID: id,
+    //   outputFS: "",
+    //   ioMegaBytesUsed: 100,
+    //   storageMegaBytesUsed: 100
+    // });
 
     const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     

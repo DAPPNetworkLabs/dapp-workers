@@ -17,6 +17,9 @@ module.exports = {
       io_usage: {
         type: Sequelize.INTEGER
       },
+      last_io_usage: {
+        type: Sequelize.INTEGER
+      },
       storage_usage: {
         type: Sequelize.INTEGER
       },

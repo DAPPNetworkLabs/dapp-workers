@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     dockerId: DataTypes.STRING,
     io_usage: DataTypes.INTEGER,
     storage_usage: DataTypes.INTEGER,
+    last_io_usage: DataTypes.INTEGER,
     stopped: DataTypes.BOOLEAN
   }, {
     paranoid: true,

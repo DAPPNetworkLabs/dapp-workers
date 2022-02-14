@@ -54,7 +54,7 @@ async function getUsageInfo(key) {
 }
 
 // pass in new fields to be set
-async function updateUsageInfo(key, io_usage, storage_usage, stopped) {
+async function updateUsageInfo(key, io_usage, storage_usage, last_io_usage, stopped) {
   await sync();
   try {
     const usageInfo = await getUsageInfo(key);
@@ -62,6 +62,7 @@ async function updateUsageInfo(key, io_usage, storage_usage, stopped) {
       return false;
     }
     usageInfo.io_usage = io_usage;
+    usageInfo.last_io_usage = last_io_usage;
     usageInfo.storage_usage = storage_usage;
     usageInfo.stopped = stopped;
     await usageInfo.save();
@@ -72,6 +73,14 @@ async function updateUsageInfo(key, io_usage, storage_usage, stopped) {
     console.error('error updating svc req', e)
     throw e;
   }
+}
+
+async function removeUsageInfo(key) {
+  await sync();
+  var res = await model_db.UsageInfo.destroy({
+    where: { key }
+  });
+  return res;
 }
 
 async function fetchAllUsageInfo() {
@@ -89,6 +98,7 @@ module.exports = {
   getUsageInfo,
   createUsageInfo,
   updateUsageInfo,
-  fetchAllUsageInfo
+  fetchAllUsageInfo,
+  removeUsageInfo
 };
 

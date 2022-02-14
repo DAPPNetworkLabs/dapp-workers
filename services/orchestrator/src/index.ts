@@ -12,7 +12,7 @@ let abi = require('/nexus/abi/contracts/Nexus.sol/Nexus.json');
 // abi = JSON.stringify(abi);
 
 const dal = require('./dal/models/index');
-const { fetchAllUsageInfo, updateUsageInfo } = require('./dal/dal')
+const { fetchAllUsageInfo, updateUsageInfo, removeUsageInfo } = require('./dal/dal')
 import { execPromise } from './exec';
 
 let startup = true;
@@ -45,6 +45,7 @@ const theContract = new web3.eth.Contract(
 );
 
 const toMegaBytes = (item) => {
+    // console.log(`before item: ${item} ${item.length}`);
     const sizes = [{name:'KB'},{name:'MB'},{name:'GB'},{name:'TB'}];
     let size = '', base;
     for(const index in sizes) {
@@ -57,6 +58,8 @@ const toMegaBytes = (item) => {
         size = "B";
         base = Number(item.slice(0,-1));
     }
+    
+    // console.log(`size: ${size} | base: ${base} | base / 1000: ${base / 1000}, size == 'KB': ${size == 'KB'}`);
     
     if(size == 'B') {
         return base / 1000;
@@ -73,20 +76,59 @@ const toMegaBytes = (item) => {
     }
 }
 
+async function validateDataLimits(id) {
+    return await theContract.methods.getDSPDataLimits(id, dspAccount.address).call({ from: dspAccount.address });
+}
+
+const completeService = async (jobID, outputFS, ioMegaBytesUsed, storageMegaBytesUsed) => {
+    await postTrx("serviceComplete", dspAccount, {
+        jobID,
+        outputFS,
+        ioMegaBytesUsed,
+        storageMegaBytesUsed
+    });
+}
+
+const endService = async (job, msg, log) => {
+    console.log(log);
+    await execPromise(`docker stop ${job.dockerId}`,{});
+    // await execPromise(`docker rm ${job.dockerId}`,{});
+    // await execPromise(`docker rm ${job.dockerId} -v`,{});
+    // await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage,true);
+    await completeService(
+        job.key,
+        msg, 
+        job.io_usage, 
+        job.storage_usage
+    );
+    await removeUsageInfo(job.key);
+}
+
 const intervalCallback = async () => {
     const jobs = await fetchAllUsageInfo();
     for(const index in jobs) {
         const job = jobs[index];
-        console.log(`ids: ${job.id}`);
+        console.log(`ids: ${job.key}`);
         console.log(`docker id: ${job.dockerId}`);
 
-        let storageUsed: any = await execPromise(`docker ps --size --filter "id=${job.dockerId}" --format "{{.Size}}"`,{});
-        storageUsed = toMegaBytes(storageUsed.split(' ')[0]);
+        const storageUsed: any = await execPromise(`docker ps --size --filter "id=${job.dockerId}" --format "{{.Size}}"`,{});
+        
+        const cmd = `docker stats --no-stream --format "{{.NetIO}}" ${job.dockerId}`;
+        
+        console.log(`cmd used: ${cmd}`);
 
-        let ioInfo: any = await execPromise(`docker stats --no-stream "${job.dockerId}"" --format "{{.NetIO}}"`,{});
+        const ioInfo: any = await execPromise(cmd,{});
 
-        let inputUsage = toMegaBytes(ioInfo.split(' / ')[0])
-        let outputUsage = toMegaBytes(ioInfo.split(' / ')[1]);
+        const inputUsage = toMegaBytes(ioInfo.split(' / ')[0].replace(/[\n\r]/g, ''));
+        const outputUsage = toMegaBytes(ioInfo.split(' / ')[1].replace(/[\n\r]/g, ''));
+        
+        if(startup == true) {
+            job.last_io_usage = Math.floor(job.io_usage);
+            startup = false;
+        }
+        
+        job.io_usage = Math.floor((inputUsage + outputUsage) + job.last_io_usage);
+        job.storage_usage = Math.floor(toMegaBytes(storageUsed.split(' ')[0]));
         
         console.log(`inputUsage: ${inputUsage}`);
         console.log(`outputUsage: ${outputUsage}`);
@@ -94,23 +136,31 @@ const intervalCallback = async () => {
         
         /*
         
-            - storage can be reset for total current usafe
-            - IO should not reset and should be added between DSP resets
+            - perform validation check for max io/storage used
         
         */
         
-        job.io_usage = (inputUsage + outputUsage);
-        job.storage_usage = storageUsed;
+        const limits = await validateDataLimits(job.key);
         
-        const serviceInfo = await getInfo(job.id,"service");
-        const valid = await validateServiceBalance(serviceInfo.consumer, job.id);
-        if (valid == false && job.stopped == false) {
-            await execPromise(`docker stop ${job.dockerId}`,{});
-            await execPromise(`docker rm ${job.dockerId} -v`,{});
-            await updateUsageInfo(job.key,0,0,true);
+        console.log(`limits: ${typeof(limits)=="object"?JSON.stringify(limits):limits}`)
+        
+        console.log(job.key, job.io_usage, job.storage_usage, job.last_io_usage, job.stopped);
+        
+        if(job.io_usage > limits.ioMegaBytesLimit || job.storage_usage > limits.storageMegaBytesLimit) {
+            await endService(job, "io/storage resource limit reached", `max io/storage limit reached for job id: ${job.key} | docker id: ${job.dockerId} | io usage: ${job.io_usage} | io limit: ${limits.ioMegaBytesLimit} | storage usage: ${job.storage_usage} | storage limit: ${limits.storageMegaBytesLimit}`);
         }
         
-        await updateUsageInfo(job.id, job.io_usage, job.storage_usage, false);
+        const serviceInfo = await getInfo(job.key,"service");
+        const valid = await validateServiceBalance(serviceInfo.consumer, job.key);
+        if (valid == false && job.stopped == false) {
+            await endService(job, "dapp gas limit reached", `dapp gas ran out for job id: ${job.key} | docker id: ${job.dockerId}`);
+        }
+        
+        if(await isServiceDone(job.key)) {
+            await endService(job, "service time exceeded", `service time exceeded: ${job.key} | docker id: ${job.dockerId}`);
+        }
+        
+        await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage, false);
     }
 }
 
@@ -129,6 +179,10 @@ run();
 
 async function isProcessed(jobID, isJob) {
     return await theContract.methods.jobServiceCompleted(jobID, dspAccount.address, isJob).call({ from: dspAccount.address });
+}
+
+async function isServiceDone(jobID) {
+    return await theContract.methods.isServiceDone(jobID).call({ from: dspAccount.address });
 }
 
 async function validateJobBalance(consumer, gasLimit, imageName) {
