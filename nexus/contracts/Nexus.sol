@@ -297,6 +297,8 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 _fallbackGasPrice,
         uint16 _gasCeilingMultiplier
     ) external initializer {
+        __Ownable_init();
+        __ReentrancyGuard_init();
         token = IERC20Upgradeable(_tokenContract);
         bancorNetwork = IBancorNetwork(_bancorNetwork);
         FAST_GAS_FEED = AggregatorV3Interface(_fastGasFeed);
@@ -397,7 +399,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint _amount,
         address _consumer,
         address _dsp
-    ) public {
+    ) public nonReentrant {
         require(registeredDSPs[_dsp].active,"dsp inactive");
 
         token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -413,7 +415,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function sellGas(
         uint _amountToSell,
         address _dsp
-    ) public {
+    ) public nonReentrant {
         address _consumer = msg.sender;
 
         require(!(_amountToSell > dspData[_consumer][_dsp].amount),"overdrawn balance");
@@ -428,7 +430,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev allows dsp to claim for consumer
      */
-    function claim() external {
+    function claim() external nonReentrant {
         uint claimableAmount = registeredDSPs[msg.sender].claimableDapp;
 
         require(claimableAmount != 0,"must have positive balance to claim");
