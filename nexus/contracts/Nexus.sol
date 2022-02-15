@@ -735,7 +735,11 @@ contract Nexus is Ownable {
      */
     function isServiceDone(uint id) external view returns (bool) {
         ServiceData storage sd = services[id];
-        
+        console.log("sd.endDate");
+        console.log(sd.endDate);
+        console.log("block.timestamp");
+        console.log(block.timestamp);
+        console.log(sd.endDate < block.timestamp);
         return sd.endDate < block.timestamp;
     }
     

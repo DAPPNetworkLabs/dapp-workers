@@ -3,7 +3,7 @@ const Stream = require('stream');
 const fetch =require('node-fetch');
 import { execPromise } from './exec';
 
-const { getLastBlock,createLastBlock,getUsageInfo,createUsageInfo,updateUsageInfo } = require('./dal/dal')
+const { createUsageInfo } = require('./dal/dal')
 
 const kill = require('kill-port');
 

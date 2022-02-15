@@ -20,6 +20,8 @@ const gasCeilingMultiplier = 2;
 const delay = s => new Promise(res => setTimeout(res, s * 1000));
 
 let provider;
+    
+let outputFSRes;
 
 function loadfsRoot(fsrootName){
   if(process.env.PRIVATE_KEY) {
@@ -197,8 +199,6 @@ describe("Nexus", function() {
       requiresConsistent: false,
       args: []
     });
-    
-    let outputFSRes;
 
     const eventPromise = new Promise((resolve, reject) => {
         nexusContract.once("JobResult", (
@@ -311,8 +311,6 @@ describe("Nexus", function() {
 
     jobId++;
     
-    let outputFSRes;
-
     const JobPromise = new Promise((resolve, reject) => {
         nexusContract.once("JobResult", (
             consumer, 
@@ -597,6 +595,36 @@ describe("Nexus", function() {
   });
 
   it("Run service - complete", async function() {
+    await nexusContract.queueJob({
+      owner: addr1.address,
+      imageName: "rust-compiler",
+      inputFS: loadfsRoot("serviceTest"),
+      callback: false,
+      gasLimit: 1000000,
+      requiresConsistent: false,
+      args: []
+    });
+
+    jobId++;
+    
+    const JobPromise = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            dsp, 
+            outputFS, 
+            outputHash,
+            dapps,
+            jobID
+          ) => {
+            resolve(outputFS);
+          }
+        );
+    });
+
+    await JobPromise.then(val => {
+      outputFSRes = val;
+    });
+    
     const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
 
     await nexusContract.queueService({
@@ -604,7 +632,7 @@ describe("Nexus", function() {
       imageName: "wasi-service",
       ioMegaBytes: 100,
       storageMegaBytes: 100,
-      inputFS: "",
+      inputFS: outputFSRes,
       args: ["target/wasm32-wasi/release/test"],
       months: 1
     });
@@ -623,9 +651,9 @@ describe("Nexus", function() {
           }
         );
     });
-
-    await servicePromise.then();
     
+    await servicePromise.then();
+
     let failed = false;
     try {
       await nexusContract.connect(dsp1).serviceComplete({
@@ -635,16 +663,40 @@ describe("Nexus", function() {
         storageMegaBytesUsed: 100
       });
     } catch(e) {
+      console.log('yo dis da eee',e);
       failed = true;
     }
 
     expect(failed).to.equal(true);
 
+    console.log('\n\nyoo otime dogggg');
+
+    
+    console.log("start evm_increaseTime block", await ethers.provider.getBlockNumber());
     await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
+    
+    console.log("end evm_increaseTime block", await ethers.provider.getBlockNumber());
+
+    // await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
+
+    // await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
+
+    // await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
+
+    // await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
+    let nowBlock = await ethers.provider.getBlockNumber();
+    
+    console.log("start evm_mine block", nowBlock);
+    let timestamp = (await ethers.provider.getBlock(nowBlock)).timestamp;
+    await ethers.provider.send("evm_mine", [ timestamp + (30 * 1000 * 10 * 10 * 10) ]);
+
+    console.log('\n\nyoo otime donnnneeeee dogggg');
+    console.log("end evm_mine block", await ethers.provider.getBlockNumber());
+    
     
     const completePromise = new Promise((resolve, reject) => {
         nexusContract.once("ServiceComplete", (
-            consumer, 
+            consumer,
             dsp, 
             outputFS, 
             jobID
@@ -656,6 +708,8 @@ describe("Nexus", function() {
     });
 
     await completePromise.then();
+
+    console.log('\n\nyoo ServiceComplete done dogg')
 
     // await nexusContract.connect(dsp1).serviceComplete({
     //   jobID: id,
@@ -675,7 +729,7 @@ describe("Nexus", function() {
   it("Get get max payment for gas with fallback time", async function() {
     const data = await nexusContract.getMaxPaymentForGas("1000000","runner",dsp1.address);
     
-    expect(data).is.above(1000000000);
+    expect(data).is.above(100000000);
   });
 
   it("Claim dsp dapp", async function() {

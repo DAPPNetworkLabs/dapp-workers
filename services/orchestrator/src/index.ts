@@ -155,7 +155,10 @@ const intervalCallback = async () => {
             await endService(job, "dapp gas limit reached", `dapp gas ran out for job id: ${job.key} | docker id: ${job.dockerId}`);
         }
         
-        if(await isServiceDone(job.key)) {
+        const serviceDone = await isServiceDone(job.key);
+        console.log(`serviceDoneResponse`, serviceDone)
+        
+        if(serviceDone) {
             await endService(job, "service time exceeded", `service time exceeded: ${job.key} | docker id: ${job.dockerId}`);
         }
         
