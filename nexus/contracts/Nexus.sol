@@ -11,22 +11,22 @@ import "hardhat/console.sol";
 
 contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
-
-    uint public gasPerTimeUnit = 100;
-    uint public usdtPrecision = 1e6;
     
     IERC20Upgradeable public token;
     IBancorNetwork public bancorNetwork;
     AggregatorV3Interface public FAST_GAS_FEED;
 
-    address dappToken = 0x939B462ee3311f8926c047D2B576C389092b1649;
-    address dappBntToken = 0x33A23d447De16a8Ff802c9Fcc917465Df01A3977;
-    address bntToken = 0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C;
-    address ethBntToken = 0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533;
-    address ethToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address private dappToken;
+    address private dappBntToken;
+    address private bntToken;
+    address private ethBntToken;
+    address private ethToken;
 
-    address usdtToken = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-    address usdtBntToken = 0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306;
+    uint public gasPerTimeUnit;
+    uint public usdtPrecision;
+
+    address private usdtToken;
+    address private usdtBntToken;
 
     uint256 private constant CUSHION = 5_000;
     uint256 private constant JOB_GAS_OVERHEAD = 80_000;
@@ -266,6 +266,25 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         string outputHash;
     }
 
+    struct initArgs {
+        address _tokenContract;
+        address _bancorNetwork;
+        address _fastGasFeed;
+        uint32 _paymentPremiumPPB;
+        uint24 _stalenessSeconds;
+        uint256 _fallbackGasPrice;
+        uint16 _gasCeilingMultiplier;
+        address _dappToken;
+        address _dappBntToken;
+        address _bntToken;
+        address _ethBntToken;
+        address _ethToken;
+        uint256 _gasPerTimeUnit;
+        uint256 _usdtPrecision;
+        address _usdtToken;
+        address _usdtBntToken;
+    }
+
     mapping(address => RegisteredDSP) public registeredDSPs;
     mapping(address => mapping(address => PerConsumerDSPEntry)) public dspData;
 
@@ -289,25 +308,31 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     uint256 private s_fallbackGasPrice; // not in config object for gas savings
 
     function initialize(
-        address _tokenContract,
-        address _bancorNetwork,
-        address _fastGasFeed,
-        uint32 _paymentPremiumPPB,
-        uint24 _stalenessSeconds,
-        uint256 _fallbackGasPrice,
-        uint16 _gasCeilingMultiplier
+        initArgs memory args
     ) external initializer {
         __Ownable_init();
         __ReentrancyGuard_init();
-        token = IERC20Upgradeable(_tokenContract);
-        bancorNetwork = IBancorNetwork(_bancorNetwork);
-        FAST_GAS_FEED = AggregatorV3Interface(_fastGasFeed);
+        token = IERC20Upgradeable(args._tokenContract);
+        bancorNetwork = IBancorNetwork(args._bancorNetwork);
+        FAST_GAS_FEED = AggregatorV3Interface(args._fastGasFeed);
+        
+        address dappToken = args._dappToken;
+        address dappBntToken = args._dappBntToken;
+        address bntToken = args._bntToken;
+        address ethBntToken = args._ethBntToken;
+        address ethToken = args._ethToken;
+    
+        gasPerTimeUnit = args._gasPerTimeUnit;
+        usdtPrecision = args._usdtPrecision;
+
+        address usdtToken = args._usdtToken;
+        address usdtBntToken = args._usdtBntToken;
 
         setConfig(
-            _paymentPremiumPPB,
-            _gasCeilingMultiplier,
-            _fallbackGasPrice,
-            _stalenessSeconds
+            args._paymentPremiumPPB,
+            args._gasCeilingMultiplier,
+            args._fallbackGasPrice,
+            args._stalenessSeconds
         );
     }
       

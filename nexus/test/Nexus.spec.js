@@ -46,15 +46,27 @@ describe("Nexus", function() {
     const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
 
     dappTokenContract = await dappTokenFactory.deploy();
-    nexusContract = await nexusTokenFactory.deploy(
+    nexusContract = await upgrades.deployProxy(nexusTokenFactory, [
       dappTokenContract.address,
       bancorNetwork,
       fastGasFeed,
       paymentPremiumPPB,
       stalenessSeconds,
       100,
-      gasCeilingMultiplier
-    );
+      gasCeilingMultiplier,
+      '0x939B462ee3311f8926c047D2B576C389092b1649',
+      '0x33A23d447De16a8Ff802c9Fcc917465Df01A3977',
+      '0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C',
+      '0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533',
+      '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      100,
+      1e6,
+      '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      '0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306'
+    ]);
+    
+    console.log(`proxy pool address: ${nexusContract.address}\npool address: ${await upgrades.erc1967.getImplementationAddress(nexusContract.address)}`);
+    
     consumerContract = await consumerTokenFactory.deploy(nexusContract.address, "hash");
 
     if(process.env.PRIVATE_KEY) {

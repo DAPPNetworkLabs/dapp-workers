@@ -1,0 +1,486 @@
+{
+  "manifestVersion": "3.2",
+  "proxies": [],
+  "impls": {
+    "43cb992ddba58f6c8a9a0d21330438506e1d941ccae34ae5d5aa7a705712ef88": {
+      "address": "0xAfe1b5bdEbD4ae65AF2024738bf0735fbb65d44b",
+      "txHash": "0x8d243675bed2efe08e5db2e19e0fe6d312caba3fd759f8dc18c66fc9a9ee41f5",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:26"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:30"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:21"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:77"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "_status",
+            "type": "t_uint256",
+            "src": "contracts/ReentrancyGuardUpgradeable.sol:39"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "contracts/ReentrancyGuardUpgradeable.sol:69"
+          },
+          {
+            "contract": "Nexus",
+            "label": "token",
+            "type": "t_contract(IERC20Upgradeable)4733",
+            "src": "contracts/Nexus.sol:15"
+          },
+          {
+            "contract": "Nexus",
+            "label": "bancorNetwork",
+            "type": "t_contract(IBancorNetwork)4655",
+            "src": "contracts/Nexus.sol:16"
+          },
+          {
+            "contract": "Nexus",
+            "label": "FAST_GAS_FEED",
+            "type": "t_contract(AggregatorV3Interface)4642",
+            "src": "contracts/Nexus.sol:17"
+          },
+          {
+            "contract": "Nexus",
+            "label": "dappToken",
+            "type": "t_address",
+            "src": "contracts/Nexus.sol:19"
+          },
+          {
+            "contract": "Nexus",
+            "label": "dappBntToken",
+            "type": "t_address",
+            "src": "contracts/Nexus.sol:20"
+          },
+          {
+            "contract": "Nexus",
+            "label": "bntToken",
+            "type": "t_address",
+            "src": "contracts/Nexus.sol:21"
+          },
+          {
+            "contract": "Nexus",
+            "label": "ethBntToken",
+            "type": "t_address",
+            "src": "contracts/Nexus.sol:22"
+          },
+          {
+            "contract": "Nexus",
+            "label": "ethToken",
+            "type": "t_address",
+            "src": "contracts/Nexus.sol:23"
+          },
+          {
+            "contract": "Nexus",
+            "label": "gasPerTimeUnit",
+            "type": "t_uint256",
+            "src": "contracts/Nexus.sol:25"
+          },
+          {
+            "contract": "Nexus",
+            "label": "usdtPrecision",
+            "type": "t_uint256",
+            "src": "contracts/Nexus.sol:26"
+          },
+          {
+            "contract": "Nexus",
+            "label": "usdtToken",
+            "type": "t_address",
+            "src": "contracts/Nexus.sol:28"
+          },
+          {
+            "contract": "Nexus",
+            "label": "usdtBntToken",
+            "type": "t_address",
+            "src": "contracts/Nexus.sol:29"
+          },
+          {
+            "contract": "Nexus",
+            "label": "registeredDSPs",
+            "type": "t_mapping(t_address,t_struct(RegisteredDSP)793_storage)",
+            "src": "contracts/Nexus.sol:288"
+          },
+          {
+            "contract": "Nexus",
+            "label": "dspData",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(PerConsumerDSPEntry)786_storage))",
+            "src": "contracts/Nexus.sol:289"
+          },
+          {
+            "contract": "Nexus",
+            "label": "providers",
+            "type": "t_mapping(t_address,t_array(t_address)dyn_storage)",
+            "src": "contracts/Nexus.sol:291"
+          },
+          {
+            "contract": "Nexus",
+            "label": "contracts",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts/Nexus.sol:293"
+          },
+          {
+            "contract": "Nexus",
+            "label": "jobs",
+            "type": "t_mapping(t_uint256,t_struct(JobData)819_storage)",
+            "src": "contracts/Nexus.sol:295"
+          },
+          {
+            "contract": "Nexus",
+            "label": "services",
+            "type": "t_mapping(t_uint256,t_struct(ServiceData)859_storage)",
+            "src": "contracts/Nexus.sol:296"
+          },
+          {
+            "contract": "Nexus",
+            "label": "approvedImages",
+            "type": "t_mapping(t_string_memory_ptr,t_string_storage)",
+            "src": "contracts/Nexus.sol:298"
+          },
+          {
+            "contract": "Nexus",
+            "label": "dspApprovedImages",
+            "type": "t_mapping(t_address,t_mapping(t_string_memory_ptr,t_struct(DspDockerImage)872_storage))",
+            "src": "contracts/Nexus.sol:299"
+          },
+          {
+            "contract": "Nexus",
+            "label": "totalDsps",
+            "type": "t_uint256",
+            "src": "contracts/Nexus.sol:301"
+          },
+          {
+            "contract": "Nexus",
+            "label": "lastJobID",
+            "type": "t_uint256",
+            "src": "contracts/Nexus.sol:303"
+          },
+          {
+            "contract": "Nexus",
+            "label": "dspList",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "contracts/Nexus.sol:305"
+          },
+          {
+            "contract": "Nexus",
+            "label": "s_config",
+            "type": "t_struct(Config)936_storage",
+            "src": "contracts/Nexus.sol:307"
+          },
+          {
+            "contract": "Nexus",
+            "label": "s_fallbackGasPrice",
+            "type": "t_uint256",
+            "src": "contracts/Nexus.sol:308"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)4733": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_contract(IBancorNetwork)4655": {
+            "label": "contract IBancorNetwork"
+          },
+          "t_contract(AggregatorV3Interface)4642": {
+            "label": "contract AggregatorV3Interface"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_struct(RegisteredDSP)793_storage)": {
+            "label": "mapping(address => struct Nexus.RegisteredDSP)"
+          },
+          "t_struct(RegisteredDSP)793_storage": {
+            "label": "struct Nexus.RegisteredDSP",
+            "members": [
+              {
+                "label": "active",
+                "type": "t_bool"
+              },
+              {
+                "label": "endpoint",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "claimableDapp",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_struct(PerConsumerDSPEntry)786_storage))": {
+            "label": "mapping(address => mapping(address => struct Nexus.PerConsumerDSPEntry))"
+          },
+          "t_mapping(t_address,t_struct(PerConsumerDSPEntry)786_storage)": {
+            "label": "mapping(address => struct Nexus.PerConsumerDSPEntry)"
+          },
+          "t_struct(PerConsumerDSPEntry)786_storage": {
+            "label": "struct Nexus.PerConsumerDSPEntry",
+            "members": [
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "claimable",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_array(t_address)dyn_storage)": {
+            "label": "mapping(address => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_mapping(t_uint256,t_struct(JobData)819_storage)": {
+            "label": "mapping(uint256 => struct Nexus.JobData)"
+          },
+          "t_struct(JobData)819_storage": {
+            "label": "struct Nexus.JobData",
+            "members": [
+              {
+                "label": "consumer",
+                "type": "t_address"
+              },
+              {
+                "label": "owner",
+                "type": "t_address"
+              },
+              {
+                "label": "dsps",
+                "type": "t_array(t_address)dyn_storage"
+              },
+              {
+                "label": "callback",
+                "type": "t_bool"
+              },
+              {
+                "label": "resultsCount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "imageName",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "gasLimit",
+                "type": "t_uint256"
+              },
+              {
+                "label": "requireConsistent",
+                "type": "t_bool"
+              },
+              {
+                "label": "done",
+                "type": "t_mapping(t_uint256,t_bool)"
+              },
+              {
+                "label": "dataHash",
+                "type": "t_mapping(t_uint256,t_bytes32)"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_mapping(t_uint256,t_bytes32)": {
+            "label": "mapping(uint256 => bytes32)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_mapping(t_uint256,t_struct(ServiceData)859_storage)": {
+            "label": "mapping(uint256 => struct Nexus.ServiceData)"
+          },
+          "t_struct(ServiceData)859_storage": {
+            "label": "struct Nexus.ServiceData",
+            "members": [
+              {
+                "label": "consumer",
+                "type": "t_address"
+              },
+              {
+                "label": "owner",
+                "type": "t_address"
+              },
+              {
+                "label": "dsps",
+                "type": "t_array(t_address)dyn_storage"
+              },
+              {
+                "label": "imageName",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "started",
+                "type": "t_bool"
+              },
+              {
+                "label": "endDate",
+                "type": "t_uint256"
+              },
+              {
+                "label": "months",
+                "type": "t_uint256"
+              },
+              {
+                "label": "ioMegaBytes",
+                "type": "t_uint256"
+              },
+              {
+                "label": "storageMegaBytes",
+                "type": "t_uint256"
+              },
+              {
+                "label": "dspServiceData",
+                "type": "t_mapping(t_address,t_struct(DspServiceData)826_storage)"
+              },
+              {
+                "label": "dataHash",
+                "type": "t_mapping(t_address,t_bytes32)"
+              },
+              {
+                "label": "done",
+                "type": "t_mapping(t_uint256,t_bool)"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_struct(DspServiceData)826_storage)": {
+            "label": "mapping(address => struct Nexus.DspServiceData)"
+          },
+          "t_struct(DspServiceData)826_storage": {
+            "label": "struct Nexus.DspServiceData",
+            "members": [
+              {
+                "label": "port",
+                "type": "t_uint256"
+              },
+              {
+                "label": "ioMegaBytesLimit",
+                "type": "t_uint256"
+              },
+              {
+                "label": "storageMegaBytesLimit",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bytes32)": {
+            "label": "mapping(address => bytes32)"
+          },
+          "t_mapping(t_string_memory_ptr,t_string_storage)": {
+            "label": "mapping(string => string)"
+          },
+          "t_mapping(t_address,t_mapping(t_string_memory_ptr,t_struct(DspDockerImage)872_storage))": {
+            "label": "mapping(address => mapping(string => struct Nexus.DspDockerImage))"
+          },
+          "t_mapping(t_string_memory_ptr,t_struct(DspDockerImage)872_storage)": {
+            "label": "mapping(string => struct Nexus.DspDockerImage)"
+          },
+          "t_struct(DspDockerImage)872_storage": {
+            "label": "struct Nexus.DspDockerImage",
+            "members": [
+              {
+                "label": "jobFee",
+                "type": "t_uint256"
+              },
+              {
+                "label": "baseFee",
+                "type": "t_uint256"
+              },
+              {
+                "label": "storageFee",
+                "type": "t_uint256"
+              },
+              {
+                "label": "ioFee",
+                "type": "t_uint256"
+              },
+              {
+                "label": "minStorageMegaBytes",
+                "type": "t_uint256"
+              },
+              {
+                "label": "minIoMegaBytes",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_struct(Config)936_storage": {
+            "label": "struct Nexus.Config",
+            "members": [
+              {
+                "label": "paymentPremiumPPB",
+                "type": "t_uint32"
+              },
+              {
+                "label": "gasCeilingMultiplier",
+                "type": "t_uint16"
+              },
+              {
+                "label": "stalenessSeconds",
+                "type": "t_uint24"
+              }
+            ]
+          },
+          "t_uint32": {
+            "label": "uint32"
+          },
+          "t_uint16": {
+            "label": "uint16"
+          },
+          "t_uint24": {
+            "label": "uint24"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    }
+  }
+}
