@@ -114,7 +114,7 @@ const intervalCallback = async () => {
         
         const cmd = `docker stats --no-stream --format "{{.NetIO}}" ${job.dockerId}`;
         
-        console.log(`cmd used: ${cmd}`);
+        // console.log(`cmd used: ${cmd}`);
 
         const ioInfo: any = await execPromise(cmd,{});
 
@@ -129,21 +129,15 @@ const intervalCallback = async () => {
         job.io_usage = Math.floor((inputUsage + outputUsage) + job.last_io_usage);
         job.storage_usage = Math.floor(toMegaBytes(storageUsed.split(' ')[0]));
         
-        console.log(`inputUsage: ${inputUsage}`);
-        console.log(`outputUsage: ${outputUsage}`);
-        console.log(`storage used: ${storageUsed}MB`);
-        
-        /*
-        
-            - perform validation check for max io/storage used
-        
-        */
+        // console.log(`inputUsage: ${inputUsage}`);
+        // console.log(`outputUsage: ${outputUsage}`);
+        // console.log(`storage used: ${storageUsed}MB`);
         
         const limits = await validateDataLimits(job.key);
         
-        console.log(`limits: ${typeof(limits)=="object"?JSON.stringify(limits):limits}`)
+        // console.log(`limits: ${typeof(limits)=="object"?JSON.stringify(limits):limits}`)
         
-        console.log(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
+        // console.log(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
         
         if(job.io_usage > limits.ioMegaBytesLimit || job.storage_usage > limits.storageMegaBytesLimit) {
             await endService(job, "io/storage resource limit reached", `max io/storage limit reached for job id: ${job.key} | docker id: ${job.dockerId} | io usage: ${job.io_usage} | io limit: ${limits.ioMegaBytesLimit} | storage usage: ${job.storage_usage} | storage limit: ${limits.storageMegaBytesLimit}`);
@@ -155,10 +149,7 @@ const intervalCallback = async () => {
             await endService(job, "dapp gas limit reached", `dapp gas ran out for job id: ${job.key} | docker id: ${job.dockerId}`);
         }
         
-        const serviceDone = await isServiceDone(job.key);
-        console.log(`serviceDoneResponse`, serviceDone)
-        
-        if(serviceDone) {
+        if(await isServiceDone(job.key)) {
             await endService(job, "service time exceeded", `service time exceeded: ${job.key} | docker id: ${job.dockerId}`);
         }
         

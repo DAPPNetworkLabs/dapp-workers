@@ -663,15 +663,11 @@ describe("Nexus", function() {
         storageMegaBytesUsed: 100
       });
     } catch(e) {
-      console.log('yo dis da eee',e);
       failed = true;
     }
 
     expect(failed).to.equal(true);
 
-    console.log('\n\nyoo otime dogggg');
-
-    
     console.log("start evm_increaseTime block", await ethers.provider.getBlockNumber());
     await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
     
@@ -690,7 +686,6 @@ describe("Nexus", function() {
     let timestamp = (await ethers.provider.getBlock(nowBlock)).timestamp;
     await ethers.provider.send("evm_mine", [ timestamp + (30 * 1000 * 10 * 10 * 10) ]);
 
-    console.log('\n\nyoo otime donnnneeeee dogggg');
     console.log("end evm_mine block", await ethers.provider.getBlockNumber());
     
     
@@ -708,15 +703,6 @@ describe("Nexus", function() {
     });
 
     await completePromise.then();
-
-    console.log('\n\nyoo ServiceComplete done dogg')
-
-    // await nexusContract.connect(dsp1).serviceComplete({
-    //   jobID: id,
-    //   outputFS: "",
-    //   ioMegaBytesUsed: 100,
-    //   storageMegaBytesUsed: 100
-    // });
 
     const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
     
