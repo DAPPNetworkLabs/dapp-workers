@@ -287,13 +287,6 @@ contract Nexus is Ownable {
     Config private s_config;  
     uint256 private s_fallbackGasPrice; // not in config object for gas savings
 
-    /*
-
-        Todo
-        - jobServiceCompleted for service return if completed or error'd out
-    
-    */
-
     constructor (
         address _tokenContract,
         address _bancorNetwork,
@@ -672,6 +665,10 @@ contract Nexus is Ownable {
         JobData storage jd = jobs[jobID];
 
         address[] storage dsps = providers[jd.owner];
+        console.log("jd.owner");
+        console.log(jd.owner);
+        console.log("jobID");
+        console.log(jobID);
         require(dsps.length > 0,"no dsps selected for consumer");
 
         uint founds = validateDspCaller(dsps,msg.sender);

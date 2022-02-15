@@ -29,41 +29,57 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
         next()
     }
 
-    let data;
+    let data, dockerError;
 
     const p = new Promise((res, rej) => {
       const timeout = setTimeout(() => {
         console.log('first job timeout');
         rej('docker container took too long');
       }, killDelay);
-      docker.run(dockerImage,  [ipfsInput, ...args],  [writableStream, writableStream2],{
-        Tty:false,
-        AttachStdout: true,
-        AttachStderr: true,
-        HostConfig: { AutoRemove: false}}
-      ).then((data) => {
-        clearTimeout(timeout);
-        res(data);
-      }).catch((e) => {
-        rej(e);
-      });
+  
+      let dockerId
+      
+      // try {
+        console.log('running docker here')
+        docker.run(dockerImage,  [ipfsInput, ...args],  [writableStream, writableStream2],{
+          Tty:false,
+          AttachStdout: true,
+          AttachStderr: true,
+          HostConfig: { AutoRemove: false}}
+        ).then((data) => {
+          console.log(`res data here:`,data);
+          clearTimeout(timeout);
+          res(data);
+        }).catch((e) => {
+          console.log(`rej error here:`,e);
+          rej(e);
+        });
+        console.log('stop running docker here')
+      // } catch(e) {
+      //   console.log(`docker error:`,e);
+      //   rej(e);
+      // }
     });
 
     await p.then(val => {
       data = val
     }).catch(e => {
-      throw e;
+      dockerError = e;
+      console.log('hit e');
+      return {stderr: error}
+      // throw e;
     });
     const container = data[1];
     await container.wait();
     await container.remove();
     if(data[0].StatusCode != 0){
-        console.log("error",error);    
+        console.log("error",error);
+        dockerError = error
     }
     console.log("output",output);
     const lines = output.split("\n")
     const outputfs = lines[lines.length-2];
-    return {stdOut:output,stderr: error, outputFS:outputfs,statusCode:data[0].StatusCode}
+    return {stdOut:output,stderr: error, outputFS:outputfs,statusCode:data[0].StatusCode, dockerError}
 }
 
 const dockerrm = async (name) => {
@@ -107,8 +123,14 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
     console.log('first service timeout');
   }, killDelay);
   
-  const dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name  ${dockerImage}-${id} --rm -d --net=dapp-workers_default -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+  let dockerId
   
+  try {
+    dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name  ${dockerImage}-${id} --rm -d --net=dapp-workers_default -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+  } catch(e) {
+    console.log(`docker error:`,e);
+    return { error:e };
+  }
   console.log(`exec Promise res: ${dockerId}`);
   dockerMap[id] = {
     dockerId,

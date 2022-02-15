@@ -109,14 +109,32 @@ const intervalCallback = async () => {
         const job = jobs[index];
         console.log(`ids: ${job.key}`);
         console.log(`docker id: ${job.dockerId}`);
-
-        const storageUsed: any = await execPromise(`docker ps --size --filter "id=${job.dockerId}" --format "{{.Size}}"`,{});
         
-        const cmd = `docker stats --no-stream --format "{{.NetIO}}" ${job.dockerId}`;
+        if (await isProcessed(job.key, false)) {
+            throw new Error(`already processed job or dsp not selected: ${job.key}`)
+            // await removeUsageInfo(job.key);
+        }
         
-        // console.log(`cmd used: ${cmd}`);
-
-        const ioInfo: any = await execPromise(cmd,{});
+        let storageUsed: any, ioInfo: any;
+        
+        try {
+            storageUsed = await execPromise(`docker ps --size --filter "id=${job.dockerId}" --format "{{.Size}}"`,{});
+            
+            const cmd = `docker stats --no-stream --format "{{.NetIO}}" ${job.dockerId}`;
+    
+            ioInfo = await execPromise(cmd,{});
+        } catch(e) {
+            console.log('error right about here');
+            await postTrx("serviceError", dspAccount, {
+                jobID: job.key,
+                stdErr: "error dispatching",
+                outputFS: "",
+                ioMegaBytesUsed:0,
+                storageMegaBytesUsed:0
+            });
+            await removeUsageInfo(job.key);
+            continue;
+        }
 
         const inputUsage = toMegaBytes(ioInfo.split(' / ')[0].replace(/[\n\r]/g, ''));
         const outputUsage = toMegaBytes(ioInfo.split(' / ')[1].replace(/[\n\r]/g, ''));
@@ -220,6 +238,9 @@ const runService = async (returnValues) => {
         const id = returnValues[fidx++];
         const inputFS = returnValues[fidx++];
         const args = returnValues[fidx++];
+        
+        const ioMegaBytesUsed = 0;
+        const storageMegaBytesUsed = 0;
 
         const jobType = "service";
 
@@ -234,8 +255,6 @@ const runService = async (returnValues) => {
             console.log(`min balance not met service: ${id}`)
             // TODO use actual values used
             // TODO ensure DAPP gas sufficient to cover gas of trx
-            const ioMegaBytesUsed = 1;
-            const storageMegaBytesUsed = 1;
             const rcpterr = await postTrx("serviceError", dspAccount, {
                 jobID: id,
                 stdErr: "service error",
@@ -259,14 +278,11 @@ const runService = async (returnValues) => {
         
         */
 
-        let serviceResults;
-        try{
-            serviceResults = await dispatchService(id, imageName, inputFS, args);
-        }
-        catch(e){
+        const serviceResults = await dispatchService(id, imageName, inputFS, args);
+        
+        if(serviceResults.error) {
+            console.log("jobError", serviceResults.error);
             // todo: handle failure. 
-            const ioMegaBytesUsed = 1;
-            const storageMegaBytesUsed = 1;
             const rcpterr = await postTrx("serviceError", dspAccount, {
                 jobID: id,
                 stdErr: "service error",
@@ -274,12 +290,11 @@ const runService = async (returnValues) => {
                 ioMegaBytesUsed,
                 storageMegaBytesUsed
             });
-            console.log(e);
-            console.log(rcpterr);
+        } else {
+            // post results
+            const servicercpt = await postTrx("serviceCallback", dspAccount, id, serviceResults.port);
+            console.log(`posted service results`,consumer,imageName, serviceResults.port);
         }
-        // // post results
-        const servicercpt = await postTrx("serviceCallback", dspAccount, id, serviceResults.port);
-        console.log(`posted service results`,consumer,imageName, serviceResults.port);
 }
 
 // todo: subscribe to Kill
@@ -317,26 +332,22 @@ function subscribe(theContract: any) {
             return;
         }
 
-        let dispatchResult
-
-        try {
-            dispatchResult = await dispatch(job.imageName, jobInfo.inputFS, jobInfo.args);
-        }
-        catch (e) {
+        const dispatchResult:any = await dispatch(job.imageName, jobInfo.inputFS, jobInfo.args);
+        
+        if(dispatchResult.dockerError) {
+            console.log("jobError", dispatchResult.dockerError, dispatchResult);
             await postTrx("jobError", dspAccount, jobInfo.jobID, "error dispatching", "");
-            console.log("jobError",e);
+        } else {
+            console.log("dispatchResult", dispatchResult);
+            const { outputFS } = dispatchResult;
+    
+            const rcpt = await postTrx("jobCallback", dspAccount, {
+                jobID: jobInfo.jobID,
+                outputFS: outputFS,
+                outputHash: "hash"
+            });
+            console.log(`posted results`, jobInfo.consumer, job.jobImage, rcpt.transactionHash);
         }
-
-        console.log("dispatchResult");
-        console.log(dispatchResult);
-        const { outputFS } = dispatchResult;
-
-        const rcpt = await postTrx("jobCallback", dspAccount, {
-            jobID: jobInfo.jobID,
-            outputFS: outputFS,
-            outputHash: "hash"
-        });
-        console.log(`posted results`, jobInfo.consumer, job.jobImage, rcpt.transactionHash);
     });
 
     theContract.events["QueueService"]({
@@ -364,6 +375,16 @@ function subscribe(theContract: any) {
         fromBlock: 0
     }, async function (error, result) {
         console.log('ServiceError hit');
+        if (error) {
+            console.log("event error",error);
+            return;
+        }
+    });
+
+    theContract.events["JobError"]({
+        fromBlock: 0
+    }, async function (error, result) {
+        console.log('JobError hit');
         if (error) {
             console.log("event error",error);
             return;
