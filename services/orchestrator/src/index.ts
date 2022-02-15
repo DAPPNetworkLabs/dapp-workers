@@ -103,6 +103,21 @@ const endService = async (job, msg, log) => {
     await removeUsageInfo(job.key);
 }
 
+const endServiceError = async (job, msg, log) => {
+    console.log(log);
+    await execPromise(`docker stop ${job.dockerId}`,{});
+    // await execPromise(`docker rm ${job.dockerId}`,{});
+    // await execPromise(`docker rm ${job.dockerId} -v`,{});
+    await postTrx("serviceError", dspAccount, {
+        jobID: job.key,
+        stdErr: "error dispatching",
+        outputFS: "",
+        ioMegaBytesUsed:0,
+        storageMegaBytesUsed:0
+    });
+    await removeUsageInfo(job.key);
+}
+
 const intervalCallback = async () => {
     const jobs = await fetchAllUsageInfo();
     for(const index in jobs) {
@@ -158,13 +173,13 @@ const intervalCallback = async () => {
         // console.log(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
         
         if(job.io_usage > limits.ioMegaBytesLimit || job.storage_usage > limits.storageMegaBytesLimit) {
-            await endService(job, "io/storage resource limit reached", `max io/storage limit reached for job id: ${job.key} | docker id: ${job.dockerId} | io usage: ${job.io_usage} | io limit: ${limits.ioMegaBytesLimit} | storage usage: ${job.storage_usage} | storage limit: ${limits.storageMegaBytesLimit}`);
+            await endServiceError(job, "io/storage resource limit reached", `max io/storage limit reached for job id: ${job.key} | docker id: ${job.dockerId} | io usage: ${job.io_usage} | io limit: ${limits.ioMegaBytesLimit} | storage usage: ${job.storage_usage} | storage limit: ${limits.storageMegaBytesLimit}`)
         }
         
         const serviceInfo = await getInfo(job.key,"service");
         const valid = await validateServiceBalance(serviceInfo.consumer, job.key);
         if (valid == false) {
-            await endService(job, "dapp gas limit reached", `dapp gas ran out for job id: ${job.key} | docker id: ${job.dockerId}`);
+            await endServiceError(job, "dapp gas limit reached", `dapp gas ran out for job id: ${job.key} | docker id: ${job.dockerId}`)
         }
         
         if(await isServiceDone(job.key)) {
