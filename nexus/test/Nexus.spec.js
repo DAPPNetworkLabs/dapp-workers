@@ -667,27 +667,9 @@ describe("Nexus", function() {
     }
 
     expect(failed).to.equal(true);
-
-    console.log("start evm_increaseTime block", await ethers.provider.getBlockNumber());
-    await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
     
-    console.log("end evm_increaseTime block", await ethers.provider.getBlockNumber());
-
-    // await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
-
-    // await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
-
-    // await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
-
-    // await ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]); // 2 months in seconds
-    let nowBlock = await ethers.provider.getBlockNumber();
-    
-    console.log("start evm_mine block", nowBlock);
-    let timestamp = (await ethers.provider.getBlock(nowBlock)).timestamp;
+    const timestamp = (await ethers.provider.getBlock(await ethers.provider.getBlockNumber())).timestamp;
     await ethers.provider.send("evm_mine", [ timestamp + (30 * 1000 * 10 * 10 * 10) ]);
-
-    console.log("end evm_mine block", await ethers.provider.getBlockNumber());
-    
     
     const completePromise = new Promise((resolve, reject) => {
         nexusContract.once("ServiceComplete", (
