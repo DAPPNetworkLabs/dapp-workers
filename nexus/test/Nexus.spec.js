@@ -105,12 +105,12 @@ describe("Nexus", function() {
   });
 
   it("Register DSP", async function() {
-    await nexusContract.connect(dsp1).regDSP("http://wasi-service-5");
+    await nexusContract.connect(dsp1).regDSP("http://wasi-service");
 
     const registeredDSPs = await nexusContract.registeredDSPs(dsp1.address);
 
     expect(registeredDSPs.active).to.equal(true);
-    expect(registeredDSPs.endpoint).to.equal("http://wasi-service-5");
+    expect(registeredDSPs.endpoint).to.equal("http://wasi-service");
     expect(registeredDSPs.claimableDapp.toString()).to.equal('0');
   });
 
@@ -358,8 +358,10 @@ describe("Nexus", function() {
     });
 
     await servicePromise.then();
+    
+    let id = jobId++
 
-    const port = await nexusContract.getPortForDSP(jobId++,dsp1.address);
+    const port = await nexusContract.getPortForDSP(id,dsp1.address);
 
     expect(port).to.equal(9000);
 
@@ -367,9 +369,11 @@ describe("Nexus", function() {
 
     expect(endpoint).to.equal(`${endpoint}`);
     
+    // console.log(`endpoint1: ${endpoint}-${id}:${port}`,id);
+    
     await delay(20);
 
-    const response = await fetch(`${endpoint}:${port}`, {method: 'GET'});
+    const response = await fetch(`${endpoint}-${id}:${port}`, {method: 'GET'});
     const body = await response.text();
 
     expect(body).to.equal("foo");
@@ -647,6 +651,11 @@ describe("Nexus", function() {
             port
           ) => {
             id = serviceId
+            // console.log("service running info",
+            // consumer, 
+            // dsp, 
+            // serviceId, 
+            // port);
             resolve();
           }
         );
@@ -672,14 +681,16 @@ describe("Nexus", function() {
     await ethers.provider.send("evm_mine", [ timestamp + (30 * 1000 * 10 * 10 * 10) ]);
     
     const completePromise = new Promise((resolve, reject) => {
-        nexusContract.once("ServiceComplete", (
+        nexusContract.on("ServiceComplete", (
             consumer,
             dsp, 
             outputFS, 
             jobID
           ) => {
-            id = jobID
-            resolve();
+            if(Number(id) == Number(jobID)) {
+              id = jobID
+              resolve();
+            }
           }
         );
     });
@@ -690,7 +701,18 @@ describe("Nexus", function() {
     
     expect(postDspBal).is.above(preDspBal);
 
-    // ensure service not running
+    const port = await nexusContract.getPortForDSP(id,dsp1.address);
+
+    const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
+
+    failed = false;
+    try {
+      await fetch(`${endpoint}-${id}:${port}`, {method: 'GET'});
+    } catch(e) {
+      failed = true;
+    }
+
+    expect(failed).to.equal(true);
   });
 
   // test relies on above increase time to assume the feed is stale
@@ -733,7 +755,7 @@ describe("Nexus", function() {
   it("Get dsp endpoint", async function() {
     const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
 
-    expect(endpoint).to.equal("http://wasi-service-5");
+    expect(endpoint).to.equal("http://wasi-service");
   });
 
   it("Get dsp list", async function() {
@@ -752,6 +774,6 @@ describe("Nexus", function() {
       dspData.push(await nexusContract.registeredDSPs(dsps[i]));
     }
 
-    expect(dspData[0].endpoint).to.equal('http://wasi-service-5');
+    expect(dspData[0].endpoint).to.equal('http://wasi-service');
   });
 });
