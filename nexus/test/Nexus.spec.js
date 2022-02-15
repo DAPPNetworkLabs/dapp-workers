@@ -449,6 +449,9 @@ describe("Nexus", function() {
     expect(isCocmplete1).to.equal(true);
     expect(isCocmplete2).to.equal(true);
   });
+  
+      // const isCocmplete1 = await nexusContract.jobServiceCompleted(5,dsp1.address,false);
+    // expect(isCocmplete1).to.equal(true);
 
   // it("Confirm job with callback ran", async function() {
   //   // const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
@@ -713,6 +716,10 @@ describe("Nexus", function() {
     }
 
     expect(failed).to.equal(true);
+    
+    const isCocmplete = await nexusContract.jobServiceCompleted(id,dsp1.address,false);
+    
+    expect(isCocmplete).to.equal(true);
   });
 
   // test relies on above increase time to assume the feed is stale
@@ -775,5 +782,8 @@ describe("Nexus", function() {
     }
 
     expect(dspData[0].endpoint).to.equal('http://wasi-service');
+  });
+
+  it("Run is service complete", async function() {
   });
 });
