@@ -1,20 +1,21 @@
 //SPDX-License-Identifier: UNLICENSED
-pragma solidity >=0.7.0 <0.9.0;
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+pragma solidity >=0.8.0;
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "./SafeERC20Upgradeable.sol";
+import "./ReentrancyGuardUpgradeable.sol";
 
 import "./interfaces/IBancorNetwork.sol";
 import "./interfaces/AggregatorV3Interface.sol";
 
 import "hardhat/console.sol";
 
-contract Nexus is Ownable {
-    using SafeERC20 for IERC20;
+contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     uint public gasPerTimeUnit = 100;
     uint public usdtPrecision = 1e6;
     
-    IERC20 public token;
+    IERC20Upgradeable public token;
     IBancorNetwork public bancorNetwork;
     AggregatorV3Interface public FAST_GAS_FEED;
 
@@ -287,7 +288,7 @@ contract Nexus is Ownable {
     Config private s_config;  
     uint256 private s_fallbackGasPrice; // not in config object for gas savings
 
-    constructor (
+    function initialize(
         address _tokenContract,
         address _bancorNetwork,
         address _fastGasFeed,
@@ -295,8 +296,8 @@ contract Nexus is Ownable {
         uint24 _stalenessSeconds,
         uint256 _fallbackGasPrice,
         uint16 _gasCeilingMultiplier
-    ) {
-        token = IERC20(_tokenContract);
+    ) external initializer {
+        token = IERC20Upgradeable(_tokenContract);
         bancorNetwork = IBancorNetwork(_bancorNetwork);
         FAST_GAS_FEED = AggregatorV3Interface(_fastGasFeed);
 
@@ -1229,7 +1230,7 @@ contract Nexus is Ownable {
         (, feedValue, , timestamp, ) = FAST_GAS_FEED.latestRoundData();
         
         if ((staleFallback && stalenessSeconds < block.timestamp - timestamp) || feedValue <= 0) {
-            return s_fallbackGasPrice;
+            revert('feed stale');
         } else {
             return uint256(feedValue);
         }
