@@ -296,15 +296,15 @@ describe("Nexus", function() {
 
   it("Queue service - try below min bytes", async function() {
     await nexusContract.approveImage("wasi-service","hash");
-    await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,100,100);
+    await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
 
     let failed = false;
     try {
       await nexusContract.queueService({
         owner: addr1.address,
         imageName: "wasi-service",
-        ioMegaBytes: 10,
-        storageMegaBytes: 10,
+        ioMegaBytes: 0,
+        storageMegaBytes: 0,
         inputFS: "",
         args: ["target/wasm32-wasi/release/test"],
         months: 1
@@ -525,6 +525,7 @@ describe("Nexus", function() {
           ) => {
             if(Number(id) == Number(jobID)) {
               console.log('hit job error')
+              expect(stdErr).to.equal("error dispatching");
               resolve();
             }
           }
@@ -597,6 +598,95 @@ describe("Nexus", function() {
     expect(data).is.above(100000000);
   });
 
+  it("Run service - io/storage limit", async function() {
+    await nexusContract.queueJob({
+      owner: addr1.address,
+      imageName: "rust-compiler",
+      inputFS: loadfsRoot("serviceTest"),
+      callback: false,
+      gasLimit: 1000000,
+      requiresConsistent: false,
+      args: []
+    });
+    
+    const JobPromise = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            dsp, 
+            outputFS, 
+            outputHash,
+            dapps,
+            jobID
+          ) => {
+            resolve(outputFS);
+          }
+        );
+    });
+
+    await JobPromise.then(val => {
+      outputFSRes = val;
+    });
+
+    await nexusContract.queueService({
+      owner: addr1.address,
+      imageName: "wasi-service",
+      ioMegaBytes: 1,
+      storageMegaBytes: 1,
+      inputFS: outputFSRes,
+      args: ["target/wasm32-wasi/release/test"],
+      months: 1
+    });
+    
+    const id = await nexusContract.lastJobID();
+    
+    console.log('id', id);
+    
+    const servicePromise = new Promise((resolve, reject) => {
+        nexusContract.once("ServiceRunning", (
+            consumer, 
+            dsp, 
+            serviceId, 
+            port
+          ) => {
+            if(Number(id) == Number(serviceId)) {
+              resolve();
+            }
+          }
+        );
+    });
+    
+    await servicePromise.then();
+    
+    console.log('ServiceRunning id', id);
+    
+    console.log('service error...')
+    
+    const completePromise = new Promise((resolve, reject) => {
+        nexusContract.on("ServiceError", (
+            consumer,
+            dsp, 
+            stdErr,
+            outputFS, 
+            jobID
+          ) => {
+            console.log(`Service Error Ids:`,jobID,id,stdErr);
+            if(Number(id) == Number(jobID)) {
+              expect(stdErr).to.equal("io/storage resource limit reached");
+              resolve();
+            }
+          }
+        );
+    });
+
+    await completePromise.then();
+    
+    console.log('service error done')
+    
+    const isCocmplete = await nexusContract.jobServiceCompleted(id,dsp1.address,false);
+    
+    expect(isCocmplete).to.equal(true);
+  });
+
   it("Run service - complete", async function() {
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -649,12 +739,7 @@ describe("Nexus", function() {
             serviceId, 
             port
           ) => {
-            id = serviceId
-            // console.log("service running info",
-            // consumer, 
-            // dsp, 
-            // serviceId, 
-            // port);
+            id = serviceId;
             resolve();
           }
         );
@@ -687,7 +772,7 @@ describe("Nexus", function() {
             jobID
           ) => {
             if(Number(id) == Number(jobID)) {
-              id = jobID
+              id = jobID;
               resolve();
             }
           }

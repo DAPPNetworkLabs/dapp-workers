@@ -110,7 +110,7 @@ const endServiceError = async (job, msg, log) => {
     // await execPromise(`docker rm ${job.dockerId} -v`,{});
     await postTrx("serviceError", dspAccount, {
         jobID: job.key,
-        stdErr: "error dispatching",
+        stdErr: msg,
         outputFS: "",
         ioMegaBytesUsed:0,
         storageMegaBytesUsed:0
@@ -272,8 +272,8 @@ const runService = async (returnValues) => {
             // TODO ensure DAPP gas sufficient to cover gas of trx
             const rcpterr = await postTrx("serviceError", dspAccount, {
                 jobID: id,
-                stdErr: "service error",
-                outputFS: "service error",
+                stdErr: "min balance not met",
+                outputFS: "",
                 ioMegaBytesUsed,
                 storageMegaBytesUsed
             });
@@ -297,17 +297,17 @@ const runService = async (returnValues) => {
         
         if(serviceResults.error) {
             console.log("jobError", serviceResults.error);
-            // todo: handle failure. 
-            const rcpterr = await postTrx("serviceError", dspAccount, {
+            await postTrx("serviceError", dspAccount, {
                 jobID: id,
                 stdErr: "service error",
                 outputFS: "service error",
                 ioMegaBytesUsed,
                 storageMegaBytesUsed
             });
+            await removeUsageInfo(id);
         } else {
             // post results
-            const servicercpt = await postTrx("serviceCallback", dspAccount, id, serviceResults.port);
+            await postTrx("serviceCallback", dspAccount, id, serviceResults.port);
             console.log(`posted service results`,consumer,imageName, serviceResults.port);
         }
 }

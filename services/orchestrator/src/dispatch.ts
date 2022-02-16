@@ -47,7 +47,6 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
           AttachStderr: true,
           HostConfig: { AutoRemove: false}}
         ).then((data) => {
-          console.log(`res data here:`,data);
           clearTimeout(timeout);
           res(data);
         }).catch((e) => {
