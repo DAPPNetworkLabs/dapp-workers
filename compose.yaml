@@ -113,7 +113,7 @@ services:
       - ETH_ADDR=ws://eth:8545
       - COMPOSE_PROFILES
       - NODE_OPTIONS=--openssl-legacy-provider
-      - ADDRESS=0x1af5e6689288F69BBAE9E41fC6BE1C82d008935f
+      - ADDRESS=0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5
       - DATABASE_URL=postgres://user:password@postgres:5432/orchestrator
       - DATABASE_NODE_ENV="production"
       - DATABASE_TIMEOUT=10000

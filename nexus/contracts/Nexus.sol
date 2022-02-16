@@ -316,17 +316,17 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         bancorNetwork = IBancorNetwork(args._bancorNetwork);
         FAST_GAS_FEED = AggregatorV3Interface(args._fastGasFeed);
         
-        address dappToken = args._dappToken;
-        address dappBntToken = args._dappBntToken;
-        address bntToken = args._bntToken;
-        address ethBntToken = args._ethBntToken;
-        address ethToken = args._ethToken;
+        dappToken = args._dappToken;
+        dappBntToken = args._dappBntToken;
+        bntToken = args._bntToken;
+        ethBntToken = args._ethBntToken;
+        ethToken = args._ethToken;
     
         gasPerTimeUnit = args._gasPerTimeUnit;
         usdtPrecision = args._usdtPrecision;
 
-        address usdtToken = args._usdtToken;
-        address usdtBntToken = args._usdtBntToken;
+        usdtToken = args._usdtToken;
+        usdtBntToken = args._usdtBntToken;
 
         setConfig(
             args._paymentPremiumPPB,
@@ -503,6 +503,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         jd.owner = args.owner;
         jd.imageName = args.imageName;
         jd.gasLimit = args.gasLimit;
+        
 
         for(uint i=0;i<dsps.length;i++) {
             require(isImageApprovedForDSP(dsps[i], args.imageName), "image not approved");
@@ -693,10 +694,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         JobData storage jd = jobs[jobID];
 
         address[] storage dsps = providers[jd.owner];
-        console.log("jd.owner");
-        console.log(jd.owner);
-        console.log("jobID");
-        console.log(jobID);
         require(dsps.length > 0,"no dsps selected for consumer");
 
         uint founds = validateDspCaller(dsps,msg.sender);
@@ -1258,6 +1255,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         
         if ((staleFallback && stalenessSeconds < block.timestamp - timestamp) || feedValue <= 0) {
             revert('feed stale');
+            // return s_fallbackGasPrice;
         } else {
             return uint256(feedValue);
         }
