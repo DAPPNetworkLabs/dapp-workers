@@ -26,7 +26,7 @@ services:
       start_period: 40s
     volumes:
       - keys:/keys
-    entrypoint: ["geth", "--syncmode=light", "--ws", "--ropsten"]
+    entrypoint: ["geth", "--syncmode=light", "--ws", "--ropsten", "--http", "--http.addr=0.0.0.0", "--ws.addr=0.0.0.0"]
   orchestrator:
     image: orchestrator
     build: services/orchestrator
@@ -35,7 +35,7 @@ services:
       - ETH_ADDR=ws://eth:8545
       - COMPOSE_PROFILES
       - NODE_OPTIONS=--openssl-legacy-provider
-      - ADDRESS=0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5
+      - ADDRESS=0xEdF6BAE9895941F2f386483640EA30bd71751d0A
       - DATABASE_URL=postgres://user:password@postgres:5432/orchestrator
       - DATABASE_NODE_ENV="production"
       - DATABASE_TIMEOUT=10000

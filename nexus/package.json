@@ -1,5 +1,10 @@
 {
-  "name": "hardhat-project",
+  "name": "hardhat-project",  
+  "scripts": {
+    "test": "npx hardhat test --network hardhat",
+    "deploy": "npx hardhat run scripts/deploy.js --network mainnet",
+    "deploy ropsten": "npx hardhat run scripts/deploy_ropsten.js --network ropsten"    
+  },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-etherscan": "^2.1.7",

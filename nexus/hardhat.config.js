@@ -36,6 +36,16 @@ module.exports = {
         mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
       },
       timeout: 120000
+    },
+    ropsten: {
+      url: `https://eth-ropsten.alchemyapi.io/v2/${config.alchemyKey}`,
+      accounts: config.keys,
+      blockGasLimit: 12e6
     }
+  },
+  etherscan: {
+    // Your API key for Etherscan
+    // Obtain one at https://etherscan.io/
+    apiKey: config.etherscanApiKey
   }
 };
