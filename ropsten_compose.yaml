@@ -39,7 +39,7 @@ services:
       - DATABASE_URL=postgres://user:password@postgres:5432/orchestrator
       - DATABASE_NODE_ENV="production"
       - DATABASE_TIMEOUT=10000
-    command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=60", "eth:8545", "--", "node", "./dist/index.js"]
+    command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=120", "eth:8545", "--", "node", "./dist/index.js"]
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -83,3 +83,4 @@ networks:
 # nexus proxy: 0x06775Cc1985453ED4446B579131db2128ef5762B
 # proxy admin contract: 0x991A5476A3148F97091DCB190Ff20188a7B2b15c
 # nexus contract: 0x84683843C3c7Ae6E841652c446E4E78647959A57
+# dapp token contract: 
