@@ -385,9 +385,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev set dsps
      */
     function setDsps(address[] calldata dsps) external {
-        // still need to be able to set dsps after registering contract
-        // should not require de-registering then re-registering
-        // validateConsumer(msg.sender);
         validateActiveDsps(dsps);
 
         providers[msg.sender] = dsps;
@@ -413,7 +410,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address _consumer,
         address _dsp
     ) public nonReentrant {
-        require(registeredDSPs[_dsp].active,"dsp inactive");
+        require(registeredDSPs[_dsp].active,"inactive");
 
         token.safeTransferFrom(msg.sender, address(this), _amount);
         
@@ -431,7 +428,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     ) public nonReentrant {
         address _consumer = msg.sender;
 
-        require(!(_amountToSell > dspData[_consumer][_dsp].amount),"overdrawn balance");
+        require(!(_amountToSell > dspData[_consumer][_dsp].amount),"overdrawn");
         
         dspData[_consumer][_dsp].amount -= _amountToSell;
 
@@ -446,7 +443,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function claim() external nonReentrant {
         uint claimableAmount = registeredDSPs[msg.sender].claimableDapp;
 
-        require(claimableAmount != 0,"must have positive balance to claim");
+        require(claimableAmount != 0,"req pos bal");
         
         token.safeTransfer(msg.sender, claimableAmount);
         
@@ -477,7 +474,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         validateConsumer(msg.sender);
 
         address[] storage dsps = providers[args.owner];
-        require(dsps.length > 0,"no dsps selected for consumer");
+        require(dsps.length > 0,"no dsps");
         
         validateActiveDsps(dsps);
 
@@ -494,12 +491,12 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         
 
         for(uint i=0;i<dsps.length;i++) {
-            require(isImageApprovedForDSP(dsps[i], args.imageName), "image not approved");
+            require(isImageApprovedForDSP(dsps[i], args.imageName), "not approved");
             require(
                 dspData[msg.sender][dsps[i]].amount 
                 >= 
                 calculatePaymentAmount(jobs[lastJobID].gasLimit,jobs[lastJobID].imageName, dsps[i])
-                ,"min balance not met"
+                ,"bal not met"
             );
         }
         
@@ -520,12 +517,12 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         validateConsumer(msg.sender);
 
         address[] storage dsps = providers[args.owner];
-        require(dsps.length > 0,"no dsps selected for consumer");
+        require(dsps.length > 0,"no dsps");
 
         validateActiveDsps(dsps);
 
         for(uint i=0;i<dsps.length;i++) {
-            require(isImageApprovedForDSP(dsps[i], args.imageName), "image not approved");
+            require(isImageApprovedForDSP(dsps[i], args.imageName), "not approved");
             validateMin(
                 args.ioMegaBytes, 
                 args.storageMegaBytes, 
@@ -565,9 +562,9 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         JobData storage jd = jobs[args.jobID];
 
         address[] storage dsps = providers[jd.owner];
-        require(dsps.length > 0,"no dsps selected for consumer");
+        require(dsps.length > 0,"no dsps");
         
-        require(!jd.done[uint(validateDspCaller(dsps,msg.sender,true))], "dsp already completed");
+        require(!jd.done[uint(validateDspCaller(dsps,msg.sender,true))], "completed");
 
         // maybe throw if user doesn't want to accept inconsistency
         bool inconsistent = submitResEntry(
@@ -577,7 +574,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         );
 
         if(jd.requireConsistent) {
-            require(inconsistent,"inconsistent response");
+            require(inconsistent,"inconsistent");
         }
         
         uint gasUsed;
@@ -629,16 +626,16 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      */
     // add check for not conflicting with DSP frontend default ports
     function serviceCallback(uint serviceId, uint port) public {
-        require(port != 8888,"dsp portal port overlap");
+        require(port != 8888,"overlap");
 
         ServiceData storage sd = services[serviceId];
 
         address[] storage dsps = providers[sd.owner];
-        require(dsps.length > 0,"no dsps selected for consumer");
+        require(dsps.length > 0,"no dsps");
 
         validateDspCaller(dsps,msg.sender,true);
 
-        require(sd.started == false, "service already started");
+        require(sd.started == false, "started");
 
         sd.started = true;
         sd.endDate = block.timestamp + ( sd.months * 30 days );
@@ -682,11 +679,11 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         JobData storage jd = jobs[jobID];
 
         address[] storage dsps = providers[jd.owner];
-        require(dsps.length > 0,"no dsps selected for consumer");
+        require(dsps.length > 0,"no dsps");
 
         uint founds = uint(validateDspCaller(dsps,msg.sender,true));
 
-        require(!jd.done[founds], "dsp already completed");
+        require(!jd.done[founds], "completed");
 
         uint dapps = calculatePaymentAmount(0,jd.imageName,msg.sender);
 
@@ -708,11 +705,11 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         ServiceData storage sd = services[args.jobID];
 
         address[] storage dsps = providers[sd.owner];
-        require(dsps.length > 0,"no dsps selected for consumer");
+        require(dsps.length > 0,"no dsps");
         
         uint founds = uint(validateDspCaller(dsps,msg.sender,true));
 
-        require(!sd.done[founds], "dsp already completed");
+        require(!sd.done[founds], "completed");
         
         uint dapps = calcServiceDapps(
             sd.imageName,
@@ -754,15 +751,15 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function serviceComplete(serviceCompleteArgs calldata args) public {
         ServiceData storage sd = services[args.jobID];
 
-        require(sd.started == true, "service not started");
-        require(sd.endDate < block.timestamp, "service time remaining");
+        require(sd.started == true, "not started");
+        require(sd.endDate < block.timestamp, "time remaining");
 
         address[] storage dsps = providers[sd.owner];
-        require(dsps.length > 0,"no dsps selected for consumer");
+        require(dsps.length > 0,"no dsps");
         
         uint founds = uint(validateDspCaller(dsps,msg.sender,true));
 
-        require(!sd.done[founds], "dsp already completed");
+        require(!sd.done[founds], "completed");
         
         uint dapps = calcServiceDapps(
             sd.imageName,
@@ -802,11 +799,11 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         
         ServiceData storage sd = services[serviceId];
 
-        require(compareStrings(imageName, sd.imageName),"image missmatch");
-        require(sd.endDate > block.timestamp, "no service time remaining");
+        require(compareStrings(imageName, sd.imageName),"missmatch");
+        require(sd.endDate > block.timestamp, "time remaining");
 
         address[] storage dsps = providers[msg.sender];
-        require(dsps.length > 0,"no dsps selected for consumer");
+        require(dsps.length > 0,"no dsps");
 
         // require service not completed
         // if service completed by dsp, do not charge
@@ -864,7 +861,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      */
     function approveImage(string calldata imageName, string calldata imageHash) external onlyOwner {
         require(bytes(approvedImages[imageName]).length == 0, "image exists");
-        require(bytes(imageHash).length != 0, "hash must not be empty");
+        require(bytes(imageHash).length != 0, "invalid hash");
 
         approvedImages[imageName] = imageHash;
     }
@@ -873,7 +870,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev active and set endpoint and gas fee mult for dsp
      */
     function regDSP(string calldata endpoint) public {
-        require(bytes(endpoint).length != 0, "endoint must not be empty");
+        require(bytes(endpoint).length != 0, "invalid endpoint");
 
         address _dsp = msg.sender;
 
@@ -915,7 +912,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint minStorageMegaBytes,
         uint minIoMegaBytes
     ) external {
-        require(bytes(approvedImages[imageName]).length != 0, "image not approved");
+        require(bytes(approvedImages[imageName]).length != 0, "not approved");
         require(jobFee > 0, "job fee must be > 0");
         require(baseFee > 0, "base fee must be > 0");
         require(storageFee > 0, "storage fee must be > 0");
@@ -950,11 +947,13 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address owner = msg.sender;
 
         require(isImageApprovedForDSP(owner, imageName), "image not approved");
-        require(jobFee > 0, "job fee must be > 0");
-        require(baseFee > 0, "base fee must be > 0");
-        require(storageFee > 0, "storage fee must be > 0");
-        require(ioFee > 0, "io fee must be > 0");
-        require(minIoMegaBytes > 0, "min io must be > 0");
+        require(
+            jobFee > 0 && 
+            baseFee > 0 && 
+            storageFee > 0 && 
+            ioFee > 0 && 
+            minIoMegaBytes > 0
+        , "invalid fee");
 
         bool diff = false;
 
@@ -965,7 +964,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         if(dspApprovedImages[owner][imageName].minStorageMegaBytes != minStorageMegaBytes) diff = true;
         if(dspApprovedImages[owner][imageName].minIoMegaBytes != minIoMegaBytes) diff = true;
 
-        require(diff, "no change in image");
+        require(diff, "no diff");
 
         // job related
         dspApprovedImages[owner][imageName].jobFee = jobFee;
@@ -1017,8 +1016,8 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             }
         }
 
-        require(founds > -1, "dsp not found");
-        require(!jd.done[uint(founds)], "dsp already completed");
+        require(founds > -1, "not found");
+        require(!jd.done[uint(founds)], "completed");
 
         jd.done[uint(founds)] = true;
         jd.resultsCount++;
@@ -1136,13 +1135,13 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             ioMegaBytes 
             >= 
             dspApprovedImages[dsp][imageName].minIoMegaBytes * months
-            ,"min io bytes not met"
+            ,"min io"
         );
         require(
             storageMegaBytes 
             >= 
             dspApprovedImages[dsp][imageName].minStorageMegaBytes * months
-            ,"min storage bytes not met"
+            ,"min storage"
         );
     }
 
@@ -1153,9 +1152,9 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address authorized_contract = contracts[consumer];
 
         if(authorized_contract != address(0)){
-            require(authorized_contract == msg.sender, "consumer not authorized");
+            require(authorized_contract == msg.sender, "not auth");
         } else {
-            require(consumer == msg.sender, "consumer not sender");
+            require(consumer == msg.sender, "not sender");
         }
     }
     
@@ -1173,7 +1172,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         }
 
         if(error) {
-            require(founds > -1, "dsp not found");
+            require(founds > -1, "not found");
         }
         
         return founds;
@@ -1183,9 +1182,9 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev require all dsps be active
      */
     function validateActiveDsps(address[] memory dsps) private view {
-        require(dsps.length > 0, "no dsps selected");
+        require(dsps.length > 0, "no dsps");
         for (uint i=0; i<dsps.length; i++) {
-            require(registeredDSPs[dsps[i]].active, "dsp not active");
+            require(registeredDSPs[dsps[i]].active, "not active");
         }
     }
 
@@ -1311,7 +1310,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint _amountToUse,
         address _dsp
     ) internal {
-        require(_amountToUse <= dspData[_consumer][_dsp].amount, "not enough dapp gas");
+        require(_amountToUse <= dspData[_consumer][_dsp].amount, "insuficient gas");
 
         dspData[_consumer][_dsp].amount -= _amountToUse;
         registeredDSPs[_dsp].claimableDapp += _amountToUse;
