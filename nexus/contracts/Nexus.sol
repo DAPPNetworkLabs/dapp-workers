@@ -361,34 +361,35 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         );
     }
 
+    function isFound (address dsp, address[] storage dsps) private view returns (int) {
+        int founds = -1;
+        
+        for (uint i=0; i<dsps.length; i++) {
+            if(dsps[i] == dsp){
+                founds = int(i);
+                break;
+            }
+        }
+        
+        return founds;
+    } 
+
     function jobServiceCompleted(uint id, address dsp, bool isJob) external view returns (bool) {
         if(isJob) {
             JobData storage jd = jobs[id];
             address[] storage dsps = providers[jd.owner];
-            int founds = -1;
-            
-            for (uint i=0; i<dsps.length; i++) {
-                if(dsps[i] == dsp){
-                    founds = int(i);
-                    break;
-                }
-            }
+            int founds = isFound(dsp, dsps);
 
             if(founds == -1) return false;
+            
             return jd.done[uint(founds)];
         } else {
             ServiceData storage sd = services[id];
             address[] storage dsps = providers[sd.owner];
-            int founds = -1;
-            
-            for (uint i=0; i<dsps.length; i++) {
-                if(dsps[i] == dsp){
-                    founds = int(i);
-                    break;
-                }
-            }
+            int founds = isFound(dsp, dsps);
 
             if(founds == -1) return false;
+
             return sd.done[uint(founds)];
         }
     }
