@@ -35,7 +35,7 @@ services:
       - ETH_ADDR=ws://eth:8545
       - COMPOSE_PROFILES
       - NODE_OPTIONS=--openssl-legacy-provider
-      - ADDRESS=0xEdF6BAE9895941F2f386483640EA30bd71751d0A
+      - ADDRESS=0x06775Cc1985453ED4446B579131db2128ef5762B
       - DATABASE_URL=postgres://user:password@postgres:5432/orchestrator
       - DATABASE_NODE_ENV="production"
       - DATABASE_TIMEOUT=10000
@@ -79,3 +79,7 @@ volumes:
     external: false
 networks:
   bridge:
+
+# nexus proxy: 0x06775Cc1985453ED4446B579131db2128ef5762B
+# proxy admin contract: 0x991A5476A3148F97091DCB190Ff20188a7B2b15c
+# nexus contract: 0x84683843C3c7Ae6E841652c446E4E78647959A57

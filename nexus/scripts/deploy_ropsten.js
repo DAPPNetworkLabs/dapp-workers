@@ -59,12 +59,15 @@ async function main() {
     // await upgrades.admin.transferProxyAdminOwnership(gnosisSafe);
     
     // console.log("Transferred ownership of ProxyAdmin to:", gnosisSafe);
+    await delay(10);
     
-    const nexusContract = await upgrades.erc1967.getImplementationAddress(nexusProxyContract.address);
-    
-    console.log(`nexus contract: ${nexusContract}`);
     console.log("nexus proxy:", nexusProxyContract.address);
     console.log(`proxy admin contract: ${await upgrades.erc1967.getAdminAddress(nexusProxyContract.address)}`);
+    
+    const nexusContract = await upgrades.erc1967.getImplementationAddress(nexusProxyContract.address);
+    // const nexusContract = await upgrades.beacon.getImplementationAddress(nexusProxyContract.address);
+    
+    console.log(`nexus contract: ${nexusContract}`);
     
     console.log("wait 60s for etherscan backend to catch up");
     await delay(60);
