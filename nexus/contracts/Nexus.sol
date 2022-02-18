@@ -361,24 +361,11 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         );
     }
 
-    function isFound (address dsp, address[] storage dsps) private view returns (int) {
-        int founds = -1;
-        
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == dsp){
-                founds = int(i);
-                break;
-            }
-        }
-        
-        return founds;
-    } 
-
     function jobServiceCompleted(uint id, address dsp, bool isJob) external view returns (bool) {
         if(isJob) {
             JobData storage jd = jobs[id];
             address[] storage dsps = providers[jd.owner];
-            int founds = isFound(dsp, dsps);
+            int founds = validateDspCaller(dsps, dsp, false);
 
             if(founds == -1) return false;
             
@@ -386,7 +373,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         } else {
             ServiceData storage sd = services[id];
             address[] storage dsps = providers[sd.owner];
-            int founds = isFound(dsp, dsps);
+            int founds = validateDspCaller(dsps, dsp, false);
 
             if(founds == -1) return false;
 
@@ -580,7 +567,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address[] storage dsps = providers[jd.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
         
-        require(!jd.done[validateDspCaller(dsps,msg.sender)], "dsp already completed");
+        require(!jd.done[uint(validateDspCaller(dsps,msg.sender,true))], "dsp already completed");
 
         // maybe throw if user doesn't want to accept inconsistency
         bool inconsistent = submitResEntry(
@@ -649,7 +636,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address[] storage dsps = providers[sd.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
 
-        validateDspCaller(dsps,msg.sender);
+        validateDspCaller(dsps,msg.sender,true);
 
         require(sd.started == false, "service already started");
 
@@ -697,7 +684,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address[] storage dsps = providers[jd.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
 
-        uint founds = validateDspCaller(dsps,msg.sender);
+        uint founds = uint(validateDspCaller(dsps,msg.sender,true));
 
         require(!jd.done[founds], "dsp already completed");
 
@@ -709,7 +696,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             msg.sender
         );
 
-        jd.done[uint(founds)] = true;
+        jd.done[founds] = true;
         
         emit JobError(jd.consumer, stdErr, outputFS, jobID);
     }
@@ -723,9 +710,9 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address[] storage dsps = providers[sd.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
         
-        uint founds = validateDspCaller(dsps,msg.sender);
+        uint founds = uint(validateDspCaller(dsps,msg.sender,true));
 
-        require(!sd.done[uint(founds)], "dsp already completed");
+        require(!sd.done[founds], "dsp already completed");
         
         uint dapps = calcServiceDapps(
             sd.imageName,
@@ -741,7 +728,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             msg.sender
         );
 
-        sd.done[uint(founds)] = true;
+        sd.done[founds] = true;
         
         emit ServiceError(
             sd.consumer,
@@ -773,19 +760,9 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address[] storage dsps = providers[sd.owner];
         require(dsps.length > 0,"no dsps selected for consumer");
         
-        validateDspCaller(dsps,msg.sender);
+        uint founds = uint(validateDspCaller(dsps,msg.sender,true));
 
-        address _dsp = msg.sender;
-        int founds = -1;
-
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == _dsp){
-                founds = int(i);
-                break;
-            }
-        }
-
-        require(!sd.done[uint(founds)], "dsp already completed");
+        require(!sd.done[founds], "dsp already completed");
         
         uint dapps = calcServiceDapps(
             sd.imageName,
@@ -801,7 +778,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             msg.sender
         );
 
-        sd.done[uint(founds)] = true;
+        sd.done[founds] = true;
         
         emit ServiceComplete(
             sd.consumer,
@@ -1185,7 +1162,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev validates dsp is authorized for job or service
      */
-    function validateDspCaller(address[] memory dsps, address dsp) private pure returns(uint) {
+    function validateDspCaller(address[] memory dsps, address dsp, bool error) private pure returns(int) {
         int founds = -1;
         
         for (uint i=0; i<dsps.length; i++) {
@@ -1195,9 +1172,11 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             }
         }
 
-        require(founds > -1, "dsp not found");
-
-        return uint(founds);
+        if(error) {
+            require(founds > -1, "dsp not found");
+        }
+        
+        return founds;
     }
 
     /**
