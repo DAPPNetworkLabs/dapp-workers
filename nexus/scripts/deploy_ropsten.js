@@ -20,14 +20,15 @@ async function main() {
 
   // We get the contract to deploy
 
-    const dappTokenFactory = await hre.ethers.getContractFactory("DappToken", deploymentAddress);
+    // const dappTokenFactory = await hre.ethers.getContractFactory("DappToken", deploymentAddress);
     const nexusTokenFactory = await hre.ethers.getContractFactory("Nexus", deploymentAddress);
     
-    const dappTokenProxyContract = await dappTokenFactory.deploy();
+    // const dappTokenProxyContract = await dappTokenFactory.deploy();
     const nexusProxyContract = await upgrades.deployProxy(nexusTokenFactory, 
       [
         [
-          dappTokenProxyContract.address,
+        //   dappTokenProxyContract.address,
+          "0x99665804dae7354bedb5f6eb7cd076ba4e984a3a",
           bancorNetwork,
           fastGasFeed,
           paymentPremiumPPB,
@@ -60,7 +61,6 @@ async function main() {
     // console.log("Transferred ownership of ProxyAdmin to:", gnosisSafe);
     
     const nexusContract = await upgrades.erc1967.getImplementationAddress(nexusProxyContract.address);
-    const dappContract = await upgrades.erc1967.getImplementationAddress(dappTokenProxyContract.address);
     
     console.log(`nexus contract: ${nexusContract}`);
     console.log("nexus proxy:", nexusProxyContract.address);
@@ -75,7 +75,7 @@ async function main() {
         constructorArguments: []
     });
     await hre.run("verify:verify", {
-        address: dappContract,
+        address: "0x99665804dae7354bedb5f6eb7cd076ba4e984a3a",
         constructorArguments: []
     });
 }
