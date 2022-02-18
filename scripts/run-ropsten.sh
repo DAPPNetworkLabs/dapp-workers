@@ -1,0 +1,1 @@
+docker-compose -f ropsten_compose.yaml up --build

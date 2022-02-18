@@ -1,1 +1,0 @@
-COMPOSE_PROFILES=prod docker-compose -f compose.yaml up

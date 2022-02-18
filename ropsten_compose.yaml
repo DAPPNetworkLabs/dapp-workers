@@ -9,33 +9,24 @@ services:
     volumes:
       - ipfs-data:/data/ipfs
   eth:
-    image: eth
-    build: eth
+    image: ethereum/client-go:latest
+    # build: ethereum/client-go
     ports:
       - "8545:8545"
-    environment:
-      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
-      - ETH_ADDR=http://0.0.0.0:8545
-    profiles:
-      - debug    
-  nexus:
-    image: nexus
-    build: nexus
-    environment:
-      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
-      - ETH_ADDR=ws://eth:8545
-      - PRIVATE_KEY=0x278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d
-    command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "npx", "hardhat", "test", "--network", "tests"]
-    profiles:
-      - debug   
-    depends_on:
-      - "eth"
-      - "orchestrator"
-    links:
-      - eth
-      - orchestrator
+      - "8546"
+      - "8547"
+      - "30303"
+    labels:
+      kompose.service.type: LoadBalancer
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
-      - ./services/orchestrator:/services/orchestrator
+      - keys:/keys
+    entrypoint: ["geth", "--syncmode=light", "--ws", "--ropsten"]
   orchestrator:
     image: orchestrator
     build: services/orchestrator
@@ -48,7 +39,7 @@ services:
       - DATABASE_URL=postgres://user:password@postgres:5432/orchestrator
       - DATABASE_NODE_ENV="production"
       - DATABASE_TIMEOUT=10000
-    command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "node", "./dist/index.js"]
+    command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=60", "eth:8545", "--", "node", "./dist/index.js"]
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -66,6 +57,10 @@ services:
       - "eth"
     links:
       - eth
+    depends_on:
+      - "eth"
+    links:
+      - eth
   postgres:
     image: postgres 
     ports:
@@ -75,18 +70,12 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: orchestrator
       PGDATA: /var/lib/postgresql/data/pgdata
-    # volumes:
-    #   - pg-data:/var/lib/postgresql/data/pgdata
 volumes:
   keys:
     external: false
   pg-data:
     external: false
-  rabbit-data:
-    external: false    
   ipfs-data:
-    external: false       
-  nexus:
-    external: false    
+    external: false
 networks:
   bridge:
