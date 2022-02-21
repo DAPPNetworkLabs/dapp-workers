@@ -23,6 +23,10 @@ USAGE
 
 wait_for()
 {
+    if [[ $WAIT_DELAY -gt 0 ]]; then
+        echo "sleeping for $WAIT_DELAY seconds"
+        sleep $WAIT_DELAY
+    fi
     if [[ $WAITFORIT_TIMEOUT -gt 0 ]]; then
         echoerr "$WAITFORIT_cmdname: waiting $WAITFORIT_TIMEOUT seconds for $WAITFORIT_HOST:$WAITFORIT_PORT"
     else

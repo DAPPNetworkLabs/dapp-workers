@@ -16,8 +16,6 @@ services:
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
       - ETH_ADDR=http://0.0.0.0:8545
-    profiles:
-      - debug    
   nexus:
     image: nexus
     build: nexus
@@ -26,8 +24,6 @@ services:
       - ETH_ADDR=ws://eth:8545
       - PRIVATE_KEY=0x278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d
     command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "npx", "hardhat", "test", "--network", "tests"]
-    profiles:
-      - debug   
     depends_on:
       - "eth"
       - "orchestrator"
@@ -48,6 +44,7 @@ services:
       - DATABASE_URL=postgres://user:password@postgres:5432/orchestrator
       - DATABASE_NODE_ENV="production"
       - DATABASE_TIMEOUT=10000
+      - FROM_BLOCK=0
     command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "node", "./dist/index.js"]
     privileged: true
     volumes:

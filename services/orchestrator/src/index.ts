@@ -37,7 +37,7 @@ provider.on('end', socketError);
 provider.on('close', socketError);
 
 const address = process.env.ADDRESS;
-const fromBlock = 0; // load and save to file
+const fromBlock = process.env.FROM_BLOCK || 0; // load and save to file
 const theContract = new web3.eth.Contract(
     abi,
     address,
@@ -316,7 +316,7 @@ const runService = async (returnValues) => {
 
 function subscribe(theContract: any) {
     theContract.events["QueueJob"]({
-        fromBlock: 0
+        fromBlock
     }, async function (error, result) {
         if (error) {
             console.log(error);
@@ -366,7 +366,7 @@ function subscribe(theContract: any) {
     });
 
     theContract.events["QueueService"]({
-        fromBlock: 0
+        fromBlock
     }, async function (error, result) {
         if (error) {
             console.log(error);
@@ -377,7 +377,7 @@ function subscribe(theContract: any) {
     });
 
     theContract.events["ServiceComplete"]({
-        fromBlock: 0
+        fromBlock
     }, async function (error, result) {
         console.log('ServiceComplete hit');
         if (error) {
@@ -387,7 +387,7 @@ function subscribe(theContract: any) {
     });
 
     theContract.events["ServiceError"]({
-        fromBlock: 0
+        fromBlock
     }, async function (error, result) {
         console.log('ServiceError hit');
         if (error) {
@@ -397,7 +397,7 @@ function subscribe(theContract: any) {
     });
 
     theContract.events["JobError"]({
-        fromBlock: 0
+        fromBlock
     }, async function (error, result) {
         console.log('JobError hit');
         if (error) {
