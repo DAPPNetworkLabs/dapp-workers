@@ -16,19 +16,19 @@ const gasCeilingMultiplier = 2;
 const deploymentAddress = "0xEdF6BAE9895941F2f386483640EA30bd71751d0A";
 
 async function main() {
-  await hre.run('compile');
+    await hre.run('compile');
 
-  // We get the contract to deploy
-
-    // const dappTokenFactory = await hre.ethers.getContractFactory("DappToken", deploymentAddress);
     const nexusTokenFactory = await hre.ethers.getContractFactory("Nexus", deploymentAddress);
-    
-    // const dappTokenProxyContract = await dappTokenFactory.deploy();
+    const dappTokenFactory = await hre.ethers.getContractFactory("DappToken", deploymentAddress);
+
+    console.log('before');
+    const dappTokenContract = await dappTokenFactory.deploy();
+    console.log('after');
+
     const nexusProxyContract = await upgrades.deployProxy(nexusTokenFactory, 
       [
         [
-        //   dappTokenProxyContract.address,
-          "0x99665804dae7354bedb5f6eb7cd076ba4e984a3a",
+          dappTokenContract.address,
           bancorNetwork,
           fastGasFeed,
           paymentPremiumPPB,
@@ -48,26 +48,15 @@ async function main() {
       ]
     );
     
-    const gnosisSafe = '';
-    
-    // await nexusProxyContract.transferOwnership(gnosisSafe);
-    
-    // await dappTokenProxyContract.transferOwnership(gnosisSafe);
-
-    // console.log("Transferring ownership of ProxyAdmin...");
-    // // The owner of the ProxyAdmin can upgrade our contracts
-    // await upgrades.admin.transferProxyAdminOwnership(gnosisSafe);
-    
-    // console.log("Transferred ownership of ProxyAdmin to:", gnosisSafe);
     await delay(10);
     
     console.log("nexus proxy:", nexusProxyContract.address);
-    console.log(`proxy admin contract: ${await upgrades.erc1967.getAdminAddress(nexusProxyContract.address)}`);
+    console.log(`nexus proxy admin contract: ${await upgrades.erc1967.getAdminAddress(nexusProxyContract.address)}`);
     
     const nexusContract = await upgrades.erc1967.getImplementationAddress(nexusProxyContract.address);
-    // const nexusContract = await upgrades.beacon.getImplementationAddress(nexusProxyContract.address);
     
     console.log(`nexus contract: ${nexusContract}`);
+    console.log(`dapp contract: ${dappTokenContract.address}`);
     
     console.log("wait 60s for etherscan backend to catch up");
     await delay(60);
@@ -78,7 +67,7 @@ async function main() {
         constructorArguments: []
     });
     await hre.run("verify:verify", {
-        address: "0x99665804dae7354bedb5f6eb7cd076ba4e984a3a",
+        address: dappTokenContract.address,
         constructorArguments: []
     });
 }

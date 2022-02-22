@@ -980,8 +980,8 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev returns approval status of image for dsp
      */
-    function isImageApprovedForDSP(address _dsp, string calldata imageName) public view returns (bool) {
-        return dspApprovedImages[_dsp][imageName].jobFee > 0;
+    function isImageApprovedForDSP(address dsp, string calldata imageName) public view returns (bool) {
+        return dspApprovedImages[dsp][imageName].jobFee > 0;
     }
     
     /**

@@ -30,28 +30,103 @@ class Home extends Component {
             consumerData:null,
             dockerImage:null,
             dspInfo:null,
-            run: {
-                consumer: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
+            jobServiceCompleted:null,
+            getMinBalance:null,
+            isServiceDone:null,
+            getMaxPaymentForGas:null,
+            getConfig: {},
+            getDspAddresses: [],
+            getDSPDataLimits: null,
+            getDSPDataLimitsParams: {
+                id:null,
+                dsp:null
+            },
+            approveImageParams: {
+                imageName:null,
+                imageHash:null
+            },
+            getMaxPaymentForGasParams:{
+                gasLimit:null, 
+                imageName:null, 
+                dsp:null
+            },
+            extendServiceParams: {
+                serviceId:null,
+                imageName:null,
+                months:null,
+                ioMb:null,
+                storageMb:null
+            },
+            isServiceDoneParams: {
+                id:null
+            },
+            getMinBalanceParams: {
+                id:null,
+                jobType:null,
+                dsp:null
+            },
+            setConsumerContractParams: {
+                authorized_contract:null
+            },
+            setDspsParams: {
+                dsps:[]                
+            },
+            setConfig: {
+                paymentPremiumPPB:null,
+                gasCeilingMultiplier:null,
+                fallbackGasPrice:null,
+                stalenessSeconds:null,
+            },
+            jobServiceCompletedParams: {
+                id:null,
+                dsp:null,
+                isJob:null,
+            },
+            queueJob: {
+                owner: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
                 imageName: 'rust-compiler',
                 inputFS: 'QmUm1JD5os8p6zu6gQBPr7Rov2VD6QzMeRBH5j4ojFBzi6',
                 callback: true,
+                gasLimit: 1000000,
+                requireConsistent: true,
                 args: []
             },
-            runJob: {
-                jobId: 5,
-                outputFS: '',
-                dapps: 804000
+            queueService: {
+                owner: null,
+                imageName: null,
+                ioMegaBytes: null,
+                storageMegaBytes: null,
+                inputFS: null,
+                args: [],
+                months: null
             },
-            runService: {
-                jobId: 5,
-                port: 8080,
-                dapps: 804000
-            },
+            // runJob: {
+            //     jobId: 5,
+            //     outputFS: '',
+            //     outputHash: ''
+            // },
+            // runService: {
+            //     jobId: 5,
+            //     port: 8080,
+            //     dapps: 804000
+            // },
             setDockerImage: {
-                imageName: 'test',
-                imageAddress: 'test',
-                imageHash: 'test',
-                imageType: 'service'
+                imageName: null,
+                jobFee:null,
+                baseFee:null,
+                storageFee:null,
+                ioFee:null,
+                minStorageMegaBytes:null,
+                minIoMegaBytes:null
+            },
+            updateDockerImage: {
+                imageName: null,
+                jobFee:null,
+                baseFee:null,
+                storageFee:null,
+                ioFee:null,
+                minStorageMegaBytes:null,
+                minIoMegaBytes:null
             },
             approveDocker: {
                 imageName: 'test'
@@ -63,7 +138,8 @@ class Home extends Component {
                 imageName:'test'
             },
             isImageApprovedForDSP: {
-                imageName:'test'
+                dsp:null,
+                imageName:null
             },
             getPortForDSP: {
                 jobID:'1',
@@ -78,7 +154,7 @@ class Home extends Component {
             regDSP: {
                 endpoint:'http://testing.com'
             },
-            claimFor: {
+            claim: {
                 _consumer:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
                 _dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
@@ -91,9 +167,6 @@ class Home extends Component {
                 _consumer:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
                 _dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
-            // setConsumerCallback: {
-            //     enabled:null
-            // },
             setConsumerPermissions: {
                 owner:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
             },
@@ -150,35 +223,70 @@ class Home extends Component {
 
     forms = [
         {
-            onClick:()=>lib.web3.postJobOrService(this),
-            buttonText:"Post Job or Service",
-            event:"run",
+            onClick:()=>lib.web3.extendService(this),
+            buttonText:"Extend Service",
+            event:"ServiceExtended",
             inputs:[
-                { name:"consumer",placeholder: "address consumer"},
+                { name:"serviceId",placeholder: "uint serviceId"},
+                { name:"imageName",placeholder: "string calldata imageName"},
+                { name:"months",placeholder: "uint months"},
+                { name:"ioMb",placeholder: "uint ioMb"},
+                { name:"storageMb",placeholder: "uint storageMb"},
+            ]
+        },
+        {
+            onClick:()=>lib.web3.setConfig(this),
+            buttonText:"Set Config",
+            event:"ConfigSet",
+            inputs:[
+                { name:"paymentPremiumPPB",placeholder: "uint32 paymentPremiumPPB"},
+                { name:"gasCeilingMultiplier",placeholder: "uint16 gasCeilingMultiplier"},
+                { name:"fallbackGasPrice",placeholder: "uint256 fallbackGasPrice"},
+                { name:"stalenessSeconds",placeholder: "uint24 stalenessSeconds"}
+            ]
+        },
+        {
+            onClick:()=>lib.web3.setDsps(this),
+            buttonText:"Set DSPs",
+            event:"UpdateDsps",
+            inputs:[
+                { name:"dsps",placeholder: "address[] calldata dsps"}
+            ]
+        },
+        {
+            onClick:()=>lib.web3.setConsumerContract(this),
+            buttonText:"Set Consumer Contract",
+            event:"",
+            inputs:[
+                { name:"dsps",placeholder: "address[] calldata dsps"}
+            ]
+        },
+        {
+            onClick:()=>lib.web3.queueJob(this),
+            buttonText:"Post Job",
+            event:"QueueJob",
+            inputs:[
+                { name:"owner",placeholder: "address owner"},
                 { name:"imageName",placeholder: "string imageName"},
                 { name:"inputFS",placeholder: "string inputFS"},
                 { name:"callback",placeholder: "bool callback"},
+                { name:"gasLimit",placeholder: "uint gasLimit"},
+                { name:"requireConsistent",placeholder: "bool requireConsistent"},
                 { name:"args",placeholder: "string[] args"}
             ]
         },
         {
-            onClick:()=>lib.web3.runJob(this),
-            buttonText:"Run Job",
-            event:"runJob",
+            onClick:()=>lib.web3.queueService(this),
+            buttonText:"Post Service",
+            event:"QueueService",
             inputs:[
-                { name:"jobID",placeholder: "uint256 jobID"},
-                { name:"outputFS",placeholder: "string outputFS"},
-                { name:"dapps",placeholder: "uint256 dapps"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.runService(this),
-            buttonText:"Run Service",
-            event:"runService",
-            inputs:[
-                { name:"jobId",placeholder: "uint256 jobId"},
-                { name:"port",placeholder: "uint256 port"},
-                { name:"dapps",placeholder: "uint256 dapps"},
+                { name:"owner",placeholder: "address owner"},
+                { name:"imageName",placeholder: "string imageName"},
+                { name:"ioMegaBytes",placeholder: "uint ioMegaBytes"},
+                { name:"storageMegaBytes",placeholder: "uint storageMegaBytes"},
+                { name:"inputFS",placeholder: "string inputFS"},
+                { name:"args",placeholder: "string[] args"},
+                { name:"months",placeholder: "uint months"},
             ]
         },
         {
@@ -187,17 +295,12 @@ class Home extends Component {
             event:"setDockerImage",
             inputs:[
                 { name:"imageName",placeholder: "string imageName"},
-                { name:"imageAddress",placeholder: "string imageAddress"},
-                { name:"imageHash",placeholder: "string imageHash"},
-                { name:"imageType",placeholder: "string imageType"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.approveDockerImage(this),
-            buttonText:"Approve Docker Image",
-            event:"approveDocker",
-            inputs:[
-                { name:"imageName",placeholder: "string imageName"},
+                { name:"jobFee",placeholder: "uint jobFee"},
+                { name:"baseFee",placeholder: "uint baseFee"},
+                { name:"storageFee",placeholder: "uint storageFee"},
+                { name:"ioFee",placeholder: "uint ioFee"},
+                { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
+                { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
             ]
         },
         {
@@ -225,14 +328,6 @@ class Home extends Component {
                 { name:"consumer",placeholder: "address consumer"},
             ]
         },
-        // {
-        //     onClick:()=>lib.web3.fetchDockerImage(this),
-        //     buttonText:"Fetch Docker Image",
-        //     event:"dockerImages",
-        //     inputs:[
-        //         { name:"imageName",placeholder: "string imageName"},
-        //     ]
-        // },
         {
             onClick:()=>lib.web3.fetchEndpointForDSP(this),
             buttonText:"Fetch DSP Endpoint",
@@ -263,6 +358,7 @@ class Home extends Component {
             buttonText:"Fetch Image Approval for DSP",
             event:"isImageApprovedForDSP",
             inputs:[
+                { name:"dsp",placeholder: "address dsp"},
                 { name:"imageName",placeholder: "string imageName"},
             ]
         },
@@ -289,13 +385,10 @@ class Home extends Component {
             ]
         },
         {
-            onClick:()=>lib.web3.claimFor(this),
-            buttonText:"Claim Gas for Consumer",
-            event:"claimFor",
-            inputs:[
-                { name:"_consumer",placeholder: "address _consumer"},
-                { name:"_dsp",placeholder: "address _dsp"},
-            ]
+            onClick:()=>lib.web3.claim(this),
+            buttonText:"Claim Gas for DSP",
+            event:"claim",
+            inputs:[]
         },
         {
             onClick:()=>lib.web3.sellGas(this),
@@ -316,14 +409,6 @@ class Home extends Component {
                 { name:"_dsp",placeholder: "address _dsp"},
             ]
         },
-        // {
-        //     onClick:()=>lib.web3.setConsumerCallback(this),
-        //     buttonText:"Enable/Disable Consumer Callback",
-        //     event:"setConsumerCallback",
-        //     inputs:[
-        //         { name:"enabled",placeholder: "bool enabled"},
-        //     ]
-        // },
         {
             onClick:()=>lib.web3.setConsumerPermissions(this),
             buttonText:"Set Consumer Owner",
@@ -342,25 +427,76 @@ class Home extends Component {
             ]
         },
         {
-            onClick:()=>lib.web3.jobError(this),
-            buttonText:"Handle Job Error",
-            event:"jobError",
+            onClick:()=>lib.web3.fetchJobServiceCompleted(this),
+            buttonText:"Is Job/Service Complete",
+            event:"",
             inputs:[
-                { name:"jobID",placeholder: "uint256 jobID"},
-                { name:"stdErr",placeholder: "string stdErr"},
-                { name:"outputFS",placeholder: "string outputFS"}
+                { name:"id",placeholder: "uint id"},
+                { name:"dsp",placeholder: "address dsp"},
+                { name:"isJob",placeholder: "isJob"},
             ]
         },
         {
-            onClick:()=>lib.web3.serviceError(this),
-            buttonText:"Handle Service Error",
-            event:"serviceError",
+            onClick:()=>lib.web3.fetchGetMinBalance(this),
+            buttonText:"Fetch Min Balance",
+            event:"",
             inputs:[
-                { name:"jobID",placeholder: "uint256 jobID"},
-                { name:"stdErr",placeholder: "string stdErr"},
-                { name:"outputFS",placeholder: "string outputFS"}
+                { name:"id",placeholder: "uint id"}
             ]
-        }
+        },
+        {
+            onClick:()=>lib.web3.fetchIsServiceDone(this),
+            buttonText:"Fetch Is Service Done",
+            event:"",
+            inputs:[
+                { name:"id",placeholder: "uint id"}
+            ]
+        },
+        {
+            onClick:()=>lib.web3.fetchGetMaxPaymentForGas(this),
+            buttonText:"Fetch Max Payment for Gas",
+            event:"",
+            inputs:[
+                { name:"gasLimit",placeholder: "gasLimit"},
+                { name:"imageName",placeholder: "imageName"},
+                { name:"dsp",placeholder: "address dsp"}
+            ]
+        },
+        {
+            onClick:()=>lib.web3.fetchGetConfig(this),
+            buttonText:"Get Config",
+            event:"",
+            inputs:[]
+        },
+        {
+            onClick:()=>lib.web3.fetchGetDspAddresses(this),
+            buttonText:"Get DSP Addresses",
+            event:"",
+            inputs:[]
+        },
+        {
+            onClick:()=>lib.web3.fetchGetDSPDataLimits(this),
+            buttonText:"Get DSP Data Limits",
+            event:"",
+            inputs:[
+                { name:"id",placeholder: "uint id"},
+                { name:"dsp",placeholder: "address dsp"}
+            ]
+        },
+        {
+            onClick:()=>lib.web3.fetchLastJob(this),
+            buttonText:"Get last Job ID",
+            event:"",
+            inputs:[]
+        },
+        // {
+        //     onClick:()=>lib.web3.(this),
+        //     buttonText:"",
+        //     event:"",
+        //     inputs:[
+        //         { name:"",placeholder: ""}
+        //     ]
+        // }
     ]
   
     render() {

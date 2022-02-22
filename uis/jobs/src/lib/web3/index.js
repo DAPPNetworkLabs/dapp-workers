@@ -1,13 +1,17 @@
 import Web3 from 'web3';
 import NexusJSON from '../../abi/Nexus.json';
 
+const config = require('../../.config.json')
+
 const jobs = [];
 const services = [];
-const provider = new Web3.providers.WebsocketProvider('ws://localhost:8545');
+const provider = new Web3.providers.WebsocketProvider(config.endpoint);
 const web3 = new Web3(provider);
-const contractAddress = "0x94D387F50569200aDACFd903345D077ef6ABcE11";
+const contractAddress = config.address;
 const contract = new web3.eth.Contract(NexusJSON.abi,contractAddress);
 const ethereum = window.ethereum;
+
+// START GETTER
 
 const returnAbi = (func) => {
     return NexusJSON.abi.find(el => el.name == func && el.type == "function");
@@ -21,7 +25,9 @@ const subscribeContractEvent = (eventName,thisObject) => {
 }
 
 const fetchLastJob = async () => {
-    return await contract.methods.lastJobID().call();
+    const id = await contract.methods.lastJobID().call();
+    console.log(id);
+    return id;
 }
 
 const fetchJobs = async (thisObject) => {
@@ -29,6 +35,7 @@ const fetchJobs = async (thisObject) => {
         const job = await contract.methods.jobs(i).call();
         jobs.push(job);
     }
+    console.log(JSON.stringify(jobs));
     thisObject.setState({jobs: JSON.stringify(jobs)});
 }
 
@@ -37,6 +44,7 @@ const fetchServices = async (thisObject) => {
         const job = await contract.methods.services(i).call();
         services.push(job);
     }
+    console.log(JSON.stringify(services));
     thisObject.setState({services: JSON.stringify(services)});
 }
 
@@ -44,13 +52,16 @@ const fetchJobImage = async (thisObject) => {
     const imageName = await contract.methods.getDockerImage(
         thisObject.state.getDockerImage.imageName
     ).call();
+    console.log(imageName);
     thisObject.setState({image: imageName});
 }
 
 const fetchIsImageApprovedForDSP = async (thisObject) => {
     const approvedImage = await contract.methods.isImageApprovedForDSP(
+        thisObject.state.isImageApprovedForDSP.dsp,
         thisObject.state.isImageApprovedForDSP.imageName
     ).call();
+    console.log(approvedImage);
     thisObject.setState({approvedImage});
 }
 
@@ -59,6 +70,7 @@ const fetchPortForDSP = async (thisObject) => {
         thisObject.state.getPortForDSP.jobID,
         thisObject.state.getPortForDSP.dsp
     ).call();
+    console.log(port);
     thisObject.setState({port});
 }
 
@@ -66,6 +78,7 @@ const fetchEndpointForDSP = async (thisObject) => {
     const endpoint = await contract.methods.getDSPEndpoint(
         thisObject.state.getDSPEndpoint.dsp
     ).call();
+    console.log(endpoint);
     thisObject.setState({endpoint});
 }
 
@@ -73,6 +86,7 @@ const fetchDspInfo = async (thisObject) => {
     const dspInfo = await contract.methods.registeredDSPs(
         thisObject.state.registeredDSPs.dsp
     ).call()
+    console.log(dspInfo);
     thisObject.setState({dspInfo});
 }
 
@@ -81,6 +95,7 @@ const fetchDspData = async (thisObject) => {
         thisObject.state.dspDataForm.account,
         thisObject.state.dspDataForm.dsp
     ).call();
+    console.log(dspData);
     thisObject.setState({dspData});
 }
 
@@ -88,66 +103,182 @@ const fetchConsumerData = async (thisObject) => {
     const consumerData = await contract.methods.consumerData(
         thisObject.state.consumerDataForm.consumer
     ).call();
-    console.log(consumerData)
+    console.log(consumerData);
     thisObject.setState({consumerData});
 }
 
-const fetchDockerImage = async (thisObject) => {
-    const dockerImage = await contract.methods.dockerImages(
-        thisObject.state.dockerImages.imageName
+const fetchJobServiceCompleted = async (thisObject) => {
+    const jobServiceCompleted = await contract.methods.jobServiceCompleted(
+        thisObject.state.jobServiceCompletedParams.id,
+        thisObject.state.jobServiceCompletedParams.dsp,
+        thisObject.state.jobServiceCompletedParams.isJob
     ).call();
-    thisObject.setState({dockerImage});
+    console.log(jobServiceCompleted);
+    thisObject.setState({jobServiceCompleted});
 }
 
-const postJobOrService = async (thisObject) => {
-    const abi = returnAbi("run");
-    const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.run.consumer,
-        thisObject.state.run.imageName,
-        thisObject.state.run.inputFS,
-        thisObject.state.run.callback,
-        thisObject.state.run.args
-    ]);
-    await runTrx(data,["Run"],thisObject);
+const fetchGetMinBalance = async (thisObject) => {
+    const getMinBalance = await contract.methods.getMinBalance(
+        thisObject.state.getMinBalanceParams.id
+    ).call();
+    console.log(getMinBalance);
+    thisObject.setState({getMinBalance});
 }
 
-const runJob = async (thisObject) => {
-    const abi = returnAbi("jobCallback");
-    const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.runJob.jobId,
-        thisObject.state.runJob.outputFS,
-        thisObject.state.runJob.dapps
-    ]);
-    await runTrx(data,["JobResult","JobDone"],thisObject);
+const fetchIsServiceDone = async (thisObject) => {
+    const isServiceDone = await contract.methods.isServiceDone(
+        thisObject.state.isServiceDoneParams.id
+    ).call();
+    console.log(isServiceDone);
+    thisObject.setState({isServiceDone});
 }
 
-const runService = async (thisObject) => {
-    const abi = returnAbi("serviceCallback");
+const fetchGetMaxPaymentForGas = async (thisObject) => {
+    const getMaxPaymentForGas = await contract.methods.getMaxPaymentForGas(
+        thisObject.state.getMaxPaymentForGasParams.gasLimit,
+        thisObject.state.getMaxPaymentForGasParams.imageName,
+        thisObject.state.getMaxPaymentForGasParams.dsp,
+    ).call();
+    console.log(getMaxPaymentForGas);
+    thisObject.setState({getMaxPaymentForGas});
+}
+
+const fetchGetConfig = async (thisObject) => {
+    const getConfig = await contract.methods.getConfig().call();
+    console.log(getConfig);
+    thisObject.setState({getConfig});
+}
+
+const fetchGetDspAddresses = async (thisObject) => {
+    const getDspAddresses = await contract.methods.getDspAddresses().call();
+    console.log(getDspAddresses);
+    thisObject.setState({getDspAddresses});
+}
+
+const fetchGetDSPDataLimits = async (thisObject) => {
+    const getDSPDataLimits = await contract.methods.getDSPDataLimits(
+        thisObject.state.getDSPDataLimitsParams.id,
+        thisObject.state.getDSPDataLimitsParams.dsp,
+    ).call();
+    console.log(getDSPDataLimits);
+    thisObject.setState({getDSPDataLimits});
+}
+
+// END GETTER
+
+// START SETTER
+
+const approveImage = async (thisObject) => {
+    const abi = returnAbi("approveImage");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.runService.jobId,
-        thisObject.state.runService.port,
-        thisObject.state.runService.serviceDapps
+        thisObject.state.approveImageParams.imageName,
+        thisObject.state.approveImageParams.imageHash
+
     ]);
-    await runTrx(data,["ServiceRunning"],thisObject);
+    await runTrx(data,[],thisObject);
+}
+
+const extendService = async (thisObject) => {
+    const abi = returnAbi("extendService");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.extendServiceParams.serviceId,
+        thisObject.state.extendServiceParams.imageName,
+        thisObject.state.extendServiceParams.months,
+        thisObject.state.extendServiceParams.ioMb,
+        thisObject.state.extendServiceParams.storageMb
+
+    ]);
+    await runTrx(data,["ServiceExtended"],thisObject);
+}
+
+const setConfig = async (thisObject) => {
+    const abi = returnAbi("setConfig");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.setConfig.paymentPremiumPPB,
+        thisObject.state.setConfig.gasCeilingMultiplier,
+        thisObject.state.setConfig.fallbackGasPrice,
+        thisObject.state.setConfig.stalenessSeconds
+
+    ]);
+    await runTrx(data,["ConfigSet"],thisObject);
+}
+
+const setDsps = async (thisObject) => {
+    const abi = returnAbi("setDsps");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.setDspsParams.dsps
+
+    ]);
+    await runTrx(data,["UpdateDsps"],thisObject);
+}
+
+const setConsumerContract = async (thisObject) => {
+    const abi = returnAbi("setConsumerContract");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.setConsumerContractParams.authorized_contract
+
+    ]);
+    await runTrx(data,[],thisObject);
+}
+
+const queueJob = async (thisObject) => {
+    const abi = returnAbi("queueJob");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        {
+            owner: thisObject.state.queueJob.owner,
+            imageName: thisObject.state.queueJob.imageName,
+            inputFS: thisObject.state.queueJob.inputFS,
+            callback: thisObject.state.queueJob.callback,
+            gasLimit: thisObject.state.queueJob.gasLimit,
+            requireConsistent: thisObject.state.queueJob.requireConsistent,
+            args: thisObject.state.queueJob.args
+        }
+    ]);
+    await runTrx(data,["QueueJob"],thisObject);
+}
+
+const queueService = async (thisObject) => {
+    const abi = returnAbi("queueService");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        {
+            owner: thisObject.state.queueService.owner,
+            imageName: thisObject.state.queueService.imageName,
+            ioMegaBytes: thisObject.state.queueService.ioMegaBytes,
+            storageMegaBytes: thisObject.state.queueService.storageMegaBytes,
+            inputFS: thisObject.state.queueService.inputFS,
+            args: thisObject.state.queueService.args,
+            months: thisObject.state.queueService.months
+        }
+    ]);
+    await runTrx(data,["QueueService"],thisObject);
 }
 
 const setDockerImage = async (thisObject) => {
     const abi = returnAbi("setDockerImage");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
         thisObject.state.setDockerImage.imageName,
-        thisObject.state.setDockerImage.imageAddress,
-        thisObject.state.setDockerImage.imageHash,
-        thisObject.state.setDockerImage.imageType
+        thisObject.state.setDockerImage.jobFee,
+        thisObject.state.setDockerImage.baseFee,
+        thisObject.state.setDockerImage.storageFee,
+        thisObject.state.setDockerImage.ioFee,
+        thisObject.state.setDockerImage.minStorageMegaBytes,
+        thisObject.state.setDockerImage.minIoMegaBytes,
     ]);
     await runTrx(data,["DockerSet"],thisObject);
 }
 
-const approveDockerImage = async (thisObject) => {
-    const abi = returnAbi("approveDockerForDSP");
+const updateDockerImage = async (thisObject) => {
+    const abi = returnAbi("updateDockerImage");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.approveDocker.imageName
+        thisObject.state.updateDockerImage.imageName,
+        thisObject.state.updateDockerImage.jobFee,
+        thisObject.state.updateDockerImage.baseFee,
+        thisObject.state.updateDockerImage.storageFee,
+        thisObject.state.updateDockerImage.ioFee,
+        thisObject.state.updateDockerImage.minStorageMegaBytes,
+        thisObject.state.updateDockerImage.minIoMegaBytes,
     ]);
-    await runTrx(data,["DockerApprovalChanged"],thisObject);
+    await runTrx(data,["updateDockerImage"],thisObject);
 }
 
 const unapproveDockerImage = async (thisObject) => {
@@ -172,12 +303,9 @@ const regDSP = async (thisObject) => {
     await runTrx(data,["DSPStatusChanged"],thisObject);
 }
 
-const claimFor = async (thisObject) => {
-    const abi = returnAbi("claimFor");
-    const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.claimFor._consumer,
-        thisObject.state.claimFor._dsp
-    ]);
+const claim = async (thisObject) => {
+    const abi = returnAbi("claim");
+    const data = web3.eth.abi.encodeFunctionCall(abi, []);
     await runTrx(data,["ClaimedGas"],thisObject);
 }
 
@@ -200,14 +328,6 @@ const buyGasFor = async (thisObject) => {
     await runTrx(data,["BoughtGas"],thisObject);
 }
 
-// const setConsumerCallback = async (thisObject) => {
-//     const abi = returnAbi("setConsumerCallback");
-//     const data = web3.eth.abi.encodeFunctionCall(abi, [
-//         thisObject.state.setConsumerCallback.enabled
-//     ]);
-//     await runTrx(data,[],thisObject);
-// }
-
 const setConsumerPermissions = async (thisObject) => {
     const abi = returnAbi("setConsumerPermissions");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
@@ -221,26 +341,6 @@ const setQuorum = async (thisObject) => {
     const data = web3.eth.abi.encodeFunctionCall(abi, [
         thisObject.state.setQuorum.consumer,
         thisObject.state.setQuorum.dsps
-    ]);
-    await runTrx(data,[],thisObject);
-}
-
-const jobError = async (thisObject) => {
-    const abi = returnAbi("jobError");
-    const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.jobError.jobID,
-        thisObject.state.jobError.stdErr,
-        thisObject.state.jobError.outputFS
-    ]);
-    await runTrx(data,[],thisObject);
-}
-
-const serviceError = async (thisObject) => {
-    const abi = returnAbi("serviceError");
-    const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.jobError.jobID,
-        thisObject.state.jobError.stdErr,
-        thisObject.state.jobError.outputFS
     ]);
     await runTrx(data,[],thisObject);
 }
@@ -288,21 +388,29 @@ export default {
     fetchDspInfo,
     fetchDspData,
     fetchConsumerData,
-    fetchDockerImage,
-    postJobOrService,
-    runJob,
-    runService,
     setDockerImage,
-    approveDockerImage,
     unapproveDockerImage,
     deprecateDSP,
     regDSP,
-    claimFor,
+    claim,
     sellGas,
     buyGasFor,
-    // setConsumerCallback,
     setConsumerPermissions,
     setQuorum,
-    jobError,
-    serviceError
+    fetchJobServiceCompleted,
+    fetchGetMinBalance,
+    fetchIsServiceDone,
+    fetchGetMaxPaymentForGas,
+    fetchGetConfig,
+    fetchGetDspAddresses,
+    fetchGetDSPDataLimits,
+    approveImage,
+    extendService,
+    setConfig,
+    setDsps,
+    setConsumerContract,
+    queueJob,
+    queueService,
+    updateDockerImage,
+    fetchLastJob
 }
