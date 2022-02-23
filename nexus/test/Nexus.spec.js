@@ -30,7 +30,7 @@ function loadfsRoot(fsrootName){
   }
 }
 
-describe("Nexus", function() {
+describe("Nexus", function(done) {
   this.timeout(1000000);
   let owner, addr1, addr2, addr3, dsp1, dsp2, addrs;
   let dappTokenContract, nexusContract, consumerContract;
@@ -77,11 +77,23 @@ describe("Nexus", function() {
         dsp1.address,
         "0x10000000000000000000000",
       ]);
+      await network.provider.send("hardhat_setBalance", [
+        "0x654Cf0636b0e85b3379BcD773672CA4B4AEf8Dc0",
+        "0x10000000000000000000000",
+      ]);
+      await network.provider.send("hardhat_setBalance", [
+        "0xE82f7108e68ceedCf48F17eDF2b9856F39464818",
+        "0x10000000000000000000000",
+      ]);
     }
 
     console.log(`nexus contract: ${nexusContract.address}`);
 
-    if(process.env.ONLY_CONTRACTS) return;
+    console.log(`process.env.ONLY_CONTRACTS: ${process.env.ONLY_CONTRACTS} ${typeof(process.env.ONLY_CONTRACTS)}`);
+
+    if(process.env.ONLY_CONTRACTS) {
+      done()
+    }
   });
 
   /*

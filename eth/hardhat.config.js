@@ -4,7 +4,8 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${config.alchemyKey}`
+        url: `https://eth-mainnet.alchemyapi.io/v2/${config.alchemyKey}`,
+        chainId: 1337
       },
       allowUnlimitedContractSize: true,
       accounts: {

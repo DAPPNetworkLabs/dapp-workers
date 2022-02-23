@@ -16,6 +16,23 @@ services:
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
       - ETH_ADDR=http://0.0.0.0:8545
+  nexus:
+    image: nexus
+    build: nexus
+    environment:
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - ETH_ADDR=ws://eth:8545
+      - PRIVATE_KEY=0x278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d
+      - ONLY_CONTRACTS=true
+    command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "npx", "hardhat", "test", "--network", "tests"]
+    depends_on:
+      - "eth"
+      - "orchestrator"
+    links:
+      - eth
+      - orchestrator
+    volumes:
+      - ./services/orchestrator:/services/orchestrator
   orchestrator:
     image: orchestrator
     build: services/orchestrator
@@ -29,7 +46,6 @@ services:
       - DATABASE_NODE_ENV="production"
       - DATABASE_TIMEOUT=10000
       - FROM_BLOCK=0
-      - ONLY_CONTRACTS=true
     command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "node", "./dist/index.js"]
     privileged: true
     volumes:
@@ -40,14 +56,23 @@ services:
     links:
       - eth
   dspportal:
+    environment:
+      - ETH_ADDR=ws://eth:8545
+      # - ETH_ADDR=http://eth:8545
+      - ADDRESS=0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5
+      - CHOKIDAR_USEPOLLING=true
     image: dspportal
     build: uis/jobs
     ports:
-      - 8888:80
+      - 3000:3000
     depends_on:
       - "eth"
     links:
       - eth
+    command: ["npm","start"]
+    volumes:
+      # - '.:/app'
+      - '/app/node_modules'
   postgres:
     image: postgres 
     ports:
@@ -57,8 +82,6 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: orchestrator
       PGDATA: /var/lib/postgresql/data/pgdata
-    # volumes:
-    #   - pg-data:/var/lib/postgresql/data/pgdata
 volumes:
   keys:
     external: false
@@ -72,3 +95,8 @@ volumes:
     external: false    
 networks:
   bridge:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.57.0/24
