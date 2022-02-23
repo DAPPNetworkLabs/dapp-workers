@@ -25,7 +25,7 @@ services:
       start_period: 40s
     volumes:
       - keys:/keys
-    entrypoint: ["geth", "--syncmode=light", "--ws", "--ropsten", "--http", "--http.addr=0.0.0.0", "--ws.addr=0.0.0.0"]
+    entrypoint: ["geth", "--syncmode=light", "--ws", "--http", "--http.addr=0.0.0.0", "--ws.addr=0.0.0.0"]
   orchestrator:
     image: orchestrator
     build: services/orchestrator

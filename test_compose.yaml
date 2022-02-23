@@ -1,0 +1,89 @@
+version: "3"
+services:
+  ipfs0:
+    container_name: ipfs0
+    image: ipfs/go-ipfs:latest
+    ports:
+      - "4001:4001" 
+      - "8080:8080"
+    volumes:
+      - ipfs-data:/data/ipfs
+  eth:
+    image: eth
+    build: eth
+    ports:
+      - "8545:8545"
+    environment:
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - ETH_ADDR=http://0.0.0.0:8545
+  nexus:
+    image: nexus
+    build: nexus
+    environment:
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - ETH_ADDR=ws://eth:8545
+      - PRIVATE_KEY=0x278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d
+    command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "npx", "hardhat", "test", "--network", "tests"]
+    depends_on:
+      - "eth"
+      - "orchestrator"
+    links:
+      - eth
+      - orchestrator
+    volumes:
+      - ./services/orchestrator:/services/orchestrator
+  orchestrator:
+    image: orchestrator
+    build: services/orchestrator
+    environment:
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - ETH_ADDR=ws://eth:8545
+      - COMPOSE_PROFILES
+      - NODE_OPTIONS=--openssl-legacy-provider
+      - ADDRESS=0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5
+      - DATABASE_URL=postgres://user:password@postgres:5432/orchestrator
+      - DATABASE_NODE_ENV="production"
+      - DATABASE_TIMEOUT=10000
+      - FROM_BLOCK=0
+    command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "node", "./dist/index.js"]
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./nexus:/nexus
+    depends_on:
+      - "eth"
+    links:
+      - eth
+  dspportal:
+    image: dspportal
+    build: uis/jobs
+    ports:
+      - 8888:80
+    depends_on:
+      - "eth"
+    links:
+      - eth
+  postgres:
+    image: postgres 
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: orchestrator
+      PGDATA: /var/lib/postgresql/data/pgdata
+    # volumes:
+    #   - pg-data:/var/lib/postgresql/data/pgdata
+volumes:
+  keys:
+    external: false
+  pg-data:
+    external: false
+  rabbit-data:
+    external: false    
+  ipfs-data:
+    external: false       
+  nexus:
+    external: false    
+networks:
+  bridge:
