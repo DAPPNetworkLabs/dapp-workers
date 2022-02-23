@@ -19,9 +19,8 @@ const gasCeilingMultiplier = 2;
 
 const delay = s => new Promise(res => setTimeout(res, s * 1000));
 
-let provider;
-    
 let outputFSRes;
+let jobId = 1;
 
 function loadfsRoot(fsrootName){
   if(process.env.PRIVATE_KEY) {
@@ -30,8 +29,6 @@ function loadfsRoot(fsrootName){
     return fs.readFileSync(path.resolve('../services/orchestrator', `fsroots/${fsrootName}.ipfs`)).toString().trim();
   }
 }
-
-let jobId = 1;
 
 describe("Nexus", function() {
   this.timeout(1000000);
@@ -83,6 +80,8 @@ describe("Nexus", function() {
     }
 
     console.log(`nexus contract: ${nexusContract.address}`);
+
+    if(process.env.ONLY_CONTRACTS) return;
   });
 
   /*
