@@ -37,6 +37,13 @@ module.exports = {
       },
       timeout: 120000
     },
+    local_tests: {
+      url: `${'http://localhost:8545'}`,
+      accounts: {
+        mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
+      },
+      timeout: 120000
+    },
     ropsten: {
       url: `https://eth-ropsten.alchemyapi.io/v2/${config.alchemyKey}`,
       accounts: config.keys,
