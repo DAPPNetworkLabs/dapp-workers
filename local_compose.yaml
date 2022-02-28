@@ -24,7 +24,7 @@ services:
       - ETH_ADDR=ws://eth:8545
       - PRIVATE_KEY=0x278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d
       - ONLY_CONTRACTS=true
-    command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "npx", "hardhat", "test", "--network", "tests"]
+    command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "npx", "hardhat", "--network", "tests", "test"]
     depends_on:
       - "eth"
       - "orchestrator"
