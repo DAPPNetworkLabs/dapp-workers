@@ -118,7 +118,9 @@ const fetchJobServiceCompleted = async (thisObject) => {
 
 const fetchGetMinBalance = async (thisObject) => {
     const getMinBalance = await contract.methods.getMinBalance(
-        thisObject.state.getMinBalanceParams.id
+        thisObject.state.getMinBalanceParams.id,
+        thisObject.state.getMinBalanceParams.jobType,
+        thisObject.state.getMinBalanceParams.dsp
     ).call();
     console.log(getMinBalance);
     thisObject.setState({getMinBalance});

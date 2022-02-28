@@ -441,7 +441,9 @@ class Home extends Component {
             buttonText:"Fetch Min Balance",
             event:"",
             inputs:[
-                { name:"id",placeholder: "uint id"}
+                { name:"id",placeholder: "uint id"},
+                { name:"jobType",placeholder: "string memory jobType"},
+                { name:"dsp",placeholder: "address dsp"}
             ]
         },
         {
