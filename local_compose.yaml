@@ -55,24 +55,24 @@ services:
       - "eth"
     links:
       - eth
-  dspportal:
-    environment:
-      - ETH_ADDR=ws://eth:8545
-      # - ETH_ADDR=http://eth:8545
-      - ADDRESS=0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5
-      - CHOKIDAR_USEPOLLING=true
-    image: dspportal
-    build: uis/jobs
-    ports:
-      - 3000:3000
-    depends_on:
-      - "eth"
-    links:
-      - eth
-    command: ["npm","start"]
-    volumes:
-      # - '.:/app'
-      - '/app/node_modules'
+  # dspportal:
+  #   environment:
+  #     - ETH_ADDR=ws://eth:8545
+  #     # - ETH_ADDR=http://eth:8545
+  #     - ADDRESS=0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5
+  #     - CHOKIDAR_USEPOLLING=true
+  #   image: dspportal
+  #   build: uis/jobs
+  #   ports:
+  #     - 3000:3000
+  #   depends_on:
+  #     - "eth"
+  #   links:
+  #     - eth
+  #   command: ["npm","start"]
+  #   volumes:
+  #     # - '.:/app'
+  #     - '/app/node_modules'
   postgres:
     image: postgres 
     ports:

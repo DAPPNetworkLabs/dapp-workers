@@ -3,9 +3,9 @@ import NexusJSON from '../../abi/Nexus.json';
 
 const jobs = [];
 const services = [];
-const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR || 'ws://eth:8545');
+const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR || 'ws://localhost:8545');
 const web3 = new Web3(provider);
-// const web3 = new Web3(process.env.ETH_ADDR || 'http://eth:8545');
+// const web3 = new Web3(process.env.ETH_ADDR || 'http://localhost:8545');
 const contractAddress = process.env.ADDRESS || '0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5';
 const contract = new web3.eth.Contract(NexusJSON.abi,contractAddress);
 const ethereum = window.ethereum;
@@ -360,9 +360,9 @@ const runTrx = async (data,events,thisObject) => {
         chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
     };
     if(events.length) {
-        for(const name of events) {
-            subscribeContractEvent(name,thisObject);
-        }
+        // for(const name of events) {
+        //     subscribeContractEvent(name,thisObject);
+        // }
     }
     await ethereum.request({
         method: 'eth_sendTransaction',
