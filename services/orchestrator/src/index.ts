@@ -8,7 +8,7 @@ import { postTrx } from './postTrx';
 import { callTrx } from './callTrx';
 
 const Web3 = require('web3');
-let abi = require('/nexus/abi/contracts/Nexus.sol/Nexus.json');
+let abi = require(process.env.NEXUS_PATH || '/nexus/abi/contracts/Nexus.sol/Nexus.json');
 // abi = JSON.stringify(abi);
 
 const dal = require('./dal/models/index');

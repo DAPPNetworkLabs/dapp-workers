@@ -39,6 +39,8 @@ describe("Nexus", function(done) {
     [owner, addr1, addr2, addr3, dsp1, dsp2, ...addrs] = await ethers.getSigners();
 
     const dappTokenFactory = await ethers.getContractFactory("DappToken", addr1);
+    console.log(addr1.address);
+    console.log(addr2.address);
     const nexusTokenFactory = await ethers.getContractFactory("Nexus", addr1);
     const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
 

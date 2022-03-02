@@ -8,23 +8,23 @@ services:
       - "8080:8080"
     volumes:
       - ipfs-data:/data/ipfs
-  eth:
-    image: eth
-    build: eth
+  ganache:
+    image: trufflesuite/ganache-cli
     ports:
       - "8545:8545"
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
       - ETH_ADDR=http://0.0.0.0:8545
+    command: ["ganache-cli", "--fork=https://eth-mainnet.alchemyapi.io/v2/82taiATgFqnL9OX16buNSYKzhF5OosdF", "-s", "cruel rebel frown short month love belt weather sense hood cage pact", "-h", "0.0.0.0"]
   nexus:
     image: nexus
     build: nexus
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
-      - ETH_ADDR=ws://eth:8545
+      - ETH_ADDR=ws://ganache:8545
       - PRIVATE_KEY=0x278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d
       - ONLY_CONTRACTS=true
-    command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "npx", "hardhat", "--network", "tests", "test"]
+    command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "ganache:8545", "--", "npx", "hardhat", "--network", "ganache", "test"]
     depends_on:
       - "eth"
       - "orchestrator"
@@ -38,7 +38,7 @@ services:
     build: services/orchestrator
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
-      - ETH_ADDR=ws://eth:8545
+      - ETH_ADDR=ws://ganache:8545
       - COMPOSE_PROFILES
       - NODE_OPTIONS=--openssl-legacy-provider
       - ADDRESS=0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5
@@ -46,7 +46,7 @@ services:
       - DATABASE_NODE_ENV="production"
       - DATABASE_TIMEOUT=10000
       - FROM_BLOCK=0
-    command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "node", "./dist/index.js"]
+    command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=15", "ganache:8545", "--", "node", "./dist/index.js"]
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -57,8 +57,7 @@ services:
       - eth
   # dspportal:
   #   environment:
-  #     - ETH_ADDR=ws://eth:8545
-  #     # - ETH_ADDR=http://eth:8545
+  #     - ETH_ADDR=ws://ganache:8545
   #     - ADDRESS=0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5
   #     - CHOKIDAR_USEPOLLING=true
   #   image: dspportal

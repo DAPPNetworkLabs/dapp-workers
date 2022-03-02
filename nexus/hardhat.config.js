@@ -37,11 +37,8 @@ module.exports = {
       },
       timeout: 120000
     },
-    local_tests: {
-      url: `${'http://localhost:8545'}`,
-      accounts: {
-        mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
-      },
+    ganache: {
+      url: `${'http://ganache:8545'}`,
       timeout: 120000
     },
     ropsten: {
