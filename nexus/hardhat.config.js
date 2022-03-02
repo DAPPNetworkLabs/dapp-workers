@@ -39,6 +39,16 @@ module.exports = {
     },
     ganache: {
       url: `${'http://ganache:8545'}`,
+      accounts: {
+        mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
+      },
+      timeout: 120000
+    },
+    localhost: {
+      url: `${'http://localhost:8545'}`,
+      accounts: {
+        mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
+      },
       timeout: 120000
     },
     ropsten: {

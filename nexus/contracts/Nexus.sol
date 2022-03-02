@@ -307,6 +307,12 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     Config private s_config;  
     uint256 private s_fallbackGasPrice; // not in config object for gas savings
 
+    /*
+
+        - 
+
+    */
+
     function initialize(
         initArgs memory args
     ) external initializer {
@@ -867,7 +873,17 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
     
     /**
-     * @dev active and set endpoint and gas fee mult for dsp
+     * @dev gov unapprove image
+     */
+    function unapproveImage(string calldata imageName, string calldata imageHash) external onlyOwner {
+        require(bytes(approvedImages[imageName]).length == 0, "image exists");
+        require(bytes(imageHash).length != 0, "invalid hash");
+
+        delete approvedImages[imageName] = imageHash;
+    }
+    
+    /**
+     * @dev active and set endpoint for dsp
      */
     function regDSP(string calldata endpoint) public {
         require(bytes(endpoint).length != 0, "invalid endpoint");

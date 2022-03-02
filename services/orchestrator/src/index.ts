@@ -17,24 +17,24 @@ import { execPromise } from './exec';
 
 let startup = true;
 
-provider.on('error', e => console.log('WS Error', e));
-function socketError(e) {
-    console.log('WS closed');
-    console.log('Attempting to reconnect...');
-    const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR);
+// provider.on('error', e => console.log('WS Error', e));
+// function socketError(e) {
+//     console.log('WS closed');
+//     console.log('Attempting to reconnect...');
+//     const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR);
 
-    provider.on('connect', function () {
-        console.log('WSS Reconnected');
-    });
-    provider.on('end', socketError);
-    provider.on('close', socketError);
+//     provider.on('connect', function () {
+//         console.log('WSS Reconnected');
+//     });
+//     provider.on('end', socketError);
+//     provider.on('close', socketError);
 
-    web3.setProvider(provider);
-    if (theContract)
-        subscribe(theContract);
-}
-provider.on('end', socketError);
-provider.on('close', socketError);
+//     web3.setProvider(provider);
+//     if (theContract)
+//         subscribe(theContract);
+// }
+// provider.on('end', socketError);
+// provider.on('close', socketError);
 
 const address = process.env.ADDRESS;
 const fromBlock = process.env.FROM_BLOCK || 0; // load and save to file
@@ -315,9 +315,7 @@ const runService = async (returnValues) => {
 // todo: subscribe to Kill
 
 function subscribe(theContract: any) {
-    theContract.events["QueueJob"]({
-        fromBlock
-    }, async function (error, result) {
+    theContract.events["QueueJob"]({}, async function (error, result) {
         if (error) {
             console.log(error);
             return;
@@ -365,9 +363,7 @@ function subscribe(theContract: any) {
         }
     });
 
-    theContract.events["QueueService"]({
-        fromBlock
-    }, async function (error, result) {
+    theContract.events["QueueService"]({}, async function (error, result) {
         if (error) {
             console.log(error);
             return;
@@ -376,9 +372,7 @@ function subscribe(theContract: any) {
         await runService(result.returnValues);
     });
 
-    theContract.events["ServiceComplete"]({
-        fromBlock
-    }, async function (error, result) {
+    theContract.events["ServiceComplete"]({}, async function (error, result) {
         console.log('ServiceComplete hit');
         if (error) {
             console.log("event error",error);
@@ -386,9 +380,7 @@ function subscribe(theContract: any) {
         }
     });
 
-    theContract.events["ServiceError"]({
-        fromBlock
-    }, async function (error, result) {
+    theContract.events["ServiceError"]({}, async function (error, result) {
         console.log('ServiceError hit');
         if (error) {
             console.log("event error",error);
@@ -396,9 +388,7 @@ function subscribe(theContract: any) {
         }
     });
 
-    theContract.events["JobError"]({
-        fromBlock
-    }, async function (error, result) {
+    theContract.events["JobError"]({}, async function (error, result) {
         console.log('JobError hit');
         if (error) {
             console.log("event error",error);

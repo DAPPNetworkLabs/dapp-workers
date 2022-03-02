@@ -6,7 +6,9 @@ const services = [];
 const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR || 'ws://localhost:8545');
 const web3 = new Web3(provider);
 // const web3 = new Web3(process.env.ETH_ADDR || 'http://localhost:8545');
-const contractAddress = process.env.ADDRESS || '0x0b182A261cFad7983f12f6F15022774Cb020aFD6';
+const contractAddress = process.env.ADDRESS || '0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5';
+console.log(contractAddress);
+console.log(process.env.ETH_ADDR || 'ws://localhost:8545');
 const contract = new web3.eth.Contract(NexusJSON.abi,contractAddress);
 const ethereum = window.ethereum;
 
@@ -47,13 +49,13 @@ const fetchServices = async (thisObject) => {
     thisObject.setState({services: JSON.stringify(services)});
 }
 
-const fetchJobImage = async (thisObject) => {
-    const imageName = await contract.methods.getDockerImage(
-        thisObject.state.getDockerImage.imageName
-    ).call();
-    console.log(imageName);
-    thisObject.setState({image: imageName});
-}
+// const fetchJobImage = async (thisObject) => {
+//     const imageName = await contract.methods.getDockerImage(
+//         thisObject.state.getDockerImage.imageName
+//     ).call();
+//     console.log(imageName);
+//     thisObject.setState({image: imageName});
+// }
 
 const fetchIsImageApprovedForDSP = async (thisObject) => {
     const approvedImage = await contract.methods.isImageApprovedForDSP(
@@ -98,13 +100,13 @@ const fetchDspData = async (thisObject) => {
     thisObject.setState({dspData});
 }
 
-const fetchConsumerData = async (thisObject) => {
-    const consumerData = await contract.methods.consumerData(
-        thisObject.state.consumerDataForm.consumer
-    ).call();
-    console.log(consumerData);
-    thisObject.setState({consumerData});
-}
+// const fetchConsumerData = async (thisObject) => {
+//     const consumerData = await contract.methods.consumerData(
+//         thisObject.state.consumerDataForm.consumer
+//     ).call();
+//     console.log(consumerData);
+//     thisObject.setState({consumerData});
+// }
 
 const fetchJobServiceCompleted = async (thisObject) => {
     const jobServiceCompleted = await contract.methods.jobServiceCompleted(
@@ -174,6 +176,15 @@ const approveImage = async (thisObject) => {
     const data = web3.eth.abi.encodeFunctionCall(abi, [
         thisObject.state.approveImageParams.imageName,
         thisObject.state.approveImageParams.imageHash
+    ]);
+    await runTrx(data,[],thisObject);
+}
+
+const unapproveImage = async (thisObject) => {
+    const abi = returnAbi("unapproveImage");
+    const data = web3.eth.abi.encodeFunctionCall(abi, [
+        thisObject.state.unapproveImageParams.imageName,
+        thisObject.state.unapproveImageParams.imageHash
 
     ]);
     await runTrx(data,[],thisObject);
@@ -382,13 +393,13 @@ const runTrx = async (data,events,thisObject) => {
 export default { 
     fetchJobs,
     fetchServices,
-    fetchJobImage,
+    // fetchJobImage,
     fetchIsImageApprovedForDSP,
     fetchPortForDSP,
     fetchEndpointForDSP,
     fetchDspInfo,
     fetchDspData,
-    fetchConsumerData,
+    // fetchConsumerData,
     setDockerImage,
     unapproveDockerImage,
     deprecateDSP,
@@ -406,6 +417,7 @@ export default {
     fetchGetDspAddresses,
     fetchGetDSPDataLimits,
     approveImage,
+    unapproveImage,
     extendService,
     setConfig,
     setDsps,

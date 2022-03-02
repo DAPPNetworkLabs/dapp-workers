@@ -12,10 +12,7 @@ services:
     image: trufflesuite/ganache-cli
     ports:
       - "8545:8545"
-    environment:
-      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
-      - ETH_ADDR=http://0.0.0.0:8545
-    command: ["ganache-cli", "--fork=https://eth-mainnet.alchemyapi.io/v2/82taiATgFqnL9OX16buNSYKzhF5OosdF", "-s", "cruel rebel frown short month love belt weather sense hood cage pact", "-h", "0.0.0.0"]
+    command: ["ganache-cli", "--fork=$ALCHEMY_ADDRESS", "--mnemonic", "cruel rebel frown short month love belt weather sense hood cage pact"]
   nexus:
     image: nexus
     build: nexus

@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import classes from './Home.module.scss';
+import classes from './Consumer.module.scss';
 import Header from '../../components/Header/Header';
 import Jobs from '../../components/Home/Jobs/Jobs';
 import Services from '../../components/Home/Services/Services';
@@ -10,7 +10,7 @@ import lib from '../../lib/index';
 
 const ethereum = window.ethereum;
 
-class Home extends Component {
+class Consumer extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -234,17 +234,17 @@ class Home extends Component {
                 { name:"storageMb",placeholder: "uint storageMb"},
             ]
         },
-        {
-            onClick:()=>lib.web3.setConfig(this),
-            buttonText:"Set Config",
-            event:"ConfigSet",
-            inputs:[
-                { name:"paymentPremiumPPB",placeholder: "uint32 paymentPremiumPPB"},
-                { name:"gasCeilingMultiplier",placeholder: "uint16 gasCeilingMultiplier"},
-                { name:"fallbackGasPrice",placeholder: "uint256 fallbackGasPrice"},
-                { name:"stalenessSeconds",placeholder: "uint24 stalenessSeconds"}
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.setConfig(this),
+        //     buttonText:"Set Config",
+        //     event:"ConfigSet",
+        //     inputs:[
+        //         { name:"paymentPremiumPPB",placeholder: "uint32 paymentPremiumPPB"},
+        //         { name:"gasCeilingMultiplier",placeholder: "uint16 gasCeilingMultiplier"},
+        //         { name:"fallbackGasPrice",placeholder: "uint256 fallbackGasPrice"},
+        //         { name:"stalenessSeconds",placeholder: "uint24 stalenessSeconds"}
+        //     ]
+        // },
         {
             onClick:()=>lib.web3.setDsps(this),
             buttonText:"Set DSPs",
@@ -289,20 +289,20 @@ class Home extends Component {
                 { name:"months",placeholder: "uint months"},
             ]
         },
-        {
-            onClick:()=>lib.web3.setDockerImage(this),
-            buttonText:"Set Docker Image",
-            event:"setDockerImage",
-            inputs:[
-                { name:"imageName",placeholder: "string imageName"},
-                { name:"jobFee",placeholder: "uint jobFee"},
-                { name:"baseFee",placeholder: "uint baseFee"},
-                { name:"storageFee",placeholder: "uint storageFee"},
-                { name:"ioFee",placeholder: "uint ioFee"},
-                { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
-                { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.setDockerImage(this),
+        //     buttonText:"Set Docker Image",
+        //     event:"setDockerImage",
+        //     inputs:[
+        //         { name:"imageName",placeholder: "string imageName"},
+        //         { name:"jobFee",placeholder: "uint jobFee"},
+        //         { name:"baseFee",placeholder: "uint baseFee"},
+        //         { name:"storageFee",placeholder: "uint storageFee"},
+        //         { name:"ioFee",placeholder: "uint ioFee"},
+        //         { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
+        //         { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
+        //     ]
+        // },
         {
             onClick:()=>lib.web3.fetchDspInfo(this),
             buttonText:"Fetch DSP Info",
@@ -345,14 +345,14 @@ class Home extends Component {
                 { name:"dsp",placeholder: "address dsp"},
             ]
         },
-        {
-            onClick:()=>lib.web3.unapproveDockerImage(this),
-            buttonText:"Unapprove Docker",
-            event:"unapproveDockerForDSP",
-            inputs:[
-                { name:"imageName",placeholder: "string imageName"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.unapproveDockerImage(this),
+        //     buttonText:"Unapprove Docker",
+        //     event:"unapproveDockerForDSP",
+        //     inputs:[
+        //         { name:"imageName",placeholder: "string imageName"},
+        //     ]
+        // },
         {
             onClick:()=>lib.web3.fetchIsImageApprovedForDSP(this),
             buttonText:"Fetch Image Approval for DSP",
@@ -370,26 +370,26 @@ class Home extends Component {
         //         { name:"imageName",placeholder: "string imageName"},
         //     ]
         // },
-        {
-            onClick:()=>lib.web3.deprecateDSP(this),
-            buttonText:"Deprecate DSP",
-            event:"deprecateDSP",
-            inputs:[]
-        },
-        {
-            onClick:()=>lib.web3.regDSP(this),
-            buttonText:"Register DSP Endpoint",
-            event:"regDSP",
-            inputs:[
-                { name:"endpoint",placeholder: "string endpoint"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.claim(this),
-            buttonText:"Claim Gas for DSP",
-            event:"claim",
-            inputs:[]
-        },
+        // {
+        //     onClick:()=>lib.web3.deprecateDSP(this),
+        //     buttonText:"Deprecate DSP",
+        //     event:"deprecateDSP",
+        //     inputs:[]
+        // },
+        // {
+        //     onClick:()=>lib.web3.regDSP(this),
+        //     buttonText:"Register DSP Endpoint",
+        //     event:"regDSP",
+        //     inputs:[
+        //         { name:"endpoint",placeholder: "string endpoint"},
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.claim(this),
+        //     buttonText:"Claim Gas for DSP",
+        //     event:"claim",
+        //     inputs:[]
+        // },
         {
             onClick:()=>lib.web3.sellGas(this),
             buttonText:"Sell Gas",
@@ -485,12 +485,12 @@ class Home extends Component {
                 { name:"dsp",placeholder: "address dsp"}
             ]
         },
-        {
-            onClick:()=>lib.web3.fetchLastJob(this),
-            buttonText:"Get last Job ID",
-            event:"",
-            inputs:[]
-        },
+        // {
+        //     onClick:()=>lib.web3.fetchLastJob(this),
+        //     buttonText:"Get last Job ID",
+        //     event:"",
+        //     inputs:[]
+        // },
         // {
         //     onClick:()=>lib.web3.(this),
         //     buttonText:"",
@@ -533,5 +533,5 @@ class Home extends Component {
     }
   }
   
-  export default Home;
+  export default Consumer;
   

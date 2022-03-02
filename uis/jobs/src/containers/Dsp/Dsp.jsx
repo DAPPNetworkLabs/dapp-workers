@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import classes from './Home.module.scss';
+import classes from './Dsp.module.scss';
 import Header from '../../components/Header/Header';
 import Jobs from '../../components/Home/Jobs/Jobs';
 import Services from '../../components/Home/Services/Services';
@@ -10,7 +10,7 @@ import lib from '../../lib/index';
 
 const ethereum = window.ethereum;
 
-class Home extends Component {
+class Dsp extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -222,73 +222,73 @@ class Home extends Component {
     }
 
     forms = [
-        {
-            onClick:()=>lib.web3.extendService(this),
-            buttonText:"Extend Service",
-            event:"ServiceExtended",
-            inputs:[
-                { name:"serviceId",placeholder: "uint serviceId"},
-                { name:"imageName",placeholder: "string calldata imageName"},
-                { name:"months",placeholder: "uint months"},
-                { name:"ioMb",placeholder: "uint ioMb"},
-                { name:"storageMb",placeholder: "uint storageMb"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.setConfig(this),
-            buttonText:"Set Config",
-            event:"ConfigSet",
-            inputs:[
-                { name:"paymentPremiumPPB",placeholder: "uint32 paymentPremiumPPB"},
-                { name:"gasCeilingMultiplier",placeholder: "uint16 gasCeilingMultiplier"},
-                { name:"fallbackGasPrice",placeholder: "uint256 fallbackGasPrice"},
-                { name:"stalenessSeconds",placeholder: "uint24 stalenessSeconds"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.setDsps(this),
-            buttonText:"Set DSPs",
-            event:"UpdateDsps",
-            inputs:[
-                { name:"dsps",placeholder: "address[] calldata dsps"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.setConsumerContract(this),
-            buttonText:"Set Consumer Contract",
-            event:"",
-            inputs:[
-                { name:"dsps",placeholder: "address[] calldata dsps"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.queueJob(this),
-            buttonText:"Post Job",
-            event:"QueueJob",
-            inputs:[
-                { name:"owner",placeholder: "address owner"},
-                { name:"imageName",placeholder: "string imageName"},
-                { name:"inputFS",placeholder: "string inputFS"},
-                { name:"callback",placeholder: "bool callback"},
-                { name:"gasLimit",placeholder: "uint gasLimit"},
-                { name:"requireConsistent",placeholder: "bool requireConsistent"},
-                { name:"args",placeholder: "string[] args"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.queueService(this),
-            buttonText:"Post Service",
-            event:"QueueService",
-            inputs:[
-                { name:"owner",placeholder: "address owner"},
-                { name:"imageName",placeholder: "string imageName"},
-                { name:"ioMegaBytes",placeholder: "uint ioMegaBytes"},
-                { name:"storageMegaBytes",placeholder: "uint storageMegaBytes"},
-                { name:"inputFS",placeholder: "string inputFS"},
-                { name:"args",placeholder: "string[] args"},
-                { name:"months",placeholder: "uint months"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.extendService(this),
+        //     buttonText:"Extend Service",
+        //     event:"ServiceExtended",
+        //     inputs:[
+        //         { name:"serviceId",placeholder: "uint serviceId"},
+        //         { name:"imageName",placeholder: "string calldata imageName"},
+        //         { name:"months",placeholder: "uint months"},
+        //         { name:"ioMb",placeholder: "uint ioMb"},
+        //         { name:"storageMb",placeholder: "uint storageMb"},
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.setConfig(this),
+        //     buttonText:"Set Config",
+        //     event:"ConfigSet",
+        //     inputs:[
+        //         { name:"paymentPremiumPPB",placeholder: "uint32 paymentPremiumPPB"},
+        //         { name:"gasCeilingMultiplier",placeholder: "uint16 gasCeilingMultiplier"},
+        //         { name:"fallbackGasPrice",placeholder: "uint256 fallbackGasPrice"},
+        //         { name:"stalenessSeconds",placeholder: "uint24 stalenessSeconds"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.setDsps(this),
+        //     buttonText:"Set DSPs",
+        //     event:"UpdateDsps",
+        //     inputs:[
+        //         { name:"dsps",placeholder: "address[] calldata dsps"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.setConsumerContract(this),
+        //     buttonText:"Set Consumer Contract",
+        //     event:"",
+        //     inputs:[
+        //         { name:"dsps",placeholder: "address[] calldata dsps"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.queueJob(this),
+        //     buttonText:"Post Job",
+        //     event:"QueueJob",
+        //     inputs:[
+        //         { name:"owner",placeholder: "address owner"},
+        //         { name:"imageName",placeholder: "string imageName"},
+        //         { name:"inputFS",placeholder: "string inputFS"},
+        //         { name:"callback",placeholder: "bool callback"},
+        //         { name:"gasLimit",placeholder: "uint gasLimit"},
+        //         { name:"requireConsistent",placeholder: "bool requireConsistent"},
+        //         { name:"args",placeholder: "string[] args"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.queueService(this),
+        //     buttonText:"Post Service",
+        //     event:"QueueService",
+        //     inputs:[
+        //         { name:"owner",placeholder: "address owner"},
+        //         { name:"imageName",placeholder: "string imageName"},
+        //         { name:"ioMegaBytes",placeholder: "uint ioMegaBytes"},
+        //         { name:"storageMegaBytes",placeholder: "uint storageMegaBytes"},
+        //         { name:"inputFS",placeholder: "string inputFS"},
+        //         { name:"args",placeholder: "string[] args"},
+        //         { name:"months",placeholder: "uint months"},
+        //     ]
+        // },
         {
             onClick:()=>lib.web3.setDockerImage(this),
             buttonText:"Set Docker Image",
@@ -345,14 +345,14 @@ class Home extends Component {
                 { name:"dsp",placeholder: "address dsp"},
             ]
         },
-        {
-            onClick:()=>lib.web3.unapproveDockerImage(this),
-            buttonText:"Unapprove Docker",
-            event:"unapproveDockerForDSP",
-            inputs:[
-                { name:"imageName",placeholder: "string imageName"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.unapproveDockerImage(this),
+        //     buttonText:"Unapprove Docker",
+        //     event:"unapproveDockerForDSP",
+        //     inputs:[
+        //         { name:"imageName",placeholder: "string imageName"},
+        //     ]
+        // },
         {
             onClick:()=>lib.web3.fetchIsImageApprovedForDSP(this),
             buttonText:"Fetch Image Approval for DSP",
@@ -390,42 +390,42 @@ class Home extends Component {
             event:"claim",
             inputs:[]
         },
-        {
-            onClick:()=>lib.web3.sellGas(this),
-            buttonText:"Sell Gas",
-            event:"sellGas",
-            inputs:[
-                { name:"_amountToSell",placeholder: "uint256 _amountToSell"},
-                { name:"_dsp",placeholder: "address _dsp"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.buyGasFor(this),
-            buttonText:"Buy Gas For DSP",
-            event:"buyGasFor",
-            inputs:[
-                { name:"_amount",placeholder: "uint256 _amount"},
-                { name:"_consumer",placeholder: "address _consumer"},
-                { name:"_dsp",placeholder: "address _dsp"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.setConsumerPermissions(this),
-            buttonText:"Set Consumer Owner",
-            event:"setConsumerPermissions",
-            inputs:[
-                { name:"owner",placeholder: "address owner"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.setQuorum(this),
-            buttonText:"Set DSP Quorum for Consumer",
-            event:"setQuorum",
-            inputs:[
-                { name:"consumer",placeholder: "address consumer"},
-                { name:"dsps",placeholder: "address[] dsps"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.sellGas(this),
+        //     buttonText:"Sell Gas",
+        //     event:"sellGas",
+        //     inputs:[
+        //         { name:"_amountToSell",placeholder: "uint256 _amountToSell"},
+        //         { name:"_dsp",placeholder: "address _dsp"},
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.buyGasFor(this),
+        //     buttonText:"Buy Gas For DSP",
+        //     event:"buyGasFor",
+        //     inputs:[
+        //         { name:"_amount",placeholder: "uint256 _amount"},
+        //         { name:"_consumer",placeholder: "address _consumer"},
+        //         { name:"_dsp",placeholder: "address _dsp"},
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.setConsumerPermissions(this),
+        //     buttonText:"Set Consumer Owner",
+        //     event:"setConsumerPermissions",
+        //     inputs:[
+        //         { name:"owner",placeholder: "address owner"},
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.setQuorum(this),
+        //     buttonText:"Set DSP Quorum for Consumer",
+        //     event:"setQuorum",
+        //     inputs:[
+        //         { name:"consumer",placeholder: "address consumer"},
+        //         { name:"dsps",placeholder: "address[] dsps"},
+        //     ]
+        // },
         {
             onClick:()=>lib.web3.fetchJobServiceCompleted(this),
             buttonText:"Is Job/Service Complete",
@@ -436,16 +436,16 @@ class Home extends Component {
                 { name:"isJob",placeholder: "isJob"},
             ]
         },
-        {
-            onClick:()=>lib.web3.fetchGetMinBalance(this),
-            buttonText:"Fetch Min Balance",
-            event:"",
-            inputs:[
-                { name:"id",placeholder: "uint id"},
-                { name:"jobType",placeholder: "string memory jobType"},
-                { name:"dsp",placeholder: "address dsp"}
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.fetchGetMinBalance(this),
+        //     buttonText:"Fetch Min Balance",
+        //     event:"",
+        //     inputs:[
+        //         { name:"id",placeholder: "uint id"},
+        //         { name:"jobType",placeholder: "string memory jobType"},
+        //         { name:"dsp",placeholder: "address dsp"}
+        //     ]
+        // },
         {
             onClick:()=>lib.web3.fetchIsServiceDone(this),
             buttonText:"Fetch Is Service Done",
@@ -454,43 +454,43 @@ class Home extends Component {
                 { name:"id",placeholder: "uint id"}
             ]
         },
-        {
-            onClick:()=>lib.web3.fetchGetMaxPaymentForGas(this),
-            buttonText:"Fetch Max Payment for Gas",
-            event:"",
-            inputs:[
-                { name:"gasLimit",placeholder: "gasLimit"},
-                { name:"imageName",placeholder: "imageName"},
-                { name:"dsp",placeholder: "address dsp"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.fetchGetConfig(this),
-            buttonText:"Get Config",
-            event:"",
-            inputs:[]
-        },
+        // {
+        //     onClick:()=>lib.web3.fetchGetMaxPaymentForGas(this),
+        //     buttonText:"Fetch Max Payment for Gas",
+        //     event:"",
+        //     inputs:[
+        //         { name:"gasLimit",placeholder: "gasLimit"},
+        //         { name:"imageName",placeholder: "imageName"},
+        //         { name:"dsp",placeholder: "address dsp"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.fetchGetConfig(this),
+        //     buttonText:"Get Config",
+        //     event:"",
+        //     inputs:[]
+        // },
         {
             onClick:()=>lib.web3.fetchGetDspAddresses(this),
             buttonText:"Get DSP Addresses",
             event:"",
             inputs:[]
         },
-        {
-            onClick:()=>lib.web3.fetchGetDSPDataLimits(this),
-            buttonText:"Get DSP Data Limits",
-            event:"",
-            inputs:[
-                { name:"id",placeholder: "uint id"},
-                { name:"dsp",placeholder: "address dsp"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.fetchLastJob(this),
-            buttonText:"Get last Job ID",
-            event:"",
-            inputs:[]
-        },
+        // {
+        //     onClick:()=>lib.web3.fetchGetDSPDataLimits(this),
+        //     buttonText:"Get DSP Data Limits",
+        //     event:"",
+        //     inputs:[
+        //         { name:"id",placeholder: "uint id"},
+        //         { name:"dsp",placeholder: "address dsp"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.fetchLastJob(this),
+        //     buttonText:"Get last Job ID",
+        //     event:"",
+        //     inputs:[]
+        // },
         // {
         //     onClick:()=>lib.web3.(this),
         //     buttonText:"",
@@ -533,5 +533,5 @@ class Home extends Component {
     }
   }
   
-  export default Home;
+  export default Dsp;
   
