@@ -1,0 +1,98 @@
+{
+    "consumer": {
+        "buy gas": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "sell gas": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "request job": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "request service": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "extend service": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "jobs": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "services": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "set consumer": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "set dsps": {
+            "title": "",
+            "button": "",
+            "": ""
+        }
+    },
+    "dsp": {
+        "register": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "deprecate": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "register image": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "update image": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "jobs": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "services": {
+            "title": "",
+            "button": "",
+            "": ""
+        }
+    },
+    "admin": {
+        "set config": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "approve image": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "unapprove image": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+    }
+}
