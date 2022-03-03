@@ -13,3 +13,10 @@ export const setIsLangUserSelected = (isLangUserSelected) => {
     isLangUserSelected: isLangUserSelected
   };
 };
+
+export const setIsDayNight = (isDayNight) => {
+  return {
+    type: actionTypes.SET_ISDAYSELECTED,
+    isDayNight: isDayNight
+  };
+};
