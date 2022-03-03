@@ -405,6 +405,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev set consumer contract
      */
     function setConsumerContract(address authorized_contract) external {
+        require(contracts[msg.sender] != authorized_contract,"already authorized");
         contracts[msg.sender] = authorized_contract;
     }
     
@@ -927,15 +928,17 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint ioFee,
         uint minStorageMegaBytes,
         uint minIoMegaBytes
-    ) external {
-        require(bytes(approvedImages[imageName]).length != 0, "not approved");
-        require(jobFee > 0, "job fee must be > 0");
-        require(baseFee > 0, "base fee must be > 0");
-        require(storageFee > 0, "storage fee must be > 0");
-        require(ioFee > 0, "io fee must be > 0");
-        require(minIoMegaBytes > 0, "min io must be > 0");
-
+    ) public {
         address owner = msg.sender;
+
+        require(isImageApprovedForDSP(owner, imageName), "image not approved");
+        require(
+            jobFee > 0 && 
+            baseFee > 0 && 
+            storageFee > 0 && 
+            ioFee > 0 && 
+            minIoMegaBytes > 0
+        , "invalid fee");
 
         // job related
         dspApprovedImages[owner][imageName].jobFee = jobFee;
@@ -960,37 +963,26 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint minStorageMegaBytes,
         uint minIoMegaBytes
     ) external {
-        address owner = msg.sender;
-
-        require(isImageApprovedForDSP(owner, imageName), "image not approved");
-        require(
-            jobFee > 0 && 
-            baseFee > 0 && 
-            storageFee > 0 && 
-            ioFee > 0 && 
-            minIoMegaBytes > 0
-        , "invalid fee");
-
         bool diff = false;
 
-        if(dspApprovedImages[owner][imageName].jobFee != jobFee) diff = true;
-        if(dspApprovedImages[owner][imageName].baseFee != baseFee) diff = true;
-        if(dspApprovedImages[owner][imageName].storageFee != storageFee) diff = true;
-        if(dspApprovedImages[owner][imageName].ioFee != ioFee) diff = true;
-        if(dspApprovedImages[owner][imageName].minStorageMegaBytes != minStorageMegaBytes) diff = true;
-        if(dspApprovedImages[owner][imageName].minIoMegaBytes != minIoMegaBytes) diff = true;
+        if(dspApprovedImages[msg.sender][imageName].jobFee != jobFee) diff = true;
+        if(dspApprovedImages[msg.sender][imageName].baseFee != baseFee) diff = true;
+        if(dspApprovedImages[msg.sender][imageName].storageFee != storageFee) diff = true;
+        if(dspApprovedImages[msg.sender][imageName].ioFee != ioFee) diff = true;
+        if(dspApprovedImages[msg.sender][imageName].minStorageMegaBytes != minStorageMegaBytes) diff = true;
+        if(dspApprovedImages[msg.sender][imageName].minIoMegaBytes != minIoMegaBytes) diff = true;
 
         require(diff, "no diff");
 
-        // job related
-        dspApprovedImages[owner][imageName].jobFee = jobFee;
-
-        // service related
-        dspApprovedImages[owner][imageName].baseFee = baseFee;
-        dspApprovedImages[owner][imageName].storageFee = storageFee;
-        dspApprovedImages[owner][imageName].ioFee = ioFee;
-        dspApprovedImages[owner][imageName].minStorageMegaBytes = minStorageMegaBytes;
-        dspApprovedImages[owner][imageName].minIoMegaBytes = minIoMegaBytes;
+        setDockerImage(
+            imageName,
+            jobFee,
+            baseFee,
+            storageFee,
+            ioFee,
+            minStorageMegaBytes,
+            minIoMegaBytes
+        );
     }
     
     /**
@@ -1146,7 +1138,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         string calldata imageName, 
         uint months, 
         address dsp
-    ) private view {
+    ) public view {
         require(
             ioMegaBytes 
             >= 
@@ -1197,7 +1189,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev require all dsps be active
      */
-    function validateActiveDsps(address[] memory dsps) private view {
+    function validateActiveDsps(address[] memory dsps) public view {
         require(dsps.length > 0, "no dsps");
         for (uint i=0; i<dsps.length; i++) {
             require(registeredDSPs[dsps[i]].active, "not active");
