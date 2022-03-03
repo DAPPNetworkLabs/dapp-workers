@@ -1,4 +1,3 @@
-
 import React, { Component } from 'react';
 import classes from './Home.module.scss';
 import Header from '../../components/Header/Header';
