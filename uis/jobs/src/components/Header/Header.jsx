@@ -70,12 +70,14 @@ class Header extends React.Component {
               wide={false}
               text={this.props.isDayNight ? 'Night' : 'Day'}
               onClick={this.props.setIsDayNight}
+              isDayNight={this.props.isDayNight}
           ></Button>
           <Button 
               loginBtn={true}
               wide={false}
               onClick={this.props.account ? this.props.logout : this.props.login}
               text={this.props.account ? this.props.account : 'Login'}
+              isDayNight={this.props.isDayNight}
           ></Button>
       </div>
     );

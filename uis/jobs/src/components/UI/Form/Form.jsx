@@ -14,7 +14,15 @@ const Form = (props) => {
             placeholder={el.placeholder}
         ></input>)
     });
-    const button = <Button wide={props.wide} text={props.buttonText} className={classes.formButton} onClick={props.onClick}>{props.buttonText}</Button>;
+    console.log('button',props.isDayNight)
+    const button = <Button 
+        wide={props.wide} 
+        text={props.buttonText} 
+        className={classes.formButton} 
+        isDayNight={props.isDayNight}
+        onClick={props.onClick}
+    >{props.buttonText}
+    </Button>;
     return (
         <div className={classes.form}>
             {inputs}

@@ -24,7 +24,6 @@ const setIsLangUserSelected = (state, action) => {
 };
 
 const setIsDayNight = (state, action) => {
-  console.log(`setIsDayNight set2`, !state.isDayNight);
   return updateObject(state, { isDayNight: !state.isDayNight });
 };
 

@@ -7,6 +7,9 @@ import Services from '../../../components/Home/Services/Services';
 import Form from '../../../components/UI/Form/Form';
 import Footer from '../../../components/Footer/Footer';
 import lib from '../../../lib/index';
+import * as actions from '../../../store/actions/auth';
+import { connect } from 'react-redux';
+import { withLocalize } from 'react-localize-redux';
 
 import { GlobalStyles } from '../../../view/css/global';
 
@@ -513,6 +516,7 @@ class BuyGas extends Component {
                     buttonText={el.buttonText}
                     event={el.event}
                     inputs={el.inputs}
+                    isDayNight={this.props.isDayNight}
                 />
             )
         });
@@ -534,6 +538,22 @@ class BuyGas extends Component {
         );
     }
   }
+
+  const mapStateToProps = state => {
+    return {
+      isDayNight: state.isDayNight,
+      lang: state.lang,
+      isLangUserSelected: state.isLangUserSelected
+    };
+  };
   
-  export default BuyGas;
+  const mapDispatchToProps = dispatch => {
+    return {
+      setIsDayNight: () => dispatch(actions.setIsDayNight()),
+      setLang: (lang) => dispatch(actions.setLang(lang)),
+      setIsLangUserSelected: (isLangUserSelected) => dispatch(actions.setIsLangUserSelected(isLangUserSelected))
+    };
+  };
+  
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(BuyGas));
   
