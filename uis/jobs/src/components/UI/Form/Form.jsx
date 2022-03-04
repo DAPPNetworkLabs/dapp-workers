@@ -14,7 +14,6 @@ const Form = (props) => {
             placeholder={el.placeholder}
         ></input>)
     });
-    console.log('button',props.isDayNight)
     const button = <Button 
         wide={props.wide} 
         text={props.buttonText} 

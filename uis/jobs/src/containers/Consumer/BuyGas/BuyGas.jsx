@@ -10,6 +10,8 @@ import lib from '../../../lib/index';
 import * as actions from '../../../store/actions/auth';
 import { connect } from 'react-redux';
 import { withLocalize } from 'react-localize-redux';
+import { ThemeProvider } from 'styled-components';
+import { lightTheme, darkTheme } from '../../../view/css/theme';
 
 import { GlobalStyles } from '../../../view/css/global';
 
@@ -521,7 +523,8 @@ class BuyGas extends Component {
             )
         });
         return (
-            <div>
+            // <div>
+            <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
                 <GlobalStyles />
                 <Header
                     login={()=>lib.metamask.login(this)}
@@ -534,7 +537,8 @@ class BuyGas extends Component {
                     </div>
                 </div>
                 <Footer/>
-            </div>
+            </ThemeProvider>
+            // </div>
         );
     }
   }
