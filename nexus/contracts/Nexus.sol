@@ -880,7 +880,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         require(bytes(approvedImages[imageName]).length == 0, "image exists");
         require(bytes(imageHash).length != 0, "invalid hash");
 
-        delete approvedImages[imageName] = imageHash;
+        delete approvedImages[imageName];
     }
     
     /**
