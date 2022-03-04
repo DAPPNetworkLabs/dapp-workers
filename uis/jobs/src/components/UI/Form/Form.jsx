@@ -17,7 +17,6 @@ const Form = (props) => {
     const button = <Button 
         wide={props.wide} 
         text={props.buttonText} 
-        className={classes.formButton} 
         isDayNight={props.isDayNight}
         onClick={props.onClick}
     >{props.buttonText}

@@ -63,16 +63,30 @@ class Header extends React.Component {
   }
 
   render() {
+    const dropDownItems = [
+      {
+        'text':'English'
+      },
+      {
+        'text':'Chinese'
+      },
+      {
+        'text':'Korean'
+      }
+    ]
     return (
       <div className={classes.container}>
           <div><img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></div>
           <div className={classes.headerButtons}>
-            <Button 
-                wide={false}
-                text="Lang"
-                // onClick={this.props.setIsDayNight}
-                isDayNight={this.props.isDayNight}
-            ></Button>
+            <div className={classes.dropdown}>
+              <Button 
+                  wide={false}
+                  text="Lang"
+                  // onClick={this.props.setIsDayNight}
+                  isDayNight={this.props.isDayNight}
+                  dropDownItems={dropDownItems}
+              ></Button>
+            </div>
             <Button 
                 wide={false}
                 text={this.props.isDayNight ? 'Night' : 'Day'}

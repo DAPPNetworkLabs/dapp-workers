@@ -5,6 +5,8 @@ import Header from '../../../components/Header/Header';
 import Jobs from '../../../components/Home/Jobs/Jobs';
 import Services from '../../../components/Home/Services/Services';
 import Form from '../../../components/UI/Form/Form';
+import Title from '../../../components/UI/Title/Title';
+import SubTitle from '../../../components/UI/SubTitle/SubTitle';
 import Footer from '../../../components/Footer/Footer';
 import lib from '../../../lib/index';
 import * as actions from '../../../store/actions/auth';
@@ -408,7 +410,7 @@ class BuyGas extends Component {
         // },
         {
             onClick:()=>lib.web3.buyGasFor(this),
-            buttonText:"Buy Gas For DSP",
+            buttonText:"BUY GAS",
             event:"buyGasFor",
             inputs:[
                 { name:"_amount",placeholder: "uint256 _amount"},
@@ -522,6 +524,7 @@ class BuyGas extends Component {
                 />
             )
         });
+        console.log(this.props.isDayNight ? lightTheme : darkTheme);
         return (
             // <div>
             <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
@@ -533,6 +536,8 @@ class BuyGas extends Component {
                 />
                 <div>
                     <div className="center">
+                        <Title text="BUY GAS FOR DSP" isDayNight={this.props.isDayNight}/>
+                        <SubTitle text="Provide amount, consumer address, and DSP account to fund a DSP to use DAPP Network jobs & services." isDayNight={this.props.isDayNight} />
                         {forms}
                     </div>
                 </div>

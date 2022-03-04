@@ -1,10 +1,27 @@
+$color-white: #FFFFFF;
+$color-light-blue: #30E0FF;
+$color-blue: #3131FF;
+$color-dark-blue: #0F1032;
+$color-purple: #201F46;
+$color-light-grey: #F4F5FB;
+$color-grey: #4B5671;
+$color-error: red;
+
 .form {
     display: flex;
     align-items: center;
     flex-direction: column;
     justify-content: center;
+    gap: 16px;
+    margin-top: 40px;
 }
 
 .formInput {
-    margin: 4px;
+    border-radius: 4px;
+    border:solid 2px $color-white;    
+    outline:solid 4px $color-grey;
+    font-family: "IBM Plex Mono", monospace;
+}
+.formInput:focus{
+    outline:solid 4px $color-blue;
 }

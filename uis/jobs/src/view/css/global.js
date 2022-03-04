@@ -11,10 +11,10 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   body {
-    background: ${({ theme }) => theme.body};
-    color: ${({ theme }) => theme.text};
+    background: ${props => props.theme.body};
+    color: ${props => props.theme.text};
     height: 100vh;
     margin: 20;
     font-family: "IBM Plex Mono", monospace;
     transition: all 0.25s linear;
-  }`
+  }`;

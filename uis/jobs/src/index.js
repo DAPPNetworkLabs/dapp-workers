@@ -4,6 +4,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { createStore } from 'redux';
 import reducer from './store/reducers/auth.js';
 import './index.css';
+// import './index.module.scss';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { LocalizeProvider } from 'react-localize-redux';
