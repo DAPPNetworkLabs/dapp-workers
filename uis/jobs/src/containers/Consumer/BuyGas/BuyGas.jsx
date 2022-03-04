@@ -8,6 +8,8 @@ import Form from '../../../components/UI/Form/Form';
 import Footer from '../../../components/Footer/Footer';
 import lib from '../../../lib/index';
 
+import { GlobalStyles } from '../../../view/css/global';
+
 const ethereum = window.ethereum;
 
 class BuyGas extends Component {
@@ -222,18 +224,18 @@ class BuyGas extends Component {
     }
 
     forms = [
-        {
-            onClick:()=>lib.web3.extendService(this),
-            buttonText:"Extend Service",
-            event:"ServiceExtended",
-            inputs:[
-                { name:"serviceId",placeholder: "uint serviceId"},
-                { name:"imageName",placeholder: "string calldata imageName"},
-                { name:"months",placeholder: "uint months"},
-                { name:"ioMb",placeholder: "uint ioMb"},
-                { name:"storageMb",placeholder: "uint storageMb"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.extendService(this),
+        //     buttonText:"Extend Service",
+        //     event:"ServiceExtended",
+        //     inputs:[
+        //         { name:"serviceId",placeholder: "uint serviceId"},
+        //         { name:"imageName",placeholder: "string calldata imageName"},
+        //         { name:"months",placeholder: "uint months"},
+        //         { name:"ioMb",placeholder: "uint ioMb"},
+        //         { name:"storageMb",placeholder: "uint storageMb"},
+        //     ]
+        // },
         // {
         //     onClick:()=>lib.web3.setConfig(this),
         //     buttonText:"Set Config",
@@ -245,50 +247,50 @@ class BuyGas extends Component {
         //         { name:"stalenessSeconds",placeholder: "uint24 stalenessSeconds"}
         //     ]
         // },
-        {
-            onClick:()=>lib.web3.setDsps(this),
-            buttonText:"Set DSPs",
-            event:"UpdateDsps",
-            inputs:[
-                { name:"dsps",placeholder: "address[] calldata dsps"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.setConsumerContract(this),
-            buttonText:"Set Consumer Contract",
-            event:"",
-            inputs:[
-                { name:"dsps",placeholder: "address[] calldata dsps"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.queueJob(this),
-            buttonText:"Post Job",
-            event:"QueueJob",
-            inputs:[
-                { name:"owner",placeholder: "address owner"},
-                { name:"imageName",placeholder: "string imageName"},
-                { name:"inputFS",placeholder: "string inputFS"},
-                { name:"callback",placeholder: "bool callback"},
-                { name:"gasLimit",placeholder: "uint gasLimit"},
-                { name:"requireConsistent",placeholder: "bool requireConsistent"},
-                { name:"args",placeholder: "string[] args"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.queueService(this),
-            buttonText:"Post Service",
-            event:"QueueService",
-            inputs:[
-                { name:"owner",placeholder: "address owner"},
-                { name:"imageName",placeholder: "string imageName"},
-                { name:"ioMegaBytes",placeholder: "uint ioMegaBytes"},
-                { name:"storageMegaBytes",placeholder: "uint storageMegaBytes"},
-                { name:"inputFS",placeholder: "string inputFS"},
-                { name:"args",placeholder: "string[] args"},
-                { name:"months",placeholder: "uint months"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.setDsps(this),
+        //     buttonText:"Set DSPs",
+        //     event:"UpdateDsps",
+        //     inputs:[
+        //         { name:"dsps",placeholder: "address[] calldata dsps"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.setConsumerContract(this),
+        //     buttonText:"Set Consumer Contract",
+        //     event:"",
+        //     inputs:[
+        //         { name:"dsps",placeholder: "address[] calldata dsps"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.queueJob(this),
+        //     buttonText:"Post Job",
+        //     event:"QueueJob",
+        //     inputs:[
+        //         { name:"owner",placeholder: "address owner"},
+        //         { name:"imageName",placeholder: "string imageName"},
+        //         { name:"inputFS",placeholder: "string inputFS"},
+        //         { name:"callback",placeholder: "bool callback"},
+        //         { name:"gasLimit",placeholder: "uint gasLimit"},
+        //         { name:"requireConsistent",placeholder: "bool requireConsistent"},
+        //         { name:"args",placeholder: "string[] args"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.queueService(this),
+        //     buttonText:"Post Service",
+        //     event:"QueueService",
+        //     inputs:[
+        //         { name:"owner",placeholder: "address owner"},
+        //         { name:"imageName",placeholder: "string imageName"},
+        //         { name:"ioMegaBytes",placeholder: "uint ioMegaBytes"},
+        //         { name:"storageMegaBytes",placeholder: "uint storageMegaBytes"},
+        //         { name:"inputFS",placeholder: "string inputFS"},
+        //         { name:"args",placeholder: "string[] args"},
+        //         { name:"months",placeholder: "uint months"},
+        //     ]
+        // },
         // {
         //     onClick:()=>lib.web3.setDockerImage(this),
         //     buttonText:"Set Docker Image",
@@ -303,23 +305,23 @@ class BuyGas extends Component {
         //         { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
         //     ]
         // },
-        {
-            onClick:()=>lib.web3.fetchDspInfo(this),
-            buttonText:"Fetch DSP Info",
-            event:"registeredDSPs",
-            inputs:[
-                { name:"dsp",placeholder: "address dsp"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.fetchDspData(this),
-            buttonText:"Fetch DSP Data",
-            event:"dspDataForm",
-            inputs:[
-                { name:"consumer",placeholder: "address consumer"},
-                { name:"dsp",placeholder: "address dsp"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.fetchDspInfo(this),
+        //     buttonText:"Fetch DSP Info",
+        //     event:"registeredDSPs",
+        //     inputs:[
+        //         { name:"dsp",placeholder: "address dsp"},
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.fetchDspData(this),
+        //     buttonText:"Fetch DSP Data",
+        //     event:"dspDataForm",
+        //     inputs:[
+        //         { name:"consumer",placeholder: "address consumer"},
+        //         { name:"dsp",placeholder: "address dsp"},
+        //     ]
+        // },
         // {
         //     onClick:()=>lib.web3.fetchConsumerData(this),
         //     buttonText:"Fetch Consumer Data",
@@ -328,23 +330,23 @@ class BuyGas extends Component {
         //         { name:"consumer",placeholder: "address consumer"},
         //     ]
         // },
-        {
-            onClick:()=>lib.web3.fetchEndpointForDSP(this),
-            buttonText:"Fetch DSP Endpoint",
-            event:"getDSPEndpoint",
-            inputs:[
-                { name:"dsp",placeholder: "address dsp"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.fetchPortForDSP(this),
-            buttonText:"Fetch DSP Port",
-            event:"getPortForDSP",
-            inputs:[
-                { name:"jobID",placeholder: "uint256 jobID"},
-                { name:"dsp",placeholder: "address dsp"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.fetchEndpointForDSP(this),
+        //     buttonText:"Fetch DSP Endpoint",
+        //     event:"getDSPEndpoint",
+        //     inputs:[
+        //         { name:"dsp",placeholder: "address dsp"},
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.fetchPortForDSP(this),
+        //     buttonText:"Fetch DSP Port",
+        //     event:"getPortForDSP",
+        //     inputs:[
+        //         { name:"jobID",placeholder: "uint256 jobID"},
+        //         { name:"dsp",placeholder: "address dsp"},
+        //     ]
+        // },
         // {
         //     onClick:()=>lib.web3.unapproveDockerImage(this),
         //     buttonText:"Unapprove Docker",
@@ -353,15 +355,15 @@ class BuyGas extends Component {
         //         { name:"imageName",placeholder: "string imageName"},
         //     ]
         // },
-        {
-            onClick:()=>lib.web3.fetchIsImageApprovedForDSP(this),
-            buttonText:"Fetch Image Approval for DSP",
-            event:"isImageApprovedForDSP",
-            inputs:[
-                { name:"dsp",placeholder: "address dsp"},
-                { name:"imageName",placeholder: "string imageName"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.fetchIsImageApprovedForDSP(this),
+        //     buttonText:"Fetch Image Approval for DSP",
+        //     event:"isImageApprovedForDSP",
+        //     inputs:[
+        //         { name:"dsp",placeholder: "address dsp"},
+        //         { name:"imageName",placeholder: "string imageName"},
+        //     ]
+        // },
         // {
         //     onClick:()=>lib.web3.fetchJobImage(this),
         //     buttonText:"Fetch Docker Image",
@@ -390,15 +392,15 @@ class BuyGas extends Component {
         //     event:"claim",
         //     inputs:[]
         // },
-        {
-            onClick:()=>lib.web3.sellGas(this),
-            buttonText:"Sell Gas",
-            event:"sellGas",
-            inputs:[
-                { name:"_amountToSell",placeholder: "uint256 _amountToSell"},
-                { name:"_dsp",placeholder: "address _dsp"},
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.sellGas(this),
+        //     buttonText:"Sell Gas",
+        //     event:"sellGas",
+        //     inputs:[
+        //         { name:"_amountToSell",placeholder: "uint256 _amountToSell"},
+        //         { name:"_dsp",placeholder: "address _dsp"},
+        //     ]
+        // },
         {
             onClick:()=>lib.web3.buyGasFor(this),
             buttonText:"Buy Gas For DSP",
@@ -409,82 +411,82 @@ class BuyGas extends Component {
                 { name:"_dsp",placeholder: "address _dsp"},
             ]
         },
-        {
-            onClick:()=>lib.web3.setConsumerPermissions(this),
-            buttonText:"Set Consumer Owner",
-            event:"setConsumerPermissions",
-            inputs:[
-                { name:"owner",placeholder: "address owner"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.setQuorum(this),
-            buttonText:"Set DSP Quorum for Consumer",
-            event:"setQuorum",
-            inputs:[
-                { name:"consumer",placeholder: "address consumer"},
-                { name:"dsps",placeholder: "address[] dsps"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.fetchJobServiceCompleted(this),
-            buttonText:"Is Job/Service Complete",
-            event:"",
-            inputs:[
-                { name:"id",placeholder: "uint id"},
-                { name:"dsp",placeholder: "address dsp"},
-                { name:"isJob",placeholder: "isJob"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.fetchGetMinBalance(this),
-            buttonText:"Fetch Min Balance",
-            event:"",
-            inputs:[
-                { name:"id",placeholder: "uint id"},
-                { name:"jobType",placeholder: "string memory jobType"},
-                { name:"dsp",placeholder: "address dsp"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.fetchIsServiceDone(this),
-            buttonText:"Fetch Is Service Done",
-            event:"",
-            inputs:[
-                { name:"id",placeholder: "uint id"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.fetchGetMaxPaymentForGas(this),
-            buttonText:"Fetch Max Payment for Gas",
-            event:"",
-            inputs:[
-                { name:"gasLimit",placeholder: "gasLimit"},
-                { name:"imageName",placeholder: "imageName"},
-                { name:"dsp",placeholder: "address dsp"}
-            ]
-        },
-        {
-            onClick:()=>lib.web3.fetchGetConfig(this),
-            buttonText:"Get Config",
-            event:"",
-            inputs:[]
-        },
-        {
-            onClick:()=>lib.web3.fetchGetDspAddresses(this),
-            buttonText:"Get DSP Addresses",
-            event:"",
-            inputs:[]
-        },
-        {
-            onClick:()=>lib.web3.fetchGetDSPDataLimits(this),
-            buttonText:"Get DSP Data Limits",
-            event:"",
-            inputs:[
-                { name:"id",placeholder: "uint id"},
-                { name:"dsp",placeholder: "address dsp"}
-            ]
-        },
+        // {
+        //     onClick:()=>lib.web3.setConsumerPermissions(this),
+        //     buttonText:"Set Consumer Owner",
+        //     event:"setConsumerPermissions",
+        //     inputs:[
+        //         { name:"owner",placeholder: "address owner"},
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.setQuorum(this),
+        //     buttonText:"Set DSP Quorum for Consumer",
+        //     event:"setQuorum",
+        //     inputs:[
+        //         { name:"consumer",placeholder: "address consumer"},
+        //         { name:"dsps",placeholder: "address[] dsps"},
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.fetchJobServiceCompleted(this),
+        //     buttonText:"Is Job/Service Complete",
+        //     event:"",
+        //     inputs:[
+        //         { name:"id",placeholder: "uint id"},
+        //         { name:"dsp",placeholder: "address dsp"},
+        //         { name:"isJob",placeholder: "isJob"},
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.fetchGetMinBalance(this),
+        //     buttonText:"Fetch Min Balance",
+        //     event:"",
+        //     inputs:[
+        //         { name:"id",placeholder: "uint id"},
+        //         { name:"jobType",placeholder: "string memory jobType"},
+        //         { name:"dsp",placeholder: "address dsp"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.fetchIsServiceDone(this),
+        //     buttonText:"Fetch Is Service Done",
+        //     event:"",
+        //     inputs:[
+        //         { name:"id",placeholder: "uint id"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.fetchGetMaxPaymentForGas(this),
+        //     buttonText:"Fetch Max Payment for Gas",
+        //     event:"",
+        //     inputs:[
+        //         { name:"gasLimit",placeholder: "gasLimit"},
+        //         { name:"imageName",placeholder: "imageName"},
+        //         { name:"dsp",placeholder: "address dsp"}
+        //     ]
+        // },
+        // {
+        //     onClick:()=>lib.web3.fetchGetConfig(this),
+        //     buttonText:"Get Config",
+        //     event:"",
+        //     inputs:[]
+        // },
+        // {
+        //     onClick:()=>lib.web3.fetchGetDspAddresses(this),
+        //     buttonText:"Get DSP Addresses",
+        //     event:"",
+        //     inputs:[]
+        // },
+        // {
+        //     onClick:()=>lib.web3.fetchGetDSPDataLimits(this),
+        //     buttonText:"Get DSP Data Limits",
+        //     event:"",
+        //     inputs:[
+        //         { name:"id",placeholder: "uint id"},
+        //         { name:"dsp",placeholder: "address dsp"}
+        //     ]
+        // },
         // {
         //     onClick:()=>lib.web3.fetchLastJob(this),
         //     buttonText:"Get last Job ID",
@@ -505,6 +507,7 @@ class BuyGas extends Component {
         const forms = this.forms.map(el => {
             return (
                 <Form
+                    wide={true}
                     onClick={el.onClick}
                     onChange={this.handleChange}
                     buttonText={el.buttonText}
@@ -512,21 +515,20 @@ class BuyGas extends Component {
                     inputs={el.inputs}
                 />
             )
-        })
+        });
         return (
             <div>
+                <GlobalStyles />
                 <Header
                     login={()=>lib.metamask.login(this)}
                     logout={()=>lib.metamask.logout(this)}
                     account={this.state.account}
                 />
-                {/* <Jobs
-                    jobs={this.state.jobs}
-                />
-                <Services
-                    services={this.state.services}
-                /> */}
-                {forms}
+                <div>
+                    <div className="center">
+                        {forms}
+                    </div>
+                </div>
                 <Footer/>
             </div>
         );

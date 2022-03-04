@@ -7,6 +7,8 @@ import Form from '../../components/UI/Form/Form';
 import Footer from '../../components/Footer/Footer';
 import lib from '../../lib/index';
 
+import { GlobalStyles } from '../../view/css/global';
+
 const ethereum = window.ethereum;
 
 class Home extends Component {
@@ -511,23 +513,23 @@ class Home extends Component {
                     inputs={el.inputs}
                 />
             )
-        })
+        });
+
         return (
-            <div>
+            <>
+                <GlobalStyles />
                 <Header
                     login={()=>lib.metamask.login(this)}
                     logout={()=>lib.metamask.logout(this)}
                     account={this.state.account}
                 />
-                {/* <Jobs
-                    jobs={this.state.jobs}
-                />
-                <Services
-                    services={this.state.services}
-                /> */}
-                {forms}
+                <div>
+                    <div className="center">
+                        {forms}
+                    </div>
+                </div>
                 <Footer/>
-            </div>
+            </>
         );
     }
   }

@@ -41,7 +41,9 @@ $color-grey: #4B5671;
 $color-error: red;
 
 body {
-  background-color: $color-light-grey;
+  @include desktop {
+    margin: 20px;
+  }
 }
 
 // default container

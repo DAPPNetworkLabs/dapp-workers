@@ -2,16 +2,12 @@ import React from 'react';
 import classes from './Button.module.scss';
 
 const Button = (props) => {
-    let el;
-    if(props.account){
-        el = <div onClick={props.logout}>{props.account}</div>
-    } else {
-        el = (<button onClick={props.login}>Login</button>)
-    }
+    let className = props.wide ? classes.wideButton : classes.button;
+    let el = <div className={className} onClick={props.onClick}>{props.text}</div>
     return (
-        <div>
+        <>
             {el}
-        </div>
+        </>
     );
 };
 

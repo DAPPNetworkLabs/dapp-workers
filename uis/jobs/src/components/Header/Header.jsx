@@ -17,7 +17,7 @@ class Header extends React.Component {
   }
 
   state = {
-    isDayNight: 'en',
+    isDayNight: true,
     lang: 'English',
     isLangUserSelected: this.props.isLangUserSelected,
     langs: { 'en': 'English', 'zh': 'Chinese', 'ko': 'Korean' }
@@ -65,11 +65,17 @@ class Header extends React.Component {
   render() {
     return (
       <div className={classes.container}>
-          <div><img className={classes.logo} src={this.props.day ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></div>
+          <div><img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></div>
           <Button 
-              login={this.props.login}
-              logout={this.props.logout}
-              account={this.props.account}
+              wide={false}
+              text={this.props.isDayNight ? 'Night' : 'Day'}
+              onClick={this.props.setIsDayNight}
+          ></Button>
+          <Button 
+              loginBtn={true}
+              wide={false}
+              onClick={this.props.account ? this.props.logout : this.props.login}
+              text={this.props.account ? this.props.account : 'Login'}
           ></Button>
       </div>
     );
@@ -86,7 +92,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    setIsDayNight: (lang) => dispatch(actions.setIsDayNight(lang)),
+    setIsDayNight: () => dispatch(actions.setIsDayNight()),
     setLang: (lang) => dispatch(actions.setLang(lang)),
     setIsLangUserSelected: (isLangUserSelected) => dispatch(actions.setIsLangUserSelected(isLangUserSelected))
   };

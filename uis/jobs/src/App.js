@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.module.scss';
+import { ThemeProvider } from 'styled-components';
+import { lightTheme, darkTheme } from './view/css/theme';
+import { GlobalStyles } from './view/css/global';
 
 import Home from './containers/Home/Home';
 
@@ -28,12 +31,25 @@ import SetConsumer from './containers/Consumer/SetConsumer/SetConsumer';
 import SetDsps from './containers/Consumer/SetDsps/SetDsps';
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-
 function App() {
+  const [theme, setTheme] = useState('light');
+  
+  // The function that toggles between themes
+  const toggleTheme = () => {
+    // if the theme is not light, then set it to dark
+    if (theme === 'light') {
+      setTheme('dark');
+    // otherwise, it should be light
+    } else {
+      setTheme('light');
+    }
+  }
+  
   return (
-    <div>
+    <ThemeProvider theme={theme === 'light' ? lightTheme : darkTheme}>
       <BrowserRouter>
         <Routes>
+          {/* <GlobalStyles /> */}
           <Route path="/dsp/register" exact element={<Register/>} />
           <Route path="/dsp/deprecate" exact element={<Deprecate/>} />
           <Route path="/dsp/register-image" exact element={<RegisterImage/>} />
@@ -59,7 +75,7 @@ function App() {
           <Route path="/" element={<Home/>} />
         </Routes>
       </BrowserRouter>
-    </div>
+    </ThemeProvider>
   );
 }
 
