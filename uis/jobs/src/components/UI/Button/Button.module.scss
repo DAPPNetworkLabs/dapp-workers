@@ -1,9 +1,24 @@
-.button, .wideButton {
+$color-white: #FFFFFF;
+$color-light-blue: #30E0FF;
+$color-blue: #3131FF;
+$color-dark-blue: #0F1032;
+$color-purple: #201F46;
+$color-light-grey: #F4F5FB;
+$color-grey: #4B5671;
+$color-error: red;
+
+.button, .wideButton, .buttonDay, .wideButtonDay {
     border-radius: 20px;
     border: 0;
     padding: 5px;
-    color: #F4F5FB;
-    background: #4B5671;
+    width: 120px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.button, .wideButton {
+    color: $color-dark-blue;
+    background: $color-white;
 }
 
 .wideButton {
@@ -11,16 +26,13 @@
 }
 
 .button:hover, .wideButton:hover {
-    color: #4B5671;
-    background: #F4F5FB;
+    color: $color-white;
+    background: $color-blue;
 }
 
 .buttonDay, .wideButtonDay {
-    border-radius: 20px;
-    border: 0;
-    padding: 5px;
-    background: #F4F5FB;
-    color: #4B5671;
+    background: $color-blue;
+    color: $color-white;
 }
 
 .wideButtonDay {
@@ -28,6 +40,6 @@
 }
 
 .buttonDay:hover, .wideButtonDay:hover {
-    background: #4B5671;
+    background: $color-dark-blue;
     color: #F4F5FB;
 }

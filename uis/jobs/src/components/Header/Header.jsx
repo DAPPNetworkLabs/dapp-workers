@@ -66,19 +66,27 @@ class Header extends React.Component {
     return (
       <div className={classes.container}>
           <div><img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></div>
-          <Button 
-              wide={false}
-              text={this.props.isDayNight ? 'Night' : 'Day'}
-              onClick={this.props.setIsDayNight}
-              isDayNight={this.props.isDayNight}
-          ></Button>
-          <Button 
-              loginBtn={true}
-              wide={false}
-              onClick={this.props.account ? this.props.logout : this.props.login}
-              text={this.props.account ? this.props.account : 'Login'}
-              isDayNight={this.props.isDayNight}
-          ></Button>
+          <div className={classes.headerButtons}>
+            <Button 
+                wide={false}
+                text="Lang"
+                // onClick={this.props.setIsDayNight}
+                isDayNight={this.props.isDayNight}
+            ></Button>
+            <Button 
+                wide={false}
+                text={this.props.isDayNight ? 'Night' : 'Day'}
+                onClick={this.props.setIsDayNight}
+                isDayNight={this.props.isDayNight}
+            ></Button>
+            <Button 
+                loginBtn={true}
+                wide={false}
+                onClick={this.props.account ? this.props.logout : this.props.login}
+                text={this.props.account ? `${this.props.account.slice(0,4)}..${this.props.account.slice(-4)}` : 'Login'}
+                isDayNight={this.props.isDayNight}
+            ></Button>
+          </div>
       </div>
     );
   }

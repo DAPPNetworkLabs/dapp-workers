@@ -21,3 +21,8 @@
     height: 24px;
 }
 
+.headerButtons {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
