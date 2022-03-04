@@ -51,13 +51,14 @@ $color-error: red;
     display: none;
     position: absolute;
     background-color: #f9f9f9;
-    min-width: 160px;
+    min-width: 120px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
+    text-align: center;
   }
   
   /* Links inside the dropdown */
-  .content a {
+  .content div {
     color: black;
     padding: 12px 16px;
     text-decoration: none;
@@ -65,10 +66,12 @@ $color-error: red;
   }
   
   /* Change color of dropdown links on hover */
-  .content a:hover {background-color: #f1f1f1}
+  .content div:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+  }
   
   /* Show the dropdown menu on hover */
   .dropdown:hover .content {
     display: block;
   }
-  

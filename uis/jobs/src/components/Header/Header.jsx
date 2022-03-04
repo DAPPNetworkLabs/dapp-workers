@@ -23,25 +23,25 @@ class Header extends React.Component {
     langs: { 'en': 'English', 'zh': 'Chinese', 'ko': 'Korean' }
   }
 
-  // componentDidMount() {
-  //   if (!this.state.isLangUserSelected) {
-  //     let userlang = detectBrowserLanguage().substring(0,2);
-  //     if (userlang == 'en' || 'zh' || 'ko') {
-  //       if (userlang == 'ko') {
-  //         this.props.setKorean();
-  //       } else if (userlang == 'zh') {
-  //         this.props.setChinese();
-  //       } else {
-  //         this.props.setEnglish();
-  //       }
-  //     }
-  //     else { 
-  //       this.props.setEnglish();
-  //     }
-  //   } else {
-  //     this.props.setActiveLanguage(this.props.lang); 
-  //   }
-  // }
+  componentDidMount() {
+    if (!this.state.isLangUserSelected) {
+      let userlang = detectBrowserLanguage().substring(0,2);
+      if (userlang == 'en' || 'zh' || 'ko') {
+        if (userlang == 'ko') {
+          this.setKorean();
+        } else if (userlang == 'zh') {
+          this.setChinese();
+        } else {
+          this.setEnglish();
+        }
+      }
+      else { 
+        this.setEnglish();
+      }
+    } else {
+      this.props.setActiveLanguage(this.props.lang); 
+    }
+  }
 
   // TODO: refactor to use one lang function (setLanguage(lang, code))
   setEnglish = () => {
@@ -65,15 +65,19 @@ class Header extends React.Component {
   render() {
     const dropDownItems = [
       {
-        'text':'English'
+        'text':'English',
+        'onClick': this.setEnglish
       },
       {
-        'text':'Chinese'
+        'text':'Chinese',
+        'onClick': this.setChinese
       },
       {
-        'text':'Korean'
+        'text':'Korean',
+        'onClick': this.setKorean
       }
     ]
+    const text = `${this.state.lang}`
     return (
       <div className={classes.container}>
           <div><img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></div>
@@ -81,7 +85,7 @@ class Header extends React.Component {
             <div className={classes.dropdown}>
               <Button 
                   wide={false}
-                  text="Lang"
+                  text={text}
                   // onClick={this.props.setIsDayNight}
                   isDayNight={this.props.isDayNight}
                   dropDownItems={dropDownItems}

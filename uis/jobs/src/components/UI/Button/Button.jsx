@@ -19,9 +19,11 @@ const Button = (props) => {
                 >{props.text}
             </div>
             <div className={classes.content}>
-                <a href="#">Link 1</a>
-                <a href="#">Link 2</a>
-                <a href="#">Link 3</a>
+                {props.dropDownItems.map(el => {
+                    return (
+                        <div onClick={el.onClick}>{el.text}</div>
+                    )
+                })}
             </div>
         </div>;
     } else {
