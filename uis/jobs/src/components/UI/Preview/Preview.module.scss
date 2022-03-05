@@ -10,8 +10,9 @@ $color-error: red;
 .form {
     display: flex;
     align-items: center;
+    flex-direction: column;
     justify-content: center;
-    gap: 20px;
+    gap: 16px;
     margin-top: 40px;
 }
 
@@ -20,33 +21,7 @@ $color-error: red;
     border:solid 2px $color-white;    
     outline:solid 4px $color-grey;
     font-family: "IBM Plex Mono", monospace;
-    width: 200px;
 }
 .formInput:focus{
     outline:solid 4px $color-blue;
-}
-
-.innerForm{
-    display:flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.preview {
-    text-align:center;
-    width: 200px;
-    justify-content: space-between;
-    display:flex;
-}
-
-.flexRow {
-    display:flex;
-}
-
-.keyValue{
-    gap:12px;
-    margin:2px;
 }
