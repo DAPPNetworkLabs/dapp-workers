@@ -63,7 +63,7 @@ class Header extends React.Component {
   }
 
   render() {
-    const dropDownItems = [
+    const langItems = [
       {
         'text':'English',
         'onClick': this.setEnglish
@@ -77,18 +77,116 @@ class Header extends React.Component {
         'onClick': this.setKorean
       }
     ]
-    const text = `${this.state.lang}`
+    
+    const menuItems = [
+      {
+        'text':'Consumer',
+        'dropdown': [
+          {
+            'name': 'Buy Gas',
+            'path': '/consumer/buy-gas'
+          },
+          {
+            'name': 'Sell Gas',
+            'path': '/consumer/sell-gas'
+          },
+          {
+            'name': 'Request Job',
+            'path': '/consumer/request-job'
+          },
+          {
+            'name': 'Request Service',
+            'path': '/consumer/request-service'
+          },
+          {
+            'name': 'Extend Service',
+            'path': '/consumer/extend-service'
+          },
+          {
+            'name': 'Jobs',
+            'path': '/consumer/jobs'
+          },
+          {
+            'name': 'Services',
+            'path': '/consumer/services'
+          },
+          {
+            'name': 'Set Consumer',
+            'path': '/consumer/set-consumer'
+          },
+          {
+            'name': 'Set DSPs',
+            'path': '/consumer/set-dsps'
+          }
+      ]
+    },
+    {
+      'text':'DSP',
+      'dropdown': [
+        {
+          'name': 'Register DSP',
+          'path': '/dsp/register'
+        },
+        {
+          'name': 'Deprecate DSP',
+          'path': '/dsp/deprecate'
+        },
+        {
+          'name': 'Register DSP',
+          'path': '/dsp/register'
+        },
+        {
+          'name': 'Update DSP',
+          'path': '/dsp/update'
+        },
+        {
+          'name': 'Jobs',
+          'path': '/dsp/jobs'
+        },
+        {
+          'name': 'Services',
+          'path': '/dsp/services'
+        }
+      ]
+    },
+    {
+      'text':'Admin',
+      'dropdown': [
+        {
+          'name': 'Set Config',
+          'path': '/admin/set-config'
+        },
+        {
+          'name': 'Approve Image',
+          'path': '/admin/approve-image'
+        },
+        {
+          'name': 'Unapprove Image',
+          'path': '/admin/unapprove-image'
+        }
+      ]
+    }
+    ]
+    const text = `${this.state.lang}`;
     return (
       <div className={classes.container}>
           <div><img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></div>
+            <div className={classes.dropdown}>
+              <Button 
+                  wide={false}
+                  text={text}
+                  isDayNight={this.props.isDayNight}
+                  menuItems={menuItems}
+                  anchor={true}
+              ></Button>
+            </div>
           <div className={classes.headerButtons}>
             <div className={classes.dropdown}>
               <Button 
                   wide={false}
                   text={text}
-                  // onClick={this.props.setIsDayNight}
                   isDayNight={this.props.isDayNight}
-                  dropDownItems={dropDownItems}
+                  dropDownItems={langItems}
               ></Button>
             </div>
             <Button 

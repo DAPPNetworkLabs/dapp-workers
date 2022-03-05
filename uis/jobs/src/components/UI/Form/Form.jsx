@@ -56,8 +56,6 @@ const Form = (props) => {
                     FORM
                     {inputs}
                 </div>
-            {/* </div> */}
-            {/* <div className={classes.form}> */}
                 <div className={classes.innerForm}>
                     PREVIEW
                     {previewItems}

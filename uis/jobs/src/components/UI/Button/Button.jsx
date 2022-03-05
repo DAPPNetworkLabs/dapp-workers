@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import classes from './Button.module.scss';
 
 const Button = (props) => {
@@ -6,10 +7,25 @@ const Button = (props) => {
     if(props.wide) className.push(classes.wide);
     props.isDayNight ? className.push(classes.day) : className.push(classes.night);
     if(props.wide) className.push(classes.wide);
-    console.log('className.join(" ")',className.join(" "));
     let el, dropDownItems;
-    if(props.dropDownItems) {
-        console.log('hit')
+    console.log(props)
+    if(props.dropDownItems || props.menuItems) {
+        let items;
+        if(props.dropDownItems){
+            console.log(props.dropDownItems)
+            items = props.dropDownItems.map((el, i) => {
+                    return (
+                        <div onClick={el.onClick}>{el.text}</div>
+                    )
+                })
+        } else if(props.menuItems) {
+            console.log(props.menuItems)
+            items = props.menuItems.map((el, i) => {
+                    return (
+                        el.dropdown.map(elem => <NavLink to={elem.path}><div>{elem.name}</div></NavLink>)
+                    )
+                })
+        }
         // dropDownItems =   <div className={props.isDayNight ? classes.day : classes.night}>
         dropDownItems =   
         <div className={classes.dropdown}>
@@ -19,11 +35,7 @@ const Button = (props) => {
                 >{props.text}
             </div>
             <div className={classes.content}>
-                {props.dropDownItems.map(el => {
-                    return (
-                        <div onClick={el.onClick}>{el.text}</div>
-                    )
-                })}
+                {items}
             </div>
         </div>;
     } else {
