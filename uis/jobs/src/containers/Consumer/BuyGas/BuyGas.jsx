@@ -27,8 +27,8 @@ class BuyGas extends Component {
             chainId: null,
             buyGasFor: {
                 _amount:0,
-                _consumer:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
-                _dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
+                _consumer:'',
+                _dsp:''
             }
         }
         this.handleChange = this.handleChange.bind(this);

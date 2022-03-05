@@ -18,7 +18,7 @@ const Form = (props) => {
         let text, value;
         if(props.previews[i].type == "address"){
             text = props.previews[i].name
-            value = `${props.previewValues[i].key.slice(0,4)}..${props.previewValues[i].key.slice(-4)}`
+            value = props.previewValues[i].key ? `${props.previewValues[i].key.slice(0,4)}..${props.previewValues[i].key.slice(-4)}` : '0x'
         } else if(props.previews[i].type == "int") {
             text = props.previews[i].name
             value = (Number(props.previewValues[i].key) / 1e4).toFixed(4);
