@@ -182,7 +182,7 @@ class Header extends React.Component {
 
     let body;
 
-    if(helpers.isMobile && this.props.show) {
+    if(helpers.isMobile() && this.props.show) {
       console.log('hello 222')
       body = (
       <div className={[this.props.isDayNight ? classes.containerMobileDay : classes.containerMobileNight,classes.open].join(' ')}>
@@ -220,7 +220,7 @@ class Header extends React.Component {
         </div>
       </div>
       )
-    } else if(helpers.isMobile) {
+    } else if(helpers.isMobile()) {
       console.log('hello here')
       body = (
         <>
