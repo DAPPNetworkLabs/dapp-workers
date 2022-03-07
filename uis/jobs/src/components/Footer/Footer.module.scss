@@ -1,0 +1,31 @@
+
+$color-white: #FFFFFF;
+$color-light-blue: #30E0FF;
+$color-blue: #3131FF;
+$color-dark-blue: #0F1032;
+$color-purple: #201F46;
+$color-light-grey: #F4F5FB;
+$color-grey: #4B5671;
+$color-error: red;
+
+.flex {
+    display: flex;
+    justify-content: center;
+}
+
+.day {
+
+}
+
+.day:hover {
+    color: white;
+    background-color: $color-dark-blue;
+}
+
+.night {
+    color: white;
+}
+
+.night:hover {
+    background-color: $color-blue;
+}

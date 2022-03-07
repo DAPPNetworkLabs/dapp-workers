@@ -10,11 +10,15 @@ export const GlobalStyles = createGlobalStyle`
     box-sizing: border-box;
   }
 
+  html {
+    height: 100%;
+  }
+
   body {
     background: ${props => props.theme.body};
     color: ${props => props.theme.text};
-    height: 100vh;
-    margin: 20;
+    height: 100%;
     font-family: "IBM Plex Mono", monospace;
     transition: all 0.25s linear;
+    margin: 0;
   }`;

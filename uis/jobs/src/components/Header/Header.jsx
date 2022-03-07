@@ -1,19 +1,29 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import classes from './Header.module.scss';
 import { connect } from 'react-redux';
-import { withLocalize } from 'react-localize-redux';
+import { withLocalize, Translate } from 'react-localize-redux';
 
-import LogoWhite from '../../assets/logo/logo-white.png';
-import LogoBlack from '../../assets/logo/logo-black.png';
-import Button from '../../components/UI/Button/Button';
+import LogoWhite from '@view/assets/logos/logo-white.png';
+import LogoBlack from '@view/assets/logos/logo-black.png';
+import Button from '@components/UI/Button/Button';
 
-import * as actions from '../../store/actions/auth';
+import { MobileMenuToggleButton } from '@components/UI/MobileMenuToggleButton/MobileMenuToggleButton';
+
+import TelegramPNG from '@view/assets/icons/newTelegram.png';
+import close from '@view/assets/icons/close.png';
+
+import classNames from 'classnames';
+// import { loc } from '@texts/links';
+
+import * as helpers from '@helpers'
+
+import * as actions from '@auth';
 import detectBrowserLanguage from 'detect-browser-language';
 
 class Header extends React.Component {
   constructor(props) {
     super(props);
-    // this.handleClick = this.handleClick.bind(this);
   }
 
   state = {
@@ -167,43 +177,103 @@ class Header extends React.Component {
       ]
     }
     ]
+    
     const text = `${this.state.lang}`;
-    return (
+
+    let body;
+
+    if(helpers.isMobile && this.props.show) {
+      console.log('hello 222')
+      body = (
+      <div className={[this.props.isDayNight ? classes.containerMobileDay : classes.containerMobileNight,classes.open].join(' ')}>
+        <div className={classes.flexOpen}>
+          <img className={classes.logoMobile} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/>
+          <MobileMenuToggleButton isDayNight={this.props.isDayNight} onToggleButtonClick={this.props.openClose} />
+        </div>
+        <div className={classes.mobileButtons}>
+          <Button 
+              wide={false}
+              text={text}
+              isDayNight={this.props.isDayNight}
+              menuItems={menuItems}
+              anchor={true}
+          ></Button>
+          <Button 
+              wide={false}
+              text={text}
+              isDayNight={this.props.isDayNight}
+              dropDownItems={langItems}
+          ></Button>
+          <Button 
+              wide={false}
+              text={this.props.isDayNight ? 'Night' : 'Day'}
+              onClick={this.props.setIsDayNight}
+              isDayNight={this.props.isDayNight}
+          ></Button>
+          <Button 
+              loginBtn={true}
+              wide={false}
+              onClick={this.props.account ? this.props.logout : this.props.login}
+              text={this.props.account ? `${this.props.account.slice(0,4)}..${this.props.account.slice(-4)}` : 'Login'}
+              isDayNight={this.props.isDayNight}
+          ></Button>
+        </div>
+      </div>
+      )
+    } else if(helpers.isMobile) {
+      console.log('hello here')
+      body = (
+        <>
+          <div className={classes.flex}>
+            <img className={classes.logoMobile} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/>
+            <MobileMenuToggleButton isDayNight={this.props.isDayNight} onToggleButtonClick={this.props.openClose} />
+          </div>
+        </>
+      )
+    } else {
+      console.log('hello here234324')
+      body = (
       <div className={classes.container}>
-          <div><img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></div>
-            <div className={classes.dropdown}>
-              <Button 
-                  wide={false}
-                  text={text}
-                  isDayNight={this.props.isDayNight}
-                  menuItems={menuItems}
-                  anchor={true}
-              ></Button>
-            </div>
-          <div className={classes.headerButtons}>
-            <div className={classes.dropdown}>
-              <Button 
-                  wide={false}
-                  text={text}
-                  isDayNight={this.props.isDayNight}
-                  dropDownItems={langItems}
-              ></Button>
-            </div>
+        <div><img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></div>
+          <div className={classes.dropdown}>
             <Button 
                 wide={false}
-                text={this.props.isDayNight ? 'Night' : 'Day'}
-                onClick={this.props.setIsDayNight}
+                text={text}
                 isDayNight={this.props.isDayNight}
-            ></Button>
-            <Button 
-                loginBtn={true}
-                wide={false}
-                onClick={this.props.account ? this.props.logout : this.props.login}
-                text={this.props.account ? `${this.props.account.slice(0,4)}..${this.props.account.slice(-4)}` : 'Login'}
-                isDayNight={this.props.isDayNight}
+                menuItems={menuItems}
+                anchor={true}
             ></Button>
           </div>
-      </div>
+        <div className={classes.headerButtons}>
+          <div className={classes.dropdown}>
+            <Button 
+                wide={false}
+                text={text}
+                isDayNight={this.props.isDayNight}
+                dropDownItems={langItems}
+            ></Button>
+          </div>
+          <Button 
+              wide={false}
+              text={this.props.isDayNight ? 'Night' : 'Day'}
+              onClick={this.props.setIsDayNight}
+              isDayNight={this.props.isDayNight}
+          ></Button>
+          <Button 
+              loginBtn={true}
+              wide={false}
+              onClick={this.props.account ? this.props.logout : this.props.login}
+              text={this.props.account ? `${this.props.account.slice(0,4)}..${this.props.account.slice(-4)}` : 'Login'}
+              isDayNight={this.props.isDayNight}
+          ></Button>
+        </div>
+    </div>
+      )
+    }
+    return (
+      <>
+        {body}
+      </>
     );
   }
 }

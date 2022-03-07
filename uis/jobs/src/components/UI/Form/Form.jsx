@@ -51,7 +51,7 @@ const Form = (props) => {
     </Button>;
     return (
         <div>
-            <div className={classes.form}>
+            <div className={props.isMobile ? classes.form : classes.formMobile}>
                 <div className={classes.innerForm}>
                     FORM
                     {inputs}

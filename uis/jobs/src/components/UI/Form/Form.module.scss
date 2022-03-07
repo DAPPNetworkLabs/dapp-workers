@@ -15,6 +15,15 @@ $color-error: red;
     margin-top: 40px;
 }
 
+.formMobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
 .formInput {
     border-radius: 4px;
     border:solid 2px $color-white;    

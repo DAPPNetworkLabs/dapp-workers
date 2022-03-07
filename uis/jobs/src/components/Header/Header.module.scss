@@ -1,28 +1,81 @@
 @import 'src/App.module.scss';
 
-.container {
+.container, .containerMobileDay, .containerMobileNight {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-top: 20px;
     margin-bottom: 20px;
-    @include mobile {
-      margin-left: 25px;
-      margin-right: 25px;
-    }
-    @include tablet {
-      margin-left: 25px;
-      margin-right: 25px;
-    }
 }
 
-.logo {
+.containerMobileDay, .containerMobileNight {
+  flex-direction: column;
+  margin: 0;
+}
+
+.containerMobileDay, .containerMobileNight {
+  height: 100%;
+  background-color: $color-light-blue;
+  box-shadow: 1px 0 7px rgba(0, 0, 0, 0.5);
+  position: fixed;
+  left: 0;
+  width: 100%;
+  z-index: 4;
+  transform: translateX(100%);
+  transition: transform;
+  transition-duration: 300ms;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.containerMobileNight {
+  background-color: $color-dark-blue;
+}
+
+.containerMobileDay.open, .containerMobileNight.open {
+  transform: translateX(0);
+}
+
+.logo, .logoMobile {
     width: 143px;
     height: 24px;
+}
+
+.logoMobile {
 }
 
 .headerButtons {
   display: flex;
   justify-content: space-between;
   gap: 12px;
+}
+
+.mobileButtons {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 30%;
+  gap: 6px;
+}
+
+.toolbarNavigation {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  padding: 0 1rem;
+  margin-right: 10px;
+
+  @media (min-width: 992px) {
+    display: none;
+  }
+}
+
+.flex, .flexOpen {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.flexOpen {
+  width: 90%;
 }

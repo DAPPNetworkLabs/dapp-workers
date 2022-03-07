@@ -1,21 +1,19 @@
 
 import React, { Component } from 'react';
 import classes from './BuyGas.module.scss';
-import Header from '../../../components/Header/Header';
-import Jobs from '../../../components/Home/Jobs/Jobs';
-import Services from '../../../components/Home/Services/Services';
-import Form from '../../../components/UI/Form/Form';
-import Title from '../../../components/UI/Title/Title';
-import SubTitle from '../../../components/UI/SubTitle/SubTitle';
-import Footer from '../../../components/Footer/Footer';
-import lib from '../../../lib/index';
-import * as actions from '../../../store/actions/auth';
+import Header from '@components/Header/Header';
+import Form from '@components/UI/Form/Form';
+import Title from '@components/UI/Title/Title';
+import SubTitle from '@components/UI/SubTitle/SubTitle';
+import Footer from '@components/Footer/Footer';
+import lib from '@lib';
+import * as actions from '@auth';
 import { connect } from 'react-redux';
 import { withLocalize } from 'react-localize-redux';
 import { ThemeProvider } from 'styled-components';
-import { lightTheme, darkTheme } from '../../../view/css/theme';
+import { lightTheme, darkTheme } from '@view/css/theme';
 
-import { GlobalStyles } from '../../../view/css/global';
+import { GlobalStyles } from '@view/css/global';
 
 const ethereum = window.ethereum;
 
@@ -29,7 +27,8 @@ class BuyGas extends Component {
                 _amount:0,
                 _consumer:'',
                 _dsp:''
-            }
+            },
+            show: false
         }
         this.handleChange = this.handleChange.bind(this);
     }
@@ -55,6 +54,10 @@ class BuyGas extends Component {
                 error: '',
             },
         });
+    }
+
+    openClose = () => {
+      this.setState({ show: !this.state.show });
     }
     
     separateObject = obj => {
@@ -101,27 +104,33 @@ class BuyGas extends Component {
                     previews={el.previews}
                     isDayNight={this.props.isDayNight}
                     previewValues={this.separateObject(this.state.buyGasFor)}
+                    isMobile={this.state.isMobile}
+                    openClose={this.openClose}
+                    show={this.state.show}
                 />
             )
         });
         return (
             <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
-                <GlobalStyles />
-                <Header
-                    login={()=>lib.metamask.login(this)}
-                    logout={()=>lib.metamask.logout(this)}
-                    account={this.state.account}
-                />
-                <div>
+                <div className={classes.flex}>
+                    <GlobalStyles />
+                    <Header
+                        login={()=>lib.metamask.login(this)}
+                        logout={()=>lib.metamask.logout(this)}
+                        account={this.state.account}
+                        openClose={this.openClose}
+                        show={this.state.show}
+                    />
                     <div className="center">
                         <Title text="BUY GAS FOR DSP" isDayNight={this.props.isDayNight}/>
                         <SubTitle text="Provide amount, consumer address, and DSP account to fund a DSP to use DAPP Network jobs & services." isDayNight={this.props.isDayNight} />
                         {forms}
                     </div>
+                    <Footer
+                        isDayNight={this.props.isDayNight}
+                    />
                 </div>
-                <Footer/>
             </ThemeProvider>
-            // </div>
         );
     }
   }
