@@ -128,7 +128,7 @@ class Register extends Component {
                         show={this.state.show}
                         isMobile={isMobile}
                     />
-                    <div className="center">
+                    <div className={isMobile ? classes.centerMobile : classes.center}>
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
                         {forms}

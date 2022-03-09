@@ -524,7 +524,7 @@ class Home extends Component {
                     account={this.state.account}
                 />
                 <div>
-                    <div className="center">
+                    <div className={isMobile ? classes.centerMobile : classes.center}>
                         {forms}
                     </div>
                 </div>

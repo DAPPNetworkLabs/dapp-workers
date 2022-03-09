@@ -40,10 +40,15 @@ $color-light-grey: #F4F5FB;
 $color-grey: #4B5671;
 $color-error: red;
 
-.center {
+.center, .centerMobile{
   display: flex;
   align-items: center;
   flex-direction: column;
+}
+
+.centerMobile{
+  margin-top: 50px;
+  margin-bottom:50px;
 }
 
 .div {
