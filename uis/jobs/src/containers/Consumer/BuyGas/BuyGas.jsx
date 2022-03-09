@@ -16,6 +16,9 @@ import { lightTheme, darkTheme } from '@view/css/theme';
 import { GlobalStyles } from '@view/css/global';
 import { loc } from '@loc';
 
+const section = 'consumer';
+const page = 'buy gas';
+
 const ethereum = window.ethereum;
 
 class BuyGas extends Component {
@@ -76,7 +79,6 @@ class BuyGas extends Component {
     forms = [
         {
             onClick:()=>lib.web3.buyGasFor(this),
-            buttonText:"BUY GAS",
             event:"buyGasFor",
             inputs:[
                 { name:"_amount",placeholder: "uint256 _amount"},
@@ -99,7 +101,7 @@ class BuyGas extends Component {
                     wide={true}
                     onClick={el.onClick}
                     onChange={this.handleChange}
-                    buttonText={el.buttonText}
+                    buttonText={loc(`${section}.${page}.button`,this.props.lang)}
                     event={el.event}
                     inputs={el.inputs}
                     previews={el.previews}
@@ -123,8 +125,8 @@ class BuyGas extends Component {
                         show={this.state.show}
                     />
                     <div className="center">
-                        <Title text={loc("consumer.buy gas.title",this.props.lang)} isDayNight={this.props.isDayNight}/>
-                        <SubTitle text={loc("consumer.buy gas.subtitle",this.props.lang)} isDayNight={this.props.isDayNight} />
+                        <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
+                        <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
                         {forms}
                     </div>
                     <Footer
