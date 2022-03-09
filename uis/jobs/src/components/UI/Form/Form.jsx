@@ -78,13 +78,11 @@ const Form = (props) => {
         onClick={props.onClick}
     >{props.buttonText}
     </Button>;
-    console.log(inputs)
-    console.log(previewItems)
     if(!inputs.length && !previewItems.length) {
         return (
-            <>
+            <div className={classes.soloButton}>
                 {button}
-            </>
+            </div>
         );
     }
     return (
