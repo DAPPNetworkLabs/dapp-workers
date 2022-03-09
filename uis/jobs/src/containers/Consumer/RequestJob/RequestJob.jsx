@@ -95,15 +95,6 @@ class RequestJob extends Component {
                 { name:"gasLimit",placeholder: "uint gasLimit"},
                 { name:"requireConsistent",placeholder: "bool requireConsistent"},
                 { name:"args",placeholder: "string[] args"}
-            ],
-            previews:[
-                { name:"OWNER",type: "address"},
-                { name:"IMAGE NAME",type: "string"},
-                { name:"INPUT",type: "string"},
-                { name:"CALLBACK",type: "bool"},
-                { name:"GAS LIMIT",type: "uint"},
-                { name:"REQUIRE UNIFORM RESPONSE",type: "bool"},
-                { name:"ARGUMENTS",type: "array"}
             ]
             // add bool
             // add string
@@ -123,7 +114,7 @@ class RequestJob extends Component {
                     buttonText={loc(`${section}.${page}.button`,this.props.lang)}
                     event={el.event}
                     inputs={el.inputs}
-                    previews={el.previews}
+                    previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}
                     previewValues={this.separateObject(this.state.queueJob)} // update
                     isMobile={isMobile}

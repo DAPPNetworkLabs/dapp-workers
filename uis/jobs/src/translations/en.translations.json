@@ -3,17 +3,35 @@
         "buy gas": {
             "title": "BUY GAS FOR DSP",
             "subtitle": "Provide amount, consumer address, and DSP account to fund a DSP to use DAPP Network jobs & services.",
-            "button": "BUY GAS"
+            "button": "BUY GAS",
+            "previews":[
+                { "name":"DAPP", "type":"dapp","short":""},
+                { "name":"Consumer", "type":"address","short":""},
+                { "name":"DSP", "type":"address","short":""}
+            ]
         },
         "sell gas": {
             "title": "SELL GAS",
             "subtitle": "Sell DAPP gas for DAPP.",
-            "button": "SELL GAS"
+            "button": "SELL GAS",
+            "previews":[
+                { "name":"DAPP", "type":"dapp","short":""},
+                { "name":"DSP", "type":"address","short":""}
+            ]
         },
         "request job": {
             "title": "REQUEST JOB",
             "subtitle": "Submit a job for the DAPP Workers to do.",
-            "button": "REQUEST JOB"
+            "button": "REQUEST JOB",
+            "previews":[
+                { "name":"OWNER","type": "address","short":"Address requesting job."},
+                { "name":"IMAGE","type": "string","short":"Docker image job will use."},
+                { "name":"INPUT","type": "string","short":""},
+                { "name":"CALLBACK","type": "bool","short":""},
+                { "name":"GAS LIMIT","type": "uint","short":""},
+                { "name":"UNIFORM RESPONSE","type": "bool","short":""},
+                { "name":"ARGUMENTS","type": "array","short":""}
+            ]
         },
         "request service": {
             "title": "REQUEST SERVICE",
@@ -28,7 +46,12 @@
         "jobs": {
             "title": "LIST CONSUMER JOBS",
             "subtitle": "List of all jobs requested by consumer.",
-            "button": ""
+            "button": "",
+            "previews":[
+                { "name":"DAPP", "type":"int","short":""},
+                { "name":"Consumer", "type":"address","short":""},
+                { "name":"DSP", "type":"address","short":""}
+            ]
         },
         "services": {
             "title": "LIST CONSUMER SERVICES",

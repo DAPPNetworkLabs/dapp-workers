@@ -24,7 +24,11 @@ const Form = (props) => {
         } else if(props.previews[i].type == "bool") {
             value = props.previewValues[i].key;
         } else if(props.previews[i].type == "string") {
-            value = props.previewValues[i].key;
+            if(props.previewValues[i].key.length > 20) {
+                value = `${props.previewValues[i].key.slice(0,4)}..${props.previewValues[i].key.slice(-4)}`
+            } else {
+                value = props.previewValues[i].key;
+            }
         } else if(props.previews[i].type == "array") {
             //
         } else if(props.previews[i].type == "uint") {

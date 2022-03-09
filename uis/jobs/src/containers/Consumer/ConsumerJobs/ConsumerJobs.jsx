@@ -86,13 +86,7 @@ class ConsumerJobs extends Component {
                 { name:"_amount",placeholder: "uint256 _amount"},
                 { name:"_consumer",placeholder: "address _consumer"},
                 { name:"_dsp",placeholder: "address _dsp"},
-            ],
-            previews:[
-                { name:"DAPP", type:"int"},
-                { name:"Consumer", type:"address"},
-                { name:"DSP", type:"address"}
-            ],
-            key:'DAPP'
+            ]
         }
     ]
   
@@ -107,7 +101,7 @@ class ConsumerJobs extends Component {
                     buttonText={loc(`${section}.${page}.button`,this.props.lang)}
                     event={el.event}
                     inputs={el.inputs}
-                    previews={el.previews}
+                    previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}
                     previewValues={this.separateObject(this.state.buyGasFor)}
                     isMobile={isMobile}

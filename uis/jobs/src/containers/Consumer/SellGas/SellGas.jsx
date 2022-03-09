@@ -86,12 +86,7 @@ class SellGas extends Component {
             inputs:[
                 { name:"_amountToSell",placeholder: "uint256 _amountToSell"},
                 { name:"_dsp",placeholder: "address _dsp"},
-            ],
-            previews:[
-                { name:"DAPP", type:"dapp"},
-                { name:"DSP", type:"address"}
-            ],
-            key:'DAPP'
+            ]
         }
     ]
   
@@ -106,7 +101,7 @@ class SellGas extends Component {
                     buttonText={loc(`${section}.${page}.button`,this.props.lang)}
                     event={el.event}
                     inputs={el.inputs}
-                    previews={el.previews}
+                    previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}
                     previewValues={this.separateObject(this.state.sellGas)} // update
                     isMobile={isMobile}
