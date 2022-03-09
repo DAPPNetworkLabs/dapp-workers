@@ -1,13 +1,11 @@
 {
-    "title":"ktest",
     "consumer": {
-        "buy_gas": {
+        "buy gas": {
             "title": "kBUY GAS FOR DSP",
             "subtitle": "kProvide amount, consumer address, and DSP account to fund a DSP to use DAPP Network jobs & services.",
             "button": "",
             "": ""
         },
-        "test2":"kthis is a test",
         "sell gas": {
             "title": "",
             "button": "",

@@ -123,8 +123,8 @@ class BuyGas extends Component {
                         show={this.state.show}
                     />
                     <div className="center">
-                        <Title text={loc("title",this.props.lang)} isDayNight={this.props.isDayNight}/>
-                        <SubTitle text={loc("consumer.test",this.props.lang)} isDayNight={this.props.isDayNight} />
+                        <Title text={loc("consumer.buy gas.title",this.props.lang)} isDayNight={this.props.isDayNight}/>
+                        <SubTitle text={loc("consumer.buy gas.subtitle",this.props.lang)} isDayNight={this.props.isDayNight} />
                         {forms}
                     </div>
                     <Footer
