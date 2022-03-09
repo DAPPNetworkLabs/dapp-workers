@@ -3,97 +3,96 @@
         "buy gas": {
             "title": "BUY GAS FOR DSP",
             "subtitle": "Provide amount, consumer address, and DSP account to fund a DSP to use DAPP Network jobs & services.",
-            "button": "",
-            "": ""
+            "button": "BUY GAS"
         },
         "sell gas": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "SELL GAS",
+            "subtitle": "Sell DAPP gas for DAPP.",
+            "button": "SELL GAS"
         },
         "request job": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "REQUEST JOB",
+            "subtitle": "Submit a job for the DAPP Workers to do.",
+            "button": "REQUEST JOB"
         },
         "request service": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "REQUEST SERVICE",
+            "subtitle": "Submit a service for the DAPP Workers to provide.",
+            "button": "REQUEST SERVICE"
         },
         "extend service": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "EXTEND SERVICE",
+            "subtitle": "Extend existing service time, upload/download limit, and or storage limit.",
+            "button": "EXTEND SERVICE"
         },
         "jobs": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "LIST CONSUMER JOBS",
+            "subtitle": "List of all jobs requested by consumer.",
+            "button": ""
         },
         "services": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "LIST CONSUMER SERVICES",
+            "subtitle": "List of all services requested by consumer.",
+            "button": ""
         },
         "set consumer": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "SET CONSUMER",
+            "subtitle": "Set consumer to use DAPP gas of user.",
+            "button": "SET CONSUMER"
         },
         "set dsps": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "SET DSPS",
+            "subtitle": "Select DAPP Workers to provide jobs/services.",
+            "button": "SET DSPS"
         }
     },
     "dsp": {
         "register": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "REGISTER DSP",
+            "subtitle": "Register DSP endpoint and ability to be selected for jobs and services.",
+            "button": "REGISTER DSP"
         },
         "deprecate": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "DEPRECATE DSP",
+            "subtitle": "Deprecate DSP, null endpoint, remove ability to be selected for jobs/services.",
+            "button": "DEPRECATE DSP"
         },
         "register image": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "REGISTER IMAGE",
+            "subtitle": "Register image and cost amounts for an existing image.",
+            "button": "REGISTER IMAGE"
         },
         "update image": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "UPDATE IMAGE",
+            "subtitle": "Update image attributes for consumers whom selected this image.",
+            "button": "UPDATE IMAGE"
         },
         "jobs": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "LIST DSP JOBS",
+            "subtitle": "List DSP jobs that include this DSP.",
+            "button": ""
         },
         "services": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "LIST DSP SERVICES",
+            "subtitle": "List DSP services that include this DSP.",
+            "button": ""
         }
     },
     "admin": {
         "set config": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "SET CONFIG",
+            "subtitle": "Set admin config.",
+            "button": "SET CONFIG"
         },
         "approve image": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "APPROVE IMAGE",
+            "subtitle": "Approve image for use by DAPP Workers.",
+            "button": "APPROVE IMAGE"
         },
         "unapprove image": {
-            "title": "",
-            "button": "",
-            "": ""
+            "title": "UNAPPROVE IMAGE",
+            "subtitle": "Unapprove image for use by DAPP Workers.",
+            "button": "UNAPPROVE IMAGE"
         }
     }
 }
