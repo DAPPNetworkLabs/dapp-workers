@@ -1,11 +1,11 @@
 @import 'src/App.module.scss';
 
 .container, .containerMobileDay, .containerMobileNight {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 20px;
-    margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .containerMobileDay, .containerMobileNight {
@@ -70,7 +70,7 @@
   }
 }
 
-.flex, .flexOpen {
+.flexForm, .flexOpen {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;

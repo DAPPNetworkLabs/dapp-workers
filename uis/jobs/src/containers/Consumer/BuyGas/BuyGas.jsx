@@ -16,6 +16,8 @@ import { lightTheme, darkTheme } from '@view/css/theme';
 import { GlobalStyles } from '@view/css/global';
 import { loc } from '@loc';
 
+import * as helpers from '@helpers'
+
 const section = 'consumer';
 const page = 'buy gas';
 
@@ -86,7 +88,7 @@ class BuyGas extends Component {
                 { name:"_dsp",placeholder: "address _dsp"},
             ],
             previews:[
-                { name:"DAPP", type:"int"},
+                { name:"DAPP", type:"dapp"},
                 { name:"Consumer", type:"address"},
                 { name:"DSP", type:"address"}
             ],
@@ -95,6 +97,7 @@ class BuyGas extends Component {
     ]
   
     render() {
+        const isMobile = helpers.isMobile();
         const forms = this.forms.map(el => {
             return (
                 <Form
@@ -107,7 +110,7 @@ class BuyGas extends Component {
                     previews={el.previews}
                     isDayNight={this.props.isDayNight}
                     previewValues={this.separateObject(this.state.buyGasFor)}
-                    isMobile={this.state.isMobile}
+                    isMobile={isMobile}
                     openClose={this.openClose}
                     show={this.state.show}
                 />
@@ -123,6 +126,7 @@ class BuyGas extends Component {
                         account={this.state.account}
                         openClose={this.openClose}
                         show={this.state.show}
+                        isMobile={isMobile}
                     />
                     <div className="center">
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
@@ -131,6 +135,7 @@ class BuyGas extends Component {
                     </div>
                     <Footer
                         isDayNight={this.props.isDayNight}
+                        isMobile={isMobile}
                     />
                 </div>
             </ThemeProvider>

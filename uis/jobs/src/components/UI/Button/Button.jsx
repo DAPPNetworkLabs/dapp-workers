@@ -17,7 +17,7 @@ const Button = (props) => {
                     )
                 })
                 dropDownItems =   
-                <div className={classes.dropdown}>
+                <div className={[classes.dropdown,classes.flex].join(' ')}>
                     <div 
                         className={className.join(" ")} 
                         onClick={props.onClick}
@@ -43,6 +43,7 @@ const Button = (props) => {
         }
     } else {
         props.isDayNight ? className.push(classes.day) : className.push(classes.night);
+        if(props.show) className.push(classes.flex);
         btn = <div 
             className={className.join(" ")} 
             onClick={props.onClick}

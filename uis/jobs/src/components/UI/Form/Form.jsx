@@ -16,24 +16,30 @@ const Form = (props) => {
     });
     const previewItems = props.inputs.map((el,i) => {
         let text, value;
+        text = props.previews[i].name
         if(props.previews[i].type == "address"){
-            text = props.previews[i].name
             value = props.previewValues[i].key ? `${props.previewValues[i].key.slice(0,4)}..${props.previewValues[i].key.slice(-4)}` : '0x'
-        } else if(props.previews[i].type == "int") {
-            text = props.previews[i].name
+        } else if(props.previews[i].type == "dapp") {
             value = (Number(props.previewValues[i].key) / 1e4).toFixed(4);
+        } else if(props.previews[i].type == "bool") {
+            value = props.previewValues[i].key;
+        } else if(props.previews[i].type == "string") {
+            value = props.previewValues[i].key;
+        } else if(props.previews[i].type == "array") {
+            //
+        } else if(props.previews[i].type == "uint") {
+            value = (Number(props.previewValues[i].key));
         } else {
-            text = props.previews[i];
             value = props.previewValues[i].key;
         }
         return (
-        <div 
-            className={classes.preview}
-            type="text"
-            onChange={(event) => props.onChange(event,props.event)}
-            name={el.name}
-            placeholder={el.placeholder}
-        >
+            <div 
+                className={classes.preview}
+                type="text"
+                onChange={(event) => props.onChange(event,props.event)}
+                name={el.name}
+                placeholder={el.placeholder}
+            >
             <div className={classes.keyValue}>
                 {text}
             </div>
@@ -51,7 +57,7 @@ const Form = (props) => {
     </Button>;
     return (
         <div>
-            <div className={props.isMobile ? classes.form : classes.formMobile}>
+            <div className={props.isMobile ? classes.formMobile : classes.form}>
                 <div className={classes.innerForm}>
                     FORM
                     {inputs}

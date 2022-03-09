@@ -15,8 +15,6 @@ import close from '@view/assets/icons/close.png';
 
 import classNames from 'classnames';
 
-import * as helpers from '@helpers'
-
 import * as actions from '@auth';
 import detectBrowserLanguage from 'detect-browser-language';
 
@@ -181,7 +179,7 @@ class Header extends React.Component {
 
     let body;
 
-    if(helpers.isMobile() && this.props.show) {
+    if(this.props.isMobile && this.props.show) {
       body = (
       <div className={[this.props.isDayNight ? classes.containerMobileDay : classes.containerMobileNight,classes.open].join(' ')}>
         <div className={classes.flexOpen}>
@@ -207,6 +205,7 @@ class Header extends React.Component {
               text={this.props.isDayNight ? 'Night' : 'Day'}
               onClick={this.props.setIsDayNight}
               isDayNight={this.props.isDayNight}
+              show={this.props.show}
           ></Button>
           <Button 
               loginBtn={true}
@@ -214,14 +213,15 @@ class Header extends React.Component {
               onClick={this.props.account ? this.props.logout : this.props.login}
               text={this.props.account ? `${this.props.account.slice(0,4)}..${this.props.account.slice(-4)}` : 'Login'}
               isDayNight={this.props.isDayNight}
+              show={this.props.show}
           ></Button>
         </div>
       </div>
       )
-    } else if(helpers.isMobile()) {
+    } else if(this.props.isMobile) {
       body = (
         <>
-          <div className={classes.flex}>
+          <div className={classes.flexForm}>
             <img className={classes.logoMobile} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/>
             <MobileMenuToggleButton isDayNight={this.props.isDayNight} onToggleButtonClick={this.props.openClose} />
           </div>
