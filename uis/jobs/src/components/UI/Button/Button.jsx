@@ -5,10 +5,10 @@ import classes from './Button.module.scss';
 const Button = (props) => {
     let className = [classes.button];
     if(props.wide) className.push(classes.wide);
-    props.isDayNight ? className.push(classes.day) : className.push(classes.night);
-    if(props.wide) className.push(classes.wide);
     let btn, dropDownItems, menuItems;
+    console.log(props)
     if(props.dropDownItems || props.menuItems) {
+        props.isDayNight ? className.push(classes.dayDropdown) : className.push(classes.nightDropdown);
         let items;
         if(props.dropDownItems){
             items = props.dropDownItems.map((el, i) => {
@@ -29,6 +29,7 @@ const Button = (props) => {
                     </div>
                 </div>;
         } else if(props.menuItems) {
+            props.isDayNight ? className.push(classes.dayDropdown) : className.push(classes.nightDropdown);
             dropDownItems = props.menuItems.map((el, i) => {
                 return (
                     <div className={[classes.dropdown,classes.flex].join(' ')}>
@@ -41,6 +42,7 @@ const Button = (props) => {
             });
         }
     } else {
+        props.isDayNight ? className.push(classes.day) : className.push(classes.night);
         btn = <div 
             className={className.join(" ")} 
             onClick={props.onClick}

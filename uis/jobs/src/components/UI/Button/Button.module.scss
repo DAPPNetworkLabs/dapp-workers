@@ -20,6 +20,26 @@
     background: $color-blue;
 }
 
+.dayDropdown {
+    color: $color-dark-blue;
+}
+
+.dayDropdown:hover {
+    background: $color-dark-blue;
+    color: $color-light-grey;
+    border-radius: 0px;
+}
+
+.nightDropdown {
+    color: $color-white;
+}
+
+.nightDropdown:hover {
+    color: $color-white;
+    background: $color-blue;
+    border-radius: 0px;
+}
+
 .button, .wideButton {
     border-radius: 20px;
     border: 0;
