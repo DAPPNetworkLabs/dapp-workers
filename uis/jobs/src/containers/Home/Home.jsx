@@ -9,6 +9,8 @@ import lib from '../../lib/index';
 
 import { GlobalStyles } from '../../view/css/global';
 
+import * as helpers from '@helpers'
+
 const ethereum = window.ethereum;
 
 class Home extends Component {
@@ -503,6 +505,7 @@ class Home extends Component {
     ]
   
     render() {
+        const isMobile = helpers.isMobile();
         const forms = this.forms.map(el => {
             return (
                 <Form
