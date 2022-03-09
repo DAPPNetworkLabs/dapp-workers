@@ -58,3 +58,7 @@ input:hover {
     background:$color-light-blue;
     border-color:$color-light-blue;
 }
+
+input:hover::placeholder {
+    color: $color-dark-blue;
+}
