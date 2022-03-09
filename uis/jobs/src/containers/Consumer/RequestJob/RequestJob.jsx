@@ -34,10 +34,10 @@ class RequestJob extends Component {
                 owner: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
                 imageName: 'rust-compiler',
                 inputFS: 'QmUm1JD5os8p6zu6gQBPr7Rov2VD6QzMeRBH5j4ojFBzi6',
-                callback: true,
+                callback: false,
                 gasLimit: 1000000,
-                requireConsistent: true,
-                args: []
+                requireConsistent: false,
+                args: ["arg1","arg2"]
             },
             show: false
         }
@@ -57,12 +57,16 @@ class RequestJob extends Component {
     }
 
     handleChange(event, func) {
-        const { name, value } = event.target;
+        let { name, value, type } = event.target;
+        console.log(event.target)
+        console.log(event.target.checked)
+        console.log({ name, value, type })
+        console.log(func)
+        if(type=="checkbox") value = event.target.checked;
         this.setState({
             [func]: {
                 ...this.state[func],
-                [name]: value,
-                error: '',
+                [name]: value
             },
         });
     }
@@ -86,7 +90,7 @@ class RequestJob extends Component {
     forms = [
         {
             onClick:()=>lib.web3.queueJob(this),
-            event:"QueueJob",
+            event:"queueJob",
             inputs:[
                 { name:"owner",placeholder: "address owner"},
                 { name:"imageName",placeholder: "string imageName"},
@@ -96,10 +100,6 @@ class RequestJob extends Component {
                 { name:"requireConsistent",placeholder: "bool requireConsistent"},
                 { name:"args",placeholder: "string[] args"}
             ]
-            // add bool
-            // add string
-            // add array
-            // add uint / non DAPP
         }
     ]
   

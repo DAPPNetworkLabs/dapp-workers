@@ -22,7 +22,8 @@
     border:solid 2px $color-white;    
     outline:solid 4px $color-grey;
     font-family: "IBM Plex Mono", monospace;
-    width: 200px;
+    max-width: 200px;
+    min-height: 18px;
 }
 .formInput:focus{
     outline:solid 4px $color-blue;

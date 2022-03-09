@@ -7,8 +7,6 @@ const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR || 'w
 const web3 = new Web3(provider);
 // const web3 = new Web3(process.env.ETH_ADDR || 'http://localhost:8545');
 const contractAddress = process.env.ADDRESS || '0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5';
-console.log(contractAddress);
-console.log(process.env.ETH_ADDR || 'ws://localhost:8545');
 const contract = new web3.eth.Contract(NexusJSON.abi,contractAddress);
 const ethereum = window.ethereum;
 

@@ -6,7 +6,6 @@ const Button = (props) => {
     let className = [classes.button];
     if(props.wide) className.push(classes.wide);
     let btn, dropDownItems, menuItems;
-    console.log(props)
     if(props.dropDownItems || props.menuItems) {
         props.isDayNight ? className.push(classes.dayDropdown) : className.push(classes.nightDropdown);
         let items;

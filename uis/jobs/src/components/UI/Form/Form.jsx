@@ -5,14 +5,21 @@ import Button from '../Button/Button'
 
 const Form = (props) => {
     const inputs = props.inputs.map((el,i) => {
+        let type = "text";
+        if(props.previews[i].type == "uint" || props.previews[i].type == "dapp") {
+            type = "number"
+        } else if(props.previews[i].type == "bool") {
+            type = "checkbox"
+        }
         return (
-        <input 
-            className={classes.formInput}
-            type={props.previews[i].type == "int" ? "number":'text'}
-            onChange={(event) => props.onChange(event,props.event)}
-            name={el.name}
-            placeholder={el.placeholder}
-        ></input>)
+            <input 
+                className={classes.formInput}
+                type={type}
+                onChange={(event) => props.onChange(event,props.event)}
+                name={el.name}
+                placeholder={el.placeholder}
+            ></input>
+        )
     });
     const previewItems = props.inputs.map((el,i) => {
         let text, value;
@@ -22,7 +29,7 @@ const Form = (props) => {
         } else if(props.previews[i].type == "dapp") {
             value = (Number(props.previewValues[i].key) / 1e4).toFixed(4);
         } else if(props.previews[i].type == "bool") {
-            value = props.previewValues[i].key;
+            value = props.previewValues[i].key.toString();
         } else if(props.previews[i].type == "string") {
             if(props.previewValues[i].key.length > 20) {
                 value = `${props.previewValues[i].key.slice(0,4)}..${props.previewValues[i].key.slice(-4)}`
@@ -30,7 +37,7 @@ const Form = (props) => {
                 value = props.previewValues[i].key;
             }
         } else if(props.previews[i].type == "array") {
-            //
+            value = props.previewValues[i].key.toString();
         } else if(props.previews[i].type == "uint") {
             value = (Number(props.previewValues[i].key));
         } else {
