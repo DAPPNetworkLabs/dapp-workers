@@ -56,13 +56,12 @@ class RequestJob extends Component {
         lib.metamask.rmHandlers();
     }
 
-    handleChange(event, func) {
+    handleChange(event, func, valType) {
         let { name, value, type } = event.target;
-        console.log(event.target)
-        console.log(event.target.checked)
-        console.log({ name, value, type })
-        console.log(func)
-        if(type=="checkbox") value = event.target.checked;
+        if(valType.includes('array')) {
+            value.includes(',') ? value = value.split(',') : value = [value];
+        }
+        if(type == "checkbox") value = event.target.checked;
         this.setState({
             [func]: {
                 ...this.state[func],
@@ -90,7 +89,7 @@ class RequestJob extends Component {
     forms = [
         {
             onClick:()=>lib.web3.queueJob(this),
-            event:"queueJob",
+            stateSelector:"queueJob",
             inputs:[
                 { name:"owner",placeholder: "address owner"},
                 { name:"imageName",placeholder: "string imageName"},
@@ -112,7 +111,7 @@ class RequestJob extends Component {
                     onClick={el.onClick}
                     onChange={this.handleChange}
                     buttonText={loc(`${section}.${page}.button`,this.props.lang)}
-                    event={el.event}
+                    stateSelector={el.stateSelector}
                     inputs={el.inputs}
                     previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}

@@ -108,9 +108,9 @@ const fetchDspData = async (thisObject) => {
 
 const fetchJobServiceCompleted = async (thisObject) => {
     const jobServiceCompleted = await contract.methods.jobServiceCompleted(
-        thisObject.state.jobServiceCompletedParams.id,
-        thisObject.state.jobServiceCompletedParams.dsp,
-        thisObject.state.jobServiceCompletedParams.isJob
+        thisObject.state.jobServiceCompleted.id,
+        thisObject.state.jobServiceCompleted.dsp,
+        thisObject.state.jobServiceCompleted.isJob
     ).call();
     console.log(jobServiceCompleted);
     thisObject.setState({jobServiceCompleted});
@@ -118,9 +118,9 @@ const fetchJobServiceCompleted = async (thisObject) => {
 
 const fetchGetMinBalance = async (thisObject) => {
     const getMinBalance = await contract.methods.getMinBalance(
-        thisObject.state.getMinBalanceParams.id,
-        thisObject.state.getMinBalanceParams.jobType,
-        thisObject.state.getMinBalanceParams.dsp
+        thisObject.state.getMinBalance.id,
+        thisObject.state.getMinBalance.jobType,
+        thisObject.state.getMinBalance.dsp
     ).call();
     console.log(getMinBalance);
     thisObject.setState({getMinBalance});
@@ -128,7 +128,7 @@ const fetchGetMinBalance = async (thisObject) => {
 
 const fetchIsServiceDone = async (thisObject) => {
     const isServiceDone = await contract.methods.isServiceDone(
-        thisObject.state.isServiceDoneParams.id
+        thisObject.state.isServiceDone.id
     ).call();
     console.log(isServiceDone);
     thisObject.setState({isServiceDone});
@@ -136,9 +136,9 @@ const fetchIsServiceDone = async (thisObject) => {
 
 const fetchGetMaxPaymentForGas = async (thisObject) => {
     const getMaxPaymentForGas = await contract.methods.getMaxPaymentForGas(
-        thisObject.state.getMaxPaymentForGasParams.gasLimit,
-        thisObject.state.getMaxPaymentForGasParams.imageName,
-        thisObject.state.getMaxPaymentForGasParams.dsp,
+        thisObject.state.getMaxPaymentForGas.gasLimit,
+        thisObject.state.getMaxPaymentForGas.imageName,
+        thisObject.state.getMaxPaymentForGas.dsp,
     ).call();
     console.log(getMaxPaymentForGas);
     thisObject.setState({getMaxPaymentForGas});
@@ -158,8 +158,8 @@ const fetchGetDspAddresses = async (thisObject) => {
 
 const fetchGetDSPDataLimits = async (thisObject) => {
     const getDSPDataLimits = await contract.methods.getDSPDataLimits(
-        thisObject.state.getDSPDataLimitsParams.id,
-        thisObject.state.getDSPDataLimitsParams.dsp,
+        thisObject.state.getDSPDataLimits.id,
+        thisObject.state.getDSPDataLimits.dsp,
     ).call();
     console.log(getDSPDataLimits);
     thisObject.setState({getDSPDataLimits});
@@ -172,8 +172,8 @@ const fetchGetDSPDataLimits = async (thisObject) => {
 const approveImage = async (thisObject) => {
     const abi = returnAbi("approveImage");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.approveImageParams.imageName,
-        thisObject.state.approveImageParams.imageHash
+        thisObject.state.approveImage.imageName,
+        thisObject.state.approveImage.imageHash
     ]);
     await runTrx(data,[],thisObject);
 }
@@ -181,8 +181,8 @@ const approveImage = async (thisObject) => {
 const unapproveImage = async (thisObject) => {
     const abi = returnAbi("unapproveImage");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.unapproveImageParams.imageName,
-        thisObject.state.unapproveImageParams.imageHash
+        thisObject.state.unapproveImage.imageName,
+        thisObject.state.unapproveImage.imageHash
 
     ]);
     await runTrx(data,[],thisObject);
@@ -191,11 +191,11 @@ const unapproveImage = async (thisObject) => {
 const extendService = async (thisObject) => {
     const abi = returnAbi("extendService");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.extendServiceParams.serviceId,
-        thisObject.state.extendServiceParams.imageName,
-        thisObject.state.extendServiceParams.months,
-        thisObject.state.extendServiceParams.ioMb,
-        thisObject.state.extendServiceParams.storageMb
+        thisObject.state.extendService.serviceId,
+        thisObject.state.extendService.imageName,
+        thisObject.state.extendService.months,
+        thisObject.state.extendService.ioMb,
+        thisObject.state.extendService.storageMb
 
     ]);
     await runTrx(data,["ServiceExtended"],thisObject);
@@ -216,7 +216,7 @@ const setConfig = async (thisObject) => {
 const setDsps = async (thisObject) => {
     const abi = returnAbi("setDsps");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.setDspsParams.dsps
+        thisObject.state.setDsps.dsps
 
     ]);
     await runTrx(data,["UpdateDsps"],thisObject);
@@ -225,7 +225,7 @@ const setDsps = async (thisObject) => {
 const setConsumerContract = async (thisObject) => {
     const abi = returnAbi("setConsumerContract");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.setConsumerContractParams.authorized_contract
+        thisObject.state.setConsumerContract.authorized_contract
 
     ]);
     await runTrx(data,[],thisObject);

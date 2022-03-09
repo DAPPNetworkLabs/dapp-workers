@@ -82,7 +82,7 @@ class SellGas extends Component {
 
         {
             onClick:()=>lib.web3.sellGas(this),
-            event:"sellGas",
+            stateSelector:"sellGas",
             inputs:[
                 { name:"_amountToSell",placeholder: "uint256 _amountToSell"},
                 { name:"_dsp",placeholder: "address _dsp"},
@@ -99,7 +99,7 @@ class SellGas extends Component {
                     onClick={el.onClick}
                     onChange={this.handleChange}
                     buttonText={loc(`${section}.${page}.button`,this.props.lang)}
-                    event={el.event}
+                    stateSelector={el.stateSelector}
                     inputs={el.inputs}
                     previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}

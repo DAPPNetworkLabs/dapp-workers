@@ -5,9 +5,9 @@
             "subtitle": "Provide amount, consumer address, and DSP account to fund a DSP to use DAPP Network jobs & services.",
             "button": "BUY GAS",
             "previews":[
-                { "name":"DAPP", "type":"dapp","short":""},
-                { "name":"Consumer", "type":"address","short":""},
-                { "name":"DSP", "type":"address","short":""}
+                { "name":"DAPP", "type":"dapp","short":"DAPP token adjusted for 4 decimal precision."},
+                { "name":"Consumer", "type":"address","short":"Address of consuming account or contract."},
+                { "name":"DSP", "type":"address","short":"DSP address to buy DAPP gas for."}
             ]
         },
         "sell gas": {
@@ -15,8 +15,8 @@
             "subtitle": "Sell DAPP gas for DAPP.",
             "button": "SELL GAS",
             "previews":[
-                { "name":"DAPP", "type":"dapp","short":""},
-                { "name":"DSP", "type":"address","short":""}
+                { "name":"DAPP", "type":"dapp","short":"DAPP token adjusted for 4 decimal precision."},
+                { "name":"DSP", "type":"address","short":"DSP address to sell DAPP gas for."}
             ]
         },
         "request job": {
@@ -26,47 +26,66 @@
             "previews":[
                 { "name":"OWNER","type": "address","short":"Address requesting job."},
                 { "name":"IMAGE","type": "string","short":"Docker image job will use."},
-                { "name":"INPUT","type": "string","short":""},
-                { "name":"CALLBACK","type": "bool","short":""},
-                { "name":"GAS LIMIT","type": "uint","short":""},
-                { "name":"UNIFORM RESPONSE","type": "bool","short":""},
-                { "name":"ARGUMENTS","type": "array","short":""}
+                { "name":"INPUT","type": "string","short":"Input command for docker image."},
+                { "name":"CALLBACK","type": "bool","short":"Is there a contract callback required for the job?"},
+                { "name":"GAS LIMIT","type": "uint","short":"Gas limit for running job"},
+                { "name":"UNIFORM RESPONSE","type": "bool","short":"Require all DSP outputs to match."},
+                { "name":"ARGUMENTS","type": "array","short":"Arguments to provide docker image comma separated."}
             ]
         },
         "request service": {
             "title": "REQUEST SERVICE",
             "subtitle": "Submit a service for the DAPP Workers to provide.",
-            "button": "REQUEST SERVICE"
+            "button": "REQUEST SERVICE",
+            "previews":[
+                { "name":"OWNER","type": "address","short":"Address requesting service."},
+                { "name":"IMAGE","type": "string","short":"Docker image service will use."},
+                { "name":"UPLOAD/DOWNLOAD MB","type": "uint","short":"Amount in megabytes of upload/download bandwidth."},
+                { "name":"STORAGE MB","type": "uint","short":"Amount in megabytes of total storage for the service."},
+                { "name":"INPUT","type": "string","short":"Input command for docker image."},
+                { "name":"ARGUMENTS","type": "array","short":"Arguments to provide docker image comma separated."},
+                { "name":"MONTHS","type": "uint","short":"Months to provide service for, covers base cost, DOES NOT multiply upload/download/storage costs."}
+            ]
         },
         "extend service": {
             "title": "EXTEND SERVICE",
             "subtitle": "Extend existing service time, upload/download limit, and or storage limit.",
-            "button": "EXTEND SERVICE"
+            "button": "EXTEND SERVICE",
+            "previews":[
+                { "name":"SERVICE ID","type": "uint","short":"ID of service to extend."},
+                { "name":"IMAGE","type": "string","short":"Docker image service used."},
+                { "name":"MONTHS","type": "uint","short":"Months to extend service for, covers base cost, DOES multiply upload/download/storage costs per month."},
+                { "name":"UPLOAD/DOWNLOAD MB","type": "uint","short":"Amount in megabytes of upload/download bandwidth."},
+                { "name":"STORAGE MB","type": "uint","short":"Amount in megabytes of additional storage for the service."}
+            ]
         },
         "jobs": {
             "title": "LIST CONSUMER JOBS",
             "subtitle": "List of all jobs requested by consumer.",
-            "button": "",
-            "previews":[
-                { "name":"DAPP", "type":"int","short":""},
-                { "name":"Consumer", "type":"address","short":""},
-                { "name":"DSP", "type":"address","short":""}
-            ]
+            "button1": "",
+            "button2": ""
         },
         "services": {
             "title": "LIST CONSUMER SERVICES",
             "subtitle": "List of all services requested by consumer.",
-            "button": ""
+            "button1": "",
+            "button2": ""
         },
         "set consumer": {
             "title": "SET CONSUMER",
             "subtitle": "Set consumer to use DAPP gas of user.",
-            "button": "SET CONSUMER"
+            "button": "SET CONSUMER",
+            "previews":[
+                { "name":"CONSUMER CONTRACT","type": "address","short":"Contract address to consumer DAPP Gas for jobs and services."}
+            ]
         },
         "set dsps": {
             "title": "SET DSPS",
             "subtitle": "Select DAPP Workers to provide jobs/services.",
-            "button": "SET DSPS"
+            "button": "SET DSPS",
+            "previews":[
+                { "name":"DSPS","type": "array_addresses","short":"List of DSP addresses to use for jobs/services."}
+            ]
         }
     },
     "dsp": {

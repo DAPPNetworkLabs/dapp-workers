@@ -81,7 +81,7 @@ class ConsumerJobs extends Component {
     forms = [
         {
             onClick:()=>lib.web3.buyGasFor(this),
-            event:"buyGasFor",
+            stateSelector:"buyGasFor",
             inputs:[
                 { name:"_amount",placeholder: "uint256 _amount"},
                 { name:"_consumer",placeholder: "address _consumer"},
@@ -99,7 +99,7 @@ class ConsumerJobs extends Component {
                     onClick={el.onClick}
                     onChange={this.handleChange}
                     buttonText={loc(`${section}.${page}.button`,this.props.lang)}
-                    event={el.event}
+                    stateSelector={el.stateSelector}
                     inputs={el.inputs}
                     previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}

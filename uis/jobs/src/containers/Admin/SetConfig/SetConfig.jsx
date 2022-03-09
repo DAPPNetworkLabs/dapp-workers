@@ -229,7 +229,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.extendService(this),
         //     buttonText:"Extend Service",
-        //     event:"ServiceExtended",
+        //     stateSelector:"ServiceExtended",
         //     inputs:[
         //         { name:"serviceId",placeholder: "uint serviceId"},
         //         { name:"imageName",placeholder: "string calldata imageName"},
@@ -241,7 +241,7 @@ class SetConfig extends Component {
         {
             onClick:()=>lib.web3.setConfig(this),
             buttonText:"Set Config",
-            event:"ConfigSet",
+            stateSelector:"ConfigSet",
             inputs:[
                 { name:"paymentPremiumPPB",placeholder: "uint32 paymentPremiumPPB"},
                 { name:"gasCeilingMultiplier",placeholder: "uint16 gasCeilingMultiplier"},
@@ -252,7 +252,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.setDsps(this),
         //     buttonText:"Set DSPs",
-        //     event:"UpdateDsps",
+        //     stateSelector:"UpdateDsps",
         //     inputs:[
         //         { name:"dsps",placeholder: "address[] calldata dsps"}
         //     ]
@@ -260,7 +260,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.setConsumerContract(this),
         //     buttonText:"Set Consumer Contract",
-        //     event:"",
+        //     stateSelector:"",
         //     inputs:[
         //         { name:"dsps",placeholder: "address[] calldata dsps"}
         //     ]
@@ -268,7 +268,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.queueJob(this),
         //     buttonText:"Post Job",
-        //     event:"QueueJob",
+        //     stateSelector:"QueueJob",
         //     inputs:[
         //         { name:"owner",placeholder: "address owner"},
         //         { name:"imageName",placeholder: "string imageName"},
@@ -282,7 +282,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.queueService(this),
         //     buttonText:"Post Service",
-        //     event:"QueueService",
+        //     stateSelector:"QueueService",
         //     inputs:[
         //         { name:"owner",placeholder: "address owner"},
         //         { name:"imageName",placeholder: "string imageName"},
@@ -296,7 +296,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.setDockerImage(this),
         //     buttonText:"Set Docker Image",
-        //     event:"setDockerImage",
+        //     stateSelector:"setDockerImage",
         //     inputs:[
         //         { name:"imageName",placeholder: "string imageName"},
         //         { name:"jobFee",placeholder: "uint jobFee"},
@@ -310,7 +310,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchDspInfo(this),
         //     buttonText:"Fetch DSP Info",
-        //     event:"registeredDSPs",
+        //     stateSelector:"registeredDSPs",
         //     inputs:[
         //         { name:"dsp",placeholder: "address dsp"},
         //     ]
@@ -318,7 +318,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchDspData(this),
         //     buttonText:"Fetch DSP Data",
-        //     event:"dspDataForm",
+        //     stateSelector:"dspDataForm",
         //     inputs:[
         //         { name:"consumer",placeholder: "address consumer"},
         //         { name:"dsp",placeholder: "address dsp"},
@@ -327,7 +327,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchConsumerData(this),
         //     buttonText:"Fetch Consumer Data",
-        //     event:"consumerDataForm",
+        //     stateSelector:"consumerDataForm",
         //     inputs:[
         //         { name:"consumer",placeholder: "address consumer"},
         //     ]
@@ -335,7 +335,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchEndpointForDSP(this),
         //     buttonText:"Fetch DSP Endpoint",
-        //     event:"getDSPEndpoint",
+        //     stateSelector:"getDSPEndpoint",
         //     inputs:[
         //         { name:"dsp",placeholder: "address dsp"},
         //     ]
@@ -343,7 +343,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchPortForDSP(this),
         //     buttonText:"Fetch DSP Port",
-        //     event:"getPortForDSP",
+        //     stateSelector:"getPortForDSP",
         //     inputs:[
         //         { name:"jobID",placeholder: "uint256 jobID"},
         //         { name:"dsp",placeholder: "address dsp"},
@@ -352,7 +352,7 @@ class SetConfig extends Component {
         {
             onClick:()=>lib.web3.unapproveDockerImage(this),
             buttonText:"Unapprove Docker",
-            event:"unapproveDockerForDSP",
+            stateSelector:"unapproveDockerForDSP",
             inputs:[
                 { name:"imageName",placeholder: "string imageName"},
             ]
@@ -360,7 +360,7 @@ class SetConfig extends Component {
         {
             onClick:()=>lib.web3.approveDockerImage(this),
             buttonText:"Approve Docker",
-            event:"",
+            stateSelector:"",
             inputs:[
                 { name:"imageName",placeholder: "string imageName"},
                 { name:"imageHash",placeholder: "string imageHash"},
@@ -369,7 +369,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchIsImageApprovedForDSP(this),
         //     buttonText:"Fetch Image Approval for DSP",
-        //     event:"isImageApprovedForDSP",
+        //     stateSelector:"isImageApprovedForDSP",
         //     inputs:[
         //         { name:"dsp",placeholder: "address dsp"},
         //         { name:"imageName",placeholder: "string imageName"},
@@ -378,7 +378,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchJobImage(this),
         //     buttonText:"Fetch Docker Image",
-        //     event:"getDockerImage",
+        //     stateSelector:"getDockerImage",
         //     inputs:[
         //         { name:"imageName",placeholder: "string imageName"},
         //     ]
@@ -386,13 +386,13 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.deprecateDSP(this),
         //     buttonText:"Deprecate DSP",
-        //     event:"deprecateDSP",
+        //     stateSelector:"deprecateDSP",
         //     inputs:[]
         // },
         // {
         //     onClick:()=>lib.web3.regDSP(this),
         //     buttonText:"Register DSP Endpoint",
-        //     event:"regDSP",
+        //     stateSelector:"regDSP",
         //     inputs:[
         //         { name:"endpoint",placeholder: "string endpoint"},
         //     ]
@@ -400,13 +400,13 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.claim(this),
         //     buttonText:"Claim Gas for DSP",
-        //     event:"claim",
+        //     stateSelector:"claim",
         //     inputs:[]
         // },
         // {
         //     onClick:()=>lib.web3.sellGas(this),
         //     buttonText:"Sell Gas",
-        //     event:"sellGas",
+        //     stateSelector:"sellGas",
         //     inputs:[
         //         { name:"_amountToSell",placeholder: "uint256 _amountToSell"},
         //         { name:"_dsp",placeholder: "address _dsp"},
@@ -415,7 +415,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.buyGasFor(this),
         //     buttonText:"Buy Gas For DSP",
-        //     event:"buyGasFor",
+        //     stateSelector:"buyGasFor",
         //     inputs:[
         //         { name:"_amount",placeholder: "uint256 _amount"},
         //         { name:"_consumer",placeholder: "address _consumer"},
@@ -425,7 +425,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.setConsumerPermissions(this),
         //     buttonText:"Set Consumer Owner",
-        //     event:"setConsumerPermissions",
+        //     stateSelector:"setConsumerPermissions",
         //     inputs:[
         //         { name:"owner",placeholder: "address owner"},
         //     ]
@@ -433,7 +433,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.setQuorum(this),
         //     buttonText:"Set DSP Quorum for Consumer",
-        //     event:"setQuorum",
+        //     stateSelector:"setQuorum",
         //     inputs:[
         //         { name:"consumer",placeholder: "address consumer"},
         //         { name:"dsps",placeholder: "address[] dsps"},
@@ -442,7 +442,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchJobServiceCompleted(this),
         //     buttonText:"Is Job/Service Complete",
-        //     event:"",
+        //     stateSelector:"",
         //     inputs:[
         //         { name:"id",placeholder: "uint id"},
         //         { name:"dsp",placeholder: "address dsp"},
@@ -452,7 +452,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchGetMinBalance(this),
         //     buttonText:"Fetch Min Balance",
-        //     event:"",
+        //     stateSelector:"",
         //     inputs:[
         //         { name:"id",placeholder: "uint id"},
         //         { name:"jobType",placeholder: "string memory jobType"},
@@ -462,7 +462,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchIsServiceDone(this),
         //     buttonText:"Fetch Is Service Done",
-        //     event:"",
+        //     stateSelector:"",
         //     inputs:[
         //         { name:"id",placeholder: "uint id"}
         //     ]
@@ -470,7 +470,7 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchGetMaxPaymentForGas(this),
         //     buttonText:"Fetch Max Payment for Gas",
-        //     event:"",
+        //     stateSelector:"",
         //     inputs:[
         //         { name:"gasLimit",placeholder: "gasLimit"},
         //         { name:"imageName",placeholder: "imageName"},
@@ -480,19 +480,19 @@ class SetConfig extends Component {
         {
             onClick:()=>lib.web3.fetchGetConfig(this),
             buttonText:"Get Config",
-            event:"",
+            stateSelector:"",
             inputs:[]
         },
         // {
         //     onClick:()=>lib.web3.fetchGetDspAddresses(this),
         //     buttonText:"Get DSP Addresses",
-        //     event:"",
+        //     stateSelector:"",
         //     inputs:[]
         // },
         // {
         //     onClick:()=>lib.web3.fetchGetDSPDataLimits(this),
         //     buttonText:"Get DSP Data Limits",
-        //     event:"",
+        //     stateSelector:"",
         //     inputs:[
         //         { name:"id",placeholder: "uint id"},
         //         { name:"dsp",placeholder: "address dsp"}
@@ -501,13 +501,13 @@ class SetConfig extends Component {
         // {
         //     onClick:()=>lib.web3.fetchLastJob(this),
         //     buttonText:"Get last Job ID",
-        //     event:"",
+        //     stateSelector:"",
         //     inputs:[]
         // },
         // {
         //     onClick:()=>lib.web3.(this),
         //     buttonText:"",
-        //     event:"",
+        //     stateSelector:"",
         //     inputs:[
         //         { name:"",placeholder: ""}
         //     ]
@@ -521,7 +521,7 @@ class SetConfig extends Component {
                     onClick={el.onClick}
                     onChange={this.handleChange}
                     buttonText={el.buttonText}
-                    event={el.event}
+                    stateSelector={el.stateSelector}
                     inputs={el.inputs}
                 />
             )
