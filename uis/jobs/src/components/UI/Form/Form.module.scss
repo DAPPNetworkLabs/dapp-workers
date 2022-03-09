@@ -52,3 +52,8 @@
     gap:12px;
     margin:2px;
 }
+
+input:hover {
+    background:$color-light-blue;
+    border-color:$color-light-blue;
+}
