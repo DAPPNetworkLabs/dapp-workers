@@ -38,11 +38,17 @@
     margin-bottom: 20px;
 }
 
-.preview {
+.preview,.previewMobile {
     text-align:center;
-    width: 400px;
     justify-content: space-between;
     display:flex;
+}
+.preview {
+    width: 400px;
+}
+
+.previewMobile {
+    width: 200px;
 }
 
 .flexRow {

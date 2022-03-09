@@ -57,7 +57,7 @@ const Form = (props) => {
         }
         return (
             <div 
-                className={classes.preview}
+                className={props.isMobile ? classes.previewMobile : classes.preview}
                 type="text"
                 onChange={(event) => props.onChange(event,props.event,props.previews[i].type)}
                 name={el.name}
