@@ -7,7 +7,9 @@ const Title = (props) => {
     let el = <div 
         className={className} 
         onClick={props.onClick}
-        >{props.text}</div>
+        >
+            {props.text}
+            </div>
     return (
         <>
             {el}

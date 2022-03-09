@@ -14,7 +14,6 @@ import TelegramPNG from '@view/assets/icons/newTelegram.png';
 import close from '@view/assets/icons/close.png';
 
 import classNames from 'classnames';
-// import { loc } from '@texts/links';
 
 import * as helpers from '@helpers'
 
@@ -183,7 +182,6 @@ class Header extends React.Component {
     let body;
 
     if(helpers.isMobile() && this.props.show) {
-      console.log('hello 222')
       body = (
       <div className={[this.props.isDayNight ? classes.containerMobileDay : classes.containerMobileNight,classes.open].join(' ')}>
         <div className={classes.flexOpen}>
@@ -221,7 +219,6 @@ class Header extends React.Component {
       </div>
       )
     } else if(helpers.isMobile()) {
-      console.log('hello here')
       body = (
         <>
           <div className={classes.flex}>
@@ -231,7 +228,6 @@ class Header extends React.Component {
         </>
       )
     } else {
-      console.log('hello here234324')
       body = (
       <div className={classes.container}>
         <div><img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></div>

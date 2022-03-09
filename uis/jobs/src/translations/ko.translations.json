@@ -1,0 +1,101 @@
+{
+    "title":"ktest",
+    "consumer": {
+        "buy_gas": {
+            "title": "kBUY GAS FOR DSP",
+            "subtitle": "kProvide amount, consumer address, and DSP account to fund a DSP to use DAPP Network jobs & services.",
+            "button": "",
+            "": ""
+        },
+        "test2":"kthis is a test",
+        "sell gas": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "request job": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "request service": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "extend service": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "jobs": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "services": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "set consumer": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "set dsps": {
+            "title": "",
+            "button": "",
+            "": ""
+        }
+    },
+    "dsp": {
+        "register": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "deprecate": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "register image": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "update image": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "jobs": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "services": {
+            "title": "",
+            "button": "",
+            "": ""
+        }
+    },
+    "admin": {
+        "set config": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "approve image": {
+            "title": "",
+            "button": "",
+            "": ""
+        },
+        "unapprove image": {
+            "title": "",
+            "button": "",
+            "": ""
+        }
+    }
+}

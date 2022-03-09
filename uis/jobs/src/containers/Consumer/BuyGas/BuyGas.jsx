@@ -14,6 +14,7 @@ import { ThemeProvider } from 'styled-components';
 import { lightTheme, darkTheme } from '@view/css/theme';
 
 import { GlobalStyles } from '@view/css/global';
+import { loc } from '@loc';
 
 const ethereum = window.ethereum;
 
@@ -122,8 +123,8 @@ class BuyGas extends Component {
                         show={this.state.show}
                     />
                     <div className="center">
-                        <Title text="BUY GAS FOR DSP" isDayNight={this.props.isDayNight}/>
-                        <SubTitle text="Provide amount, consumer address, and DSP account to fund a DSP to use DAPP Network jobs & services." isDayNight={this.props.isDayNight} />
+                        <Title text={loc("title",this.props.lang)} isDayNight={this.props.isDayNight}/>
+                        <SubTitle text={loc("consumer.test",this.props.lang)} isDayNight={this.props.isDayNight} />
                         {forms}
                     </div>
                     <Footer

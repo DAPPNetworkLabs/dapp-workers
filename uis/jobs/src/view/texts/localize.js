@@ -6,7 +6,7 @@ import { withLocalize } from 'react-localize-redux';
 
 import detectBrowserLanguage from 'detect-browser-language';
 
-import * as trans from '@trans/index';
+import * as trans from '@translations';
 
 const Localize = WrappedComponent => {
   return class Localize extends Component {

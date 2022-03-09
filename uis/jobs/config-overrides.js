@@ -9,6 +9,8 @@ module.exports = function override(config) {
     '@components': 'src/components',
     '@icons': 'src/view/assets/icons',
     '@logos': 'src/view/assets/logos',
+    '@loc': 'src/view/texts/texts',
+    '@translations': 'src/translations/index',
     '@texts': 'src/view/texts',
     '@auth': 'src/store/actions/auth'
   })(config);
