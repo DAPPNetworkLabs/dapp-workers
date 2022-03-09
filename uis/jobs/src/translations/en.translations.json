@@ -145,17 +145,30 @@
         "set config": {
             "title": "SET CONFIG",
             "subtitle": "Set admin config.",
-            "button": "SET CONFIG"
+            "button": "SET CONFIG",
+            "previews":[
+                { "name":"PAYMENT PREMIUM PPB","type": "uint","short":"Payment premium multiplier in 2 decimal precision."},
+                { "name":"GAS CEILING MULT","type": "uint","short":"Multiplier to be paid above current gas prices."},
+                { "name":"FALLBACK GAS PRICE","type": "uint","short":"Fallback gas price if chainlink fails."},
+                { "name":"STAILNESS SECONDS","type": "uint","short":"Seconds before latest chainlink price feed goes stale."}
+            ]
         },
         "approve image": {
             "title": "APPROVE IMAGE",
             "subtitle": "Approve image for use by DAPP Workers.",
-            "button": "APPROVE IMAGE"
+            "button": "APPROVE IMAGE",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Docker image to approve."},
+                { "name":"IMAGE HASH","type": "string","short":"Hash of docker image to approve"}
+            ]
         },
         "unapprove image": {
             "title": "UNAPPROVE IMAGE",
             "subtitle": "Unapprove image for use by DAPP Workers.",
-            "button": "UNAPPROVE IMAGE"
+            "button": "UNAPPROVE IMAGE",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Docker image to unapprove."}
+            ]
         }
     }
 }
