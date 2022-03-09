@@ -92,7 +92,10 @@
         "register": {
             "title": "REGISTER DSP",
             "subtitle": "Register DSP endpoint and ability to be selected for jobs and services.",
-            "button": "REGISTER DSP"
+            "button": "REGISTER DSP",
+            "previews":[
+                { "name":"endpoint","type": "string","short":"DSP Endpoint providing DSP API for services."}
+            ]
         },
         "deprecate": {
             "title": "DEPRECATE DSP",
@@ -102,12 +105,30 @@
         "register image": {
             "title": "REGISTER IMAGE",
             "subtitle": "Register image and cost amounts for an existing image.",
-            "button": "REGISTER IMAGE"
+            "button": "REGISTER IMAGE",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Docker image to register."},
+                { "name":"JOB FEE","type": "uint","short":"Fee required to perform job.."},
+                { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."},
+                { "name":"STORAGE FEE","type": "uint","short":"Fee per mb of storage used."},
+                { "name":"I/O FEE","type": "uint","short":"Fee per mb of upload/download bandwidth provided."},
+                { "name":"MIN STORAGE MB","type": "uint","short":"Min storage in mb to provide service."},
+                { "name":"MIN I/O MB","type": "uint","short":"Min i/o in mb to provide service."}
+            ]
         },
         "update image": {
             "title": "UPDATE IMAGE",
             "subtitle": "Update image attributes for consumers whom selected this image.",
-            "button": "UPDATE IMAGE"
+            "button": "UPDATE IMAGE",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Docker image to update."},
+                { "name":"JOB FEE","type": "uint","short":"Fee required to perform job.."},
+                { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."},
+                { "name":"STORAGE FEE","type": "uint","short":"Fee per mb of storage used."},
+                { "name":"I/O FEE","type": "uint","short":"Fee per mb of upload/download bandwidth provided."},
+                { "name":"MIN STORAGE MB","type": "uint","short":"Min storage in mb to provide service."},
+                { "name":"MIN I/O MB","type": "uint","short":"Min i/o in mb to provide service."}
+            ]
         },
         "jobs": {
             "title": "LIST DSP JOBS",

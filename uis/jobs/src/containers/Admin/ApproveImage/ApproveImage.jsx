@@ -293,20 +293,20 @@ class ApproveImage extends Component {
         //         { name:"months",placeholder: "uint months"},
         //     ]
         // },
-        // {
-        //     onClick:()=>lib.web3.setDockerImage(this),
-        //     buttonText:"Set Docker Image",
-        //     stateSelector:"setDockerImage",
-        //     inputs:[
-        //         { name:"imageName",placeholder: "string imageName"},
-        //         { name:"jobFee",placeholder: "uint jobFee"},
-        //         { name:"baseFee",placeholder: "uint baseFee"},
-        //         { name:"storageFee",placeholder: "uint storageFee"},
-        //         { name:"ioFee",placeholder: "uint ioFee"},
-        //         { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
-        //         { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
-        //     ]
-        // },
+        {
+            onClick:()=>lib.web3.setDockerImage(this),
+            buttonText:"Set Docker Image",
+            stateSelector:"setDockerImage",
+            inputs:[
+                { name:"imageName",placeholder: "string imageName"},
+                { name:"jobFee",placeholder: "uint jobFee"},
+                { name:"baseFee",placeholder: "uint baseFee"},
+                { name:"storageFee",placeholder: "uint storageFee"},
+                { name:"ioFee",placeholder: "uint ioFee"},
+                { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
+                { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
+            ]
+        },
         // {
         //     onClick:()=>lib.web3.fetchDspInfo(this),
         //     buttonText:"Fetch DSP Info",

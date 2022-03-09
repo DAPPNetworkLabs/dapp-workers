@@ -1,19 +1,13 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
 import classes from './Header.module.scss';
 import { connect } from 'react-redux';
-import { withLocalize, Translate } from 'react-localize-redux';
+import { withLocalize } from 'react-localize-redux';
 
 import LogoWhite from '@view/assets/logos/logo-white.png';
 import LogoBlack from '@view/assets/logos/logo-black.png';
 import Button from '@components/UI/Button/Button';
 
 import { MobileMenuToggleButton } from '@components/UI/MobileMenuToggleButton/MobileMenuToggleButton';
-
-import TelegramPNG from '@view/assets/icons/newTelegram.png';
-import close from '@view/assets/icons/close.png';
-
-import classNames from 'classnames';
 
 import * as actions from '@auth';
 import detectBrowserLanguage from 'detect-browser-language';
@@ -139,12 +133,12 @@ class Header extends React.Component {
           'path': '/dsp/deprecate'
         },
         {
-          'name': 'Register DSP',
-          'path': '/dsp/register'
+          'name': 'Register Image',
+          'path': '/dsp/register-image'
         },
         {
-          'name': 'Update DSP',
-          'path': '/dsp/update'
+          'name': 'Update Image',
+          'path': '/dsp/update-image'
         },
         {
           'name': 'Jobs',

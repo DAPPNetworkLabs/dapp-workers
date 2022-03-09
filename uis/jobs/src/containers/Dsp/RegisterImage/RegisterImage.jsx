@@ -1,12 +1,26 @@
 
 import React, { Component } from 'react';
 import classes from './RegisterImage.module.scss';
-import Header from '../../../components/Header/Header';
-import Jobs from '../../../components/Home/Jobs/Jobs';
-import Services from '../../../components/Home/Services/Services';
-import Form from '../../../components/UI/Form/Form';
-import Footer from '../../../components/Footer/Footer';
-import lib from '../../../lib/index';
+import Header from '@components/Header/Header';
+import Form from '@components/UI/Form/Form';
+import Title from '@components/UI/Title/Title';
+import SubTitle from '@components/UI/SubTitle/SubTitle';
+import Footer from '@components/Footer/Footer';
+import lib from '@lib';
+import * as actions from '@auth';
+import { connect } from 'react-redux';
+import { withLocalize } from 'react-localize-redux';
+import { ThemeProvider } from 'styled-components';
+import { lightTheme, darkTheme } from '@view/css/theme';
+
+import { GlobalStyles } from '@view/css/global';
+import { loc } from '@loc';
+
+import * as helpers from '@helpers'
+
+const section = 'dsp'; // update
+const page = 'register image'; // update
+const stateSelector = 'setDockerImage'; // update
 
 const ethereum = window.ethereum;
 
@@ -16,100 +30,7 @@ class RegisterImage extends Component {
         this.state = {
             account: null,
             chainId: null,
-            jobs: [],
-            services: [],
-            connectInfo: null,
-            disconnectInfo: null,
-            trxInfo: null,
-            events: [],
-            image:null,
-            port:null,
-            endpoint:null,
-            approvedImage:null,
-            dspData:null,
-            consumerData:null,
-            dockerImage:null,
-            dspInfo:null,
-            jobServiceCompleted:null,
-            getMinBalance:null,
-            isServiceDone:null,
-            getMaxPaymentForGas:null,
-            getConfig: {},
-            getDspAddresses: [],
-            getDSPDataLimits: null,
-            getDSPDataLimitsParams: {
-                id:null,
-                dsp:null
-            },
-            approveImageParams: {
-                imageName:null,
-                imageHash:null
-            },
-            getMaxPaymentForGasParams:{
-                gasLimit:null, 
-                imageName:null, 
-                dsp:null
-            },
-            extendServiceParams: {
-                serviceId:null,
-                imageName:null,
-                months:null,
-                ioMb:null,
-                storageMb:null
-            },
-            isServiceDoneParams: {
-                id:null
-            },
-            getMinBalanceParams: {
-                id:null,
-                jobType:null,
-                dsp:null
-            },
-            setConsumerContractParams: {
-                authorized_contract:null
-            },
-            setDspsParams: {
-                dsps:[]                
-            },
-            setConfig: {
-                paymentPremiumPPB:null,
-                gasCeilingMultiplier:null,
-                fallbackGasPrice:null,
-                stalenessSeconds:null,
-            },
-            jobServiceCompletedParams: {
-                id:null,
-                dsp:null,
-                isJob:null,
-            },
-            queueJob: {
-                owner: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
-                imageName: 'rust-compiler',
-                inputFS: 'QmUm1JD5os8p6zu6gQBPr7Rov2VD6QzMeRBH5j4ojFBzi6',
-                callback: true,
-                gasLimit: 1000000,
-                requireConsistent: true,
-                args: []
-            },
-            queueService: {
-                owner: null,
-                imageName: null,
-                ioMegaBytes: null,
-                storageMegaBytes: null,
-                inputFS: null,
-                args: [],
-                months: null
-            },
-            // runJob: {
-            //     jobId: 5,
-            //     outputFS: '',
-            //     outputHash: ''
-            // },
-            // runService: {
-            //     jobId: 5,
-            //     port: 8080,
-            //     dapps: 804000
-            // },
+            // update
             setDockerImage: {
                 imageName: null,
                 jobFee:null,
@@ -119,81 +40,7 @@ class RegisterImage extends Component {
                 minStorageMegaBytes:null,
                 minIoMegaBytes:null
             },
-            updateDockerImage: {
-                imageName: null,
-                jobFee:null,
-                baseFee:null,
-                storageFee:null,
-                ioFee:null,
-                minStorageMegaBytes:null,
-                minIoMegaBytes:null
-            },
-            approveDocker: {
-                imageName: 'test'
-            },
-            registeredDSPs: {
-                dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
-            },
-            getDockerImage: {
-                imageName:'test'
-            },
-            isImageApprovedForDSP: {
-                dsp:null,
-                imageName:null
-            },
-            getPortForDSP: {
-                jobID:'1',
-                dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
-            },
-            getDSPEndpoint: {
-                dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
-            },
-            unapproveDockerForDSP: {
-                imageName:'test'
-            },
-            regDSP: {
-                endpoint:'http://testing.com'
-            },
-            claim: {
-                _consumer:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
-                _dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
-            },
-            sellGas: {
-                _amountToSell:1,
-                _dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
-            },
-            buyGasFor: {
-                _amount:1,
-                _consumer:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
-                _dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
-            },
-            setConsumerPermissions: {
-                owner:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
-            },
-            setQuorum: {
-                consumer:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
-                dsps:['0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f']
-            },
-            jobError: {
-                jobID:'1',
-                stdErr:'',
-                outputFS:''
-            },
-            serviceError: {
-                jobID:'1',
-                stdErr:'',
-                outputFS:''
-            },
-            dspDataForm: {
-                account: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
-                dsp:'0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
-            },
-            consumerDataForm: {
-                consumer: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f'
-            },
-            dockerImages: {
-                imageName: 'test'
-            }
+            show: false
         }
         this.handleChange = this.handleChange.bind(this);
     }
@@ -210,85 +57,41 @@ class RegisterImage extends Component {
         lib.metamask.rmHandlers();
     }
 
-    handleChange(event, func) {
-        const { name, value } = event.target;
+    handleChange(event, func, valType) {
+        let { name, value, type } = event.target;
+        console.log({ name, value, type }, valType);
+        if(valType.includes('array')) {
+            console.log(valType);
+            value.includes(',') ? value = value.split(',') : value = [value];
+        }
+        if(type == "checkbox") value = event.target.checked;
+        console.log(value);
         this.setState({
             [func]: {
                 ...this.state[func],
-                [name]: value,
-                error: '',
+                [name]: value
             },
         });
     }
 
+    openClose = () => {
+      this.setState({ show: !this.state.show });
+    }
+    
+    separateObject = obj => {
+        const res = [];
+        const keys = Object.keys(obj);
+        keys.forEach(key => {
+           res.push({
+              key: obj[key]
+           });
+        });
+        return res;
+     };
+     
+
     forms = [
-        // {
-        //     onClick:()=>lib.web3.extendService(this),
-        //     buttonText:"Extend Service",
-        //     stateSelector:"ServiceExtended",
-        //     inputs:[
-        //         { name:"serviceId",placeholder: "uint serviceId"},
-        //         { name:"imageName",placeholder: "string calldata imageName"},
-        //         { name:"months",placeholder: "uint months"},
-        //         { name:"ioMb",placeholder: "uint ioMb"},
-        //         { name:"storageMb",placeholder: "uint storageMb"},
-        //     ]
-        // },
-        // {
-        //     onClick:()=>lib.web3.setConfig(this),
-        //     buttonText:"Set Config",
-        //     stateSelector:"ConfigSet",
-        //     inputs:[
-        //         { name:"paymentPremiumPPB",placeholder: "uint32 paymentPremiumPPB"},
-        //         { name:"gasCeilingMultiplier",placeholder: "uint16 gasCeilingMultiplier"},
-        //         { name:"fallbackGasPrice",placeholder: "uint256 fallbackGasPrice"},
-        //         { name:"stalenessSeconds",placeholder: "uint24 stalenessSeconds"}
-        //     ]
-        // },
-        // {
-        //     onClick:()=>lib.web3.setDsps(this),
-        //     buttonText:"Set DSPs",
-        //     stateSelector:"UpdateDsps",
-        //     inputs:[
-        //         { name:"dsps",placeholder: "address[] calldata dsps"}
-        //     ]
-        // },
-        // {
-        //     onClick:()=>lib.web3.setConsumerContract(this),
-        //     buttonText:"Set Consumer Contract",
-        //     stateSelector:"",
-        //     inputs:[
-        //         { name:"dsps",placeholder: "address[] calldata dsps"}
-        //     ]
-        // },
-        // {
-        //     onClick:()=>lib.web3.queueJob(this),
-        //     buttonText:"Post Job",
-        //     stateSelector:"QueueJob",
-        //     inputs:[
-        //         { name:"owner",placeholder: "address owner"},
-        //         { name:"imageName",placeholder: "string imageName"},
-        //         { name:"inputFS",placeholder: "string inputFS"},
-        //         { name:"callback",placeholder: "bool callback"},
-        //         { name:"gasLimit",placeholder: "uint gasLimit"},
-        //         { name:"requireConsistent",placeholder: "bool requireConsistent"},
-        //         { name:"args",placeholder: "string[] args"}
-        //     ]
-        // },
-        // {
-        //     onClick:()=>lib.web3.queueService(this),
-        //     buttonText:"Post Service",
-        //     stateSelector:"QueueService",
-        //     inputs:[
-        //         { name:"owner",placeholder: "address owner"},
-        //         { name:"imageName",placeholder: "string imageName"},
-        //         { name:"ioMegaBytes",placeholder: "uint ioMegaBytes"},
-        //         { name:"storageMegaBytes",placeholder: "uint storageMegaBytes"},
-        //         { name:"inputFS",placeholder: "string inputFS"},
-        //         { name:"args",placeholder: "string[] args"},
-        //         { name:"months",placeholder: "uint months"},
-        //     ]
-        // },
+        // update setDsps
         {
             onClick:()=>lib.web3.setDockerImage(this),
             buttonText:"Set Docker Image",
@@ -303,235 +106,70 @@ class RegisterImage extends Component {
                 { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
             ]
         },
-        {
-            onClick:()=>lib.web3.fetchDspInfo(this),
-            buttonText:"Fetch DSP Info",
-            stateSelector:"registeredDSPs",
-            inputs:[
-                { name:"dsp",placeholder: "address dsp"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.fetchDspData(this),
-            buttonText:"Fetch DSP Data",
-            stateSelector:"dspDataForm",
-            inputs:[
-                { name:"consumer",placeholder: "address consumer"},
-                { name:"dsp",placeholder: "address dsp"},
-            ]
-        },
-        // {
-        //     onClick:()=>lib.web3.fetchConsumerData(this),
-        //     buttonText:"Fetch Consumer Data",
-        //     stateSelector:"consumerDataForm",
-        //     inputs:[
-        //         { name:"consumer",placeholder: "address consumer"},
-        //     ]
-        // },
-        {
-            onClick:()=>lib.web3.fetchEndpointForDSP(this),
-            buttonText:"Fetch DSP Endpoint",
-            stateSelector:"getDSPEndpoint",
-            inputs:[
-                { name:"dsp",placeholder: "address dsp"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.fetchPortForDSP(this),
-            buttonText:"Fetch DSP Port",
-            stateSelector:"getPortForDSP",
-            inputs:[
-                { name:"jobID",placeholder: "uint256 jobID"},
-                { name:"dsp",placeholder: "address dsp"},
-            ]
-        },
-        // {
-        //     onClick:()=>lib.web3.unapproveDockerImage(this),
-        //     buttonText:"Unapprove Docker",
-        //     stateSelector:"unapproveDockerForDSP",
-        //     inputs:[
-        //         { name:"imageName",placeholder: "string imageName"},
-        //     ]
-        // },
-        {
-            onClick:()=>lib.web3.fetchIsImageApprovedForDSP(this),
-            buttonText:"Fetch Image Approval for DSP",
-            stateSelector:"isImageApprovedForDSP",
-            inputs:[
-                { name:"dsp",placeholder: "address dsp"},
-                { name:"imageName",placeholder: "string imageName"},
-            ]
-        },
-        // {
-        //     onClick:()=>lib.web3.fetchJobImage(this),
-        //     buttonText:"Fetch Docker Image",
-        //     stateSelector:"getDockerImage",
-        //     inputs:[
-        //         { name:"imageName",placeholder: "string imageName"},
-        //     ]
-        // },
-        {
-            onClick:()=>lib.web3.deprecateDSP(this),
-            buttonText:"Deprecate DSP",
-            stateSelector:"deprecateDSP",
-            inputs:[]
-        },
-        {
-            onClick:()=>lib.web3.regDSP(this),
-            buttonText:"Register DSP Endpoint",
-            stateSelector:"regDSP",
-            inputs:[
-                { name:"endpoint",placeholder: "string endpoint"},
-            ]
-        },
-        {
-            onClick:()=>lib.web3.claim(this),
-            buttonText:"Claim Gas for DSP",
-            stateSelector:"claim",
-            inputs:[]
-        },
-        // {
-        //     onClick:()=>lib.web3.sellGas(this),
-        //     buttonText:"Sell Gas",
-        //     stateSelector:"sellGas",
-        //     inputs:[
-        //         { name:"_amountToSell",placeholder: "uint256 _amountToSell"},
-        //         { name:"_dsp",placeholder: "address _dsp"},
-        //     ]
-        // },
-        // {
-        //     onClick:()=>lib.web3.buyGasFor(this),
-        //     buttonText:"Buy Gas For DSP",
-        //     stateSelector:"buyGasFor",
-        //     inputs:[
-        //         { name:"_amount",placeholder: "uint256 _amount"},
-        //         { name:"_consumer",placeholder: "address _consumer"},
-        //         { name:"_dsp",placeholder: "address _dsp"},
-        //     ]
-        // },
-        // {
-        //     onClick:()=>lib.web3.setConsumerPermissions(this),
-        //     buttonText:"Set Consumer Owner",
-        //     stateSelector:"setConsumerPermissions",
-        //     inputs:[
-        //         { name:"owner",placeholder: "address owner"},
-        //     ]
-        // },
-        // {
-        //     onClick:()=>lib.web3.setQuorum(this),
-        //     buttonText:"Set DSP Quorum for Consumer",
-        //     stateSelector:"setQuorum",
-        //     inputs:[
-        //         { name:"consumer",placeholder: "address consumer"},
-        //         { name:"dsps",placeholder: "address[] dsps"},
-        //     ]
-        // },
-        {
-            onClick:()=>lib.web3.fetchJobServiceCompleted(this),
-            buttonText:"Is Job/Service Complete",
-            stateSelector:"",
-            inputs:[
-                { name:"id",placeholder: "uint id"},
-                { name:"dsp",placeholder: "address dsp"},
-                { name:"isJob",placeholder: "isJob"},
-            ]
-        },
-        // {
-        //     onClick:()=>lib.web3.fetchGetMinBalance(this),
-        //     buttonText:"Fetch Min Balance",
-        //     stateSelector:"",
-        //     inputs:[
-        //         { name:"id",placeholder: "uint id"},
-        //         { name:"jobType",placeholder: "string memory jobType"},
-        //         { name:"dsp",placeholder: "address dsp"}
-        //     ]
-        // },
-        {
-            onClick:()=>lib.web3.fetchIsServiceDone(this),
-            buttonText:"Fetch Is Service Done",
-            stateSelector:"",
-            inputs:[
-                { name:"id",placeholder: "uint id"}
-            ]
-        },
-        // {
-        //     onClick:()=>lib.web3.fetchGetMaxPaymentForGas(this),
-        //     buttonText:"Fetch Max Payment for Gas",
-        //     stateSelector:"",
-        //     inputs:[
-        //         { name:"gasLimit",placeholder: "gasLimit"},
-        //         { name:"imageName",placeholder: "imageName"},
-        //         { name:"dsp",placeholder: "address dsp"}
-        //     ]
-        // },
-        // {
-        //     onClick:()=>lib.web3.fetchGetConfig(this),
-        //     buttonText:"Get Config",
-        //     stateSelector:"",
-        //     inputs:[]
-        // },
-        {
-            onClick:()=>lib.web3.fetchGetDspAddresses(this),
-            buttonText:"Get DSP Addresses",
-            stateSelector:"",
-            inputs:[]
-        },
-        // {
-        //     onClick:()=>lib.web3.fetchGetDSPDataLimits(this),
-        //     buttonText:"Get DSP Data Limits",
-        //     stateSelector:"",
-        //     inputs:[
-        //         { name:"id",placeholder: "uint id"},
-        //         { name:"dsp",placeholder: "address dsp"}
-        //     ]
-        // },
-        // {
-        //     onClick:()=>lib.web3.fetchLastJob(this),
-        //     buttonText:"Get last Job ID",
-        //     stateSelector:"",
-        //     inputs:[]
-        // },
-        // {
-        //     onClick:()=>lib.web3.(this),
-        //     buttonText:"",
-        //     stateSelector:"",
-        //     inputs:[
-        //         { name:"",placeholder: ""}
-        //     ]
-        // }
     ]
   
     render() {
+        const isMobile = helpers.isMobile();
         const forms = this.forms.map(el => {
             return (
                 <Form
+                    wide={true}
                     onClick={el.onClick}
                     onChange={this.handleChange}
-                    buttonText={el.buttonText}
+                    buttonText={loc(`${section}.${page}.button`,this.props.lang)}
                     stateSelector={el.stateSelector}
                     inputs={el.inputs}
+                    previews={loc(`${section}.${page}.previews`,this.props.lang)}
+                    isDayNight={this.props.isDayNight}
+                    previewValues={this.separateObject(this.state[stateSelector])} // update
+                    isMobile={isMobile}
+                    openClose={this.openClose}
+                    show={this.state.show}
                 />
             )
-        })
+        });
         return (
-            <div>
-                <Header
-                    login={()=>lib.metamask.login(this)}
-                    logout={()=>lib.metamask.logout(this)}
-                    account={this.state.account}
-                />
-                {/* <Jobs
-                    jobs={this.state.jobs}
-                />
-                <Services
-                    services={this.state.services}
-                /> */}
-                {forms}
-                <Footer/>
-            </div>
+            <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
+                <div className={classes.flex}>
+                    <GlobalStyles />
+                    <Header
+                        login={()=>lib.metamask.login(this)}
+                        logout={()=>lib.metamask.logout(this)}
+                        account={this.state.account}
+                        openClose={this.openClose}
+                        show={this.state.show}
+                        isMobile={isMobile}
+                    />
+                    <div className="center">
+                        <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
+                        <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
+                        {forms}
+                    </div>
+                    <Footer
+                        isDayNight={this.props.isDayNight}
+                        isMobile={isMobile}
+                    />
+                </div>
+            </ThemeProvider>
         );
     }
   }
+
+  const mapStateToProps = state => {
+    return {
+      isDayNight: state.isDayNight,
+      lang: state.lang,
+      isLangUserSelected: state.isLangUserSelected
+    };
+  };
   
-  export default RegisterImage;
+  const mapDispatchToProps = dispatch => {
+    return {
+      setIsDayNight: () => dispatch(actions.setIsDayNight()),
+      setLang: (lang) => dispatch(actions.setLang(lang)),
+      setIsLangUserSelected: (isLangUserSelected) => dispatch(actions.setIsLangUserSelected(isLangUserSelected))
+    };
+  };
+  
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(RegisterImage));
   
