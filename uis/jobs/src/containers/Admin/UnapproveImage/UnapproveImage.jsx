@@ -55,11 +55,11 @@ class UnapproveImage extends Component {
         let { name, value, type } = event.target;
         console.log({ name, value, type }, valType);
         if(valType.includes('array')) {
-            console.log(valType);
+            
             value.includes(',') ? value = value.split(',') : value = [value];
         }
         if(type == "checkbox") value = event.target.checked;
-        console.log(value);
+        
         this.setState({
             [func]: {
                 ...this.state[func],

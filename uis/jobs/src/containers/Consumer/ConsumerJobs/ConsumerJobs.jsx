@@ -18,8 +18,9 @@ import { loc } from '@loc';
 
 import * as helpers from '@helpers'
 
-const section = 'consumer';
-const page = 'buy gas';
+const section = 'consumer'; // update
+const page = 'jobs'; // update
+const stateSelector = 'jobs'; // update
 
 const ethereum = window.ethereum;
 
@@ -29,10 +30,9 @@ class ConsumerJobs extends Component {
         this.state = {
             account: null,
             chainId: null,
-            buyGasFor: {
-                _amount:0,
-                _consumer:'',
-                _dsp:''
+            // update
+            [stateSelector]: {
+                lastJobId: 0
             },
             show: false
         }
@@ -51,13 +51,17 @@ class ConsumerJobs extends Component {
         lib.metamask.rmHandlers();
     }
 
-    handleChange(event, func) {
-        const { name, value } = event.target;
+    handleChange(event, func, valType) {
+        let { name, value, type } = event.target;
+        console.log({ name, value, type }, valType);
+        if(valType.includes('array')) {
+            value.includes(',') ? value = value.split(',') : value = [value];
+        }
+        if(type == "checkbox") value = event.target.checked;
         this.setState({
             [func]: {
                 ...this.state[func],
-                [name]: value,
-                error: '',
+                [name]: value
             },
         });
     }
@@ -78,17 +82,7 @@ class ConsumerJobs extends Component {
      };
      
 
-    forms = [
-        {
-            onClick:()=>lib.web3.buyGasFor(this),
-            stateSelector:"buyGasFor",
-            inputs:[
-                { name:"_amount",placeholder: "uint256 _amount"},
-                { name:"_consumer",placeholder: "address _consumer"},
-                { name:"_dsp",placeholder: "address _dsp"},
-            ]
-        }
-    ]
+    forms = []
   
     render() {
         const isMobile = helpers.isMobile();
@@ -103,7 +97,7 @@ class ConsumerJobs extends Component {
                     inputs={el.inputs}
                     previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}
-                    previewValues={this.separateObject(this.state.buyGasFor)}
+                    previewValues={this.separateObject(this.state[stateSelector])} // update
                     isMobile={isMobile}
                     openClose={this.openClose}
                     show={this.state.show}

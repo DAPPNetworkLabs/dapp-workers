@@ -61,15 +61,11 @@
         },
         "jobs": {
             "title": "LIST CONSUMER JOBS",
-            "subtitle": "List of all jobs requested by consumer.",
-            "button1": "",
-            "button2": ""
+            "subtitle": "List of all jobs requested by consumer."
         },
         "services": {
             "title": "LIST CONSUMER SERVICES",
-            "subtitle": "List of all services requested by consumer.",
-            "button1": "",
-            "button2": ""
+            "subtitle": "List of all services requested by consumer."
         },
         "set consumer": {
             "title": "SET CONSUMER",
@@ -131,12 +127,12 @@
             ]
         },
         "jobs": {
-            "title": "LIST DSP JOBS",
+            "title": "DAPP WORKER JOBS",
             "subtitle": "List DSP jobs that include this DSP.",
             "button": ""
         },
         "services": {
-            "title": "LIST DSP SERVICES",
+            "title": "DAPP WORKER SERVICES",
             "subtitle": "List DSP services that include this DSP.",
             "button": ""
         }

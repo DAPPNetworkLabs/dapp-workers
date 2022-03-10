@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import classes from './Home.module.scss';
-import Header from '../../components/Header/Header';
-import Jobs from '../../components/Home/Jobs/Jobs';
-import Services from '../../components/Home/Services/Services';
-import Form from '../../components/UI/Form/Form';
-import Footer from '../../components/Footer/Footer';
-import lib from '../../lib/index';
+import Header from '@components/Header/Header';
+import Jobs from '@components/UI/Jobs/Jobs';
+import Services from '@components/UI/Services/Services';
+import Form from '@components/UI/Form/Form';
+import Footer from '@components/Footer/Footer';
+import lib from '@lib';
 
-import { GlobalStyles } from '../../view/css/global';
+import { GlobalStyles } from '@view/css/global';
 
 import * as helpers from '@helpers'
 
