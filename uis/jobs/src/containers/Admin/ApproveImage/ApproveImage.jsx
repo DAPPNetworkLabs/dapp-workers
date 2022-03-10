@@ -20,7 +20,7 @@ import * as helpers from '@helpers'
 
 const section = 'admin'; // update
 const page = 'approve image'; // update
-const stateSelector = 'updateDockerImage'; // update
+const stateSelector = 'approveImage'; // update
 
 const ethereum = window.ethereum;
 
@@ -86,7 +86,7 @@ class ApproveImage extends Component {
     forms = [
         // update setDsps
         {
-            onClick:()=>lib.web3.approveDockerImage(this),
+            onClick:()=>lib.web3.approveImage(this),
             buttonText:"Approve Docker",
             stateSelector,
             inputs:[

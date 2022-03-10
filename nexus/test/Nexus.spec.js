@@ -74,19 +74,23 @@ describe("Nexus", function(done) {
 
     if(process.env.PRIVATE_KEY) {
       dsp1 = new ethers.Wallet(process.env.PRIVATE_KEY,dsp1.provider);
+      consumer1 = new ethers.Wallet("0xc327bdb598a257632f48e4368ebe7be66a40daff34569c2f2ba36ee96e893674",dsp1.provider);
       // 10000 ETH
-      await network.provider.send("hardhat_setBalance", [
-        dsp1.address,
-        "0x10000000000000000000000",
-      ]);
-      await network.provider.send("hardhat_setBalance", [
-        "0x654Cf0636b0e85b3379BcD773672CA4B4AEf8Dc0",
-        "0x10000000000000000000000",
-      ]);
-      await network.provider.send("hardhat_setBalance", [
-        "0xE82f7108e68ceedCf48F17eDF2b9856F39464818",
-        "0x10000000000000000000000",
-      ]);
+      const dapps = ethers.utils.parseUnits("800000",4);
+      await dappTokenContract.mint("0x21dfA04241ca05320E9dCd529F15f6F55115bbC3", dapps);
+      await dappTokenContract.connect(consumer1).approve(nexusContract.address, dapps);
+      // await network.provider.send("hardhat_setBalance", [
+      //   dsp1.address,
+      //   "0x10000000000000000000000",
+      // ]);
+      // await network.provider.send("hardhat_setBalance", [
+      //   "0x654Cf0636b0e85b3379BcD773672CA4B4AEf8Dc0",
+      //   "0x10000000000000000000000",
+      // ]);
+      // await network.provider.send("hardhat_setBalance", [
+      //   "0xE82f7108e68ceedCf48F17eDF2b9856F39464818",
+      //   "0x10000000000000000000000",
+      // ]);
     }
 
     console.log(`nexus contract: ${nexusContract.address}`);

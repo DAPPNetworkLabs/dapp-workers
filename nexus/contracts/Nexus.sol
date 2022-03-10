@@ -931,7 +931,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     ) public {
         address owner = msg.sender;
 
-        require(isImageApprovedForDSP(owner, imageName), "image not approved");
+        require(bytes(approvedImages[imageName]).length != 0, "image not approved");
         require(
             jobFee > 0 && 
             baseFee > 0 && 

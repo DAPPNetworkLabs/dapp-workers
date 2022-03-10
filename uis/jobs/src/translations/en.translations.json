@@ -60,11 +60,11 @@
             ]
         },
         "jobs": {
-            "title": "LIST CONSUMER JOBS",
+            "title": "CONSUMER JOBS",
             "subtitle": "List of all jobs requested by consumer."
         },
         "services": {
-            "title": "LIST CONSUMER SERVICES",
+            "title": "CONSUMER SERVICES",
             "subtitle": "List of all services requested by consumer."
         },
         "set consumer": {

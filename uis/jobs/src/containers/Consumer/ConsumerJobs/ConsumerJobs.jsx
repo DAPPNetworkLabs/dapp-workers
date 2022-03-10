@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import classes from './ConsumerJobs.module.scss';
 import Header from '@components/Header/Header';
 import Form from '@components/UI/Form/Form';
+import Jobs from '@components/UI/Jobs/Jobs';
 import Title from '@components/UI/Title/Title';
 import SubTitle from '@components/UI/SubTitle/SubTitle';
 import Footer from '@components/Footer/Footer';
@@ -32,11 +33,11 @@ class ConsumerJobs extends Component {
             chainId: null,
             // update
             [stateSelector]: {
-                lastJobId: 0
+                lastJobId: 0,
+                jobs: null
             },
             show: false
         }
-        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount() {
@@ -51,59 +52,12 @@ class ConsumerJobs extends Component {
         lib.metamask.rmHandlers();
     }
 
-    handleChange(event, func, valType) {
-        let { name, value, type } = event.target;
-        console.log({ name, value, type }, valType);
-        if(valType.includes('array')) {
-            value.includes(',') ? value = value.split(',') : value = [value];
-        }
-        if(type == "checkbox") value = event.target.checked;
-        this.setState({
-            [func]: {
-                ...this.state[func],
-                [name]: value
-            },
-        });
-    }
-
     openClose = () => {
       this.setState({ show: !this.state.show });
     }
-    
-    separateObject = obj => {
-        const res = [];
-        const keys = Object.keys(obj);
-        keys.forEach(key => {
-           res.push({
-              key: obj[key]
-           });
-        });
-        return res;
-     };
-     
-
-    forms = []
   
     render() {
         const isMobile = helpers.isMobile();
-        const forms = this.forms.map(el => {
-            return (
-                <Form
-                    wide={true}
-                    onClick={el.onClick}
-                    onChange={this.handleChange}
-                    buttonText={loc(`${section}.${page}.button`,this.props.lang)}
-                    stateSelector={el.stateSelector}
-                    inputs={el.inputs}
-                    previews={loc(`${section}.${page}.previews`,this.props.lang)}
-                    isDayNight={this.props.isDayNight}
-                    previewValues={this.separateObject(this.state[stateSelector])} // update
-                    isMobile={isMobile}
-                    openClose={this.openClose}
-                    show={this.state.show}
-                />
-            )
-        });
         return (
             <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
                 <div className={classes.flex}>
@@ -119,7 +73,9 @@ class ConsumerJobs extends Component {
                     <div className={isMobile ? classes.centerMobile : classes.center}>
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
-                        {forms}
+                        <Jobs
+                            jobs={this.state[stateSelector].jobs}
+                        />
                     </div>
                     <Footer
                         isDayNight={this.props.isDayNight}
