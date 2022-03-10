@@ -418,7 +418,7 @@ describe("Nexus", function(done) {
     // console.log(min.toString());
     // 76,349.8769 * 0.00730 $/DAPP = $557.35
     
-    expect(min).is.above(400000000);
+    expect(min).is.above(300000000);
   });
 
   it("Min job balance with callback", async function() {
@@ -427,7 +427,7 @@ describe("Nexus", function(done) {
     // console.log(min.toString());
     // 76,349.8769 * 0.00730 $/DAPP = $557.35
     
-    expect(min).is.above(400000000);
+    expect(min).is.above(300000000);
   });
 
   it("Min service balance", async function() {
