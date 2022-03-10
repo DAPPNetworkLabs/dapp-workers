@@ -19,8 +19,7 @@ import { loc } from '@loc';
 import * as helpers from '@helpers'
 
 const section = 'consumer'; // update
-const page = 'jobs'; // update
-const stateSelector = 'jobs'; // update
+const page = 'request job'; // update
 
 const ethereum = window.ethereum;
 
@@ -31,8 +30,14 @@ class RequestJob extends Component {
             account: null,
             chainId: null,
             // update
-            [stateSelector]: {
-                lastId: 0
+            queueJob: {
+                owner: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
+                imageName: 'rust-compiler',
+                inputFS: 'QmUm1JD5os8p6zu6gQBPr7Rov2VD6QzMeRBH5j4ojFBzi6',
+                callback: false,
+                gasLimit: 1000000,
+                requireConsistent: false,
+                args: ["arg1","arg2"]
             },
             show: false
         }
@@ -53,9 +58,7 @@ class RequestJob extends Component {
 
     handleChange(event, func, valType) {
         let { name, value, type } = event.target;
-        console.log({ name, value, type }, valType);
         if(valType.includes('array')) {
-            
             value.includes(',') ? value = value.split(',') : value = [value];
         }
         if(type == "checkbox") value = event.target.checked;
@@ -84,16 +87,19 @@ class RequestJob extends Component {
      
 
     forms = [
-        // update setDsps
         {
-            onClick:()=>lib.web3.approveDockerImage(this),
-            buttonText:"Approve Docker",
-            stateSelector,
+            onClick:()=>lib.web3.queueJob(this),
+            stateSelector:"queueJob",
             inputs:[
+                { name:"owner",placeholder: "address owner"},
                 { name:"imageName",placeholder: "string imageName"},
-                { name:"imageHash",placeholder: "string imageHash"},
+                { name:"inputFS",placeholder: "string inputFS"},
+                { name:"callback",placeholder: "bool callback"},
+                { name:"gasLimit",placeholder: "uint gasLimit"},
+                { name:"requireConsistent",placeholder: "bool requireConsistent"},
+                { name:"args",placeholder: "string[] args"}
             ]
-        },
+        }
     ]
   
     render() {
@@ -109,7 +115,7 @@ class RequestJob extends Component {
                     inputs={el.inputs}
                     previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}
-                    previewValues={this.separateObject(this.state[stateSelector])} // update
+                    previewValues={this.separateObject(this.state.queueJob)} // update
                     isMobile={isMobile}
                     openClose={this.openClose}
                     show={this.state.show}
