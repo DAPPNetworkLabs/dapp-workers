@@ -26,7 +26,7 @@ const Services = (props) => {
         })
     }
     return (
-        <div className={props.isMobile ? classes.overflow : ''}>
+        <div className={props.isMobile ? classes.overflow : classes.desktopOverflow}>
             <table>
                 <tr>
                     <th>OWNER</th> 

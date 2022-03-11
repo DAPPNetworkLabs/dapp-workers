@@ -3,5 +3,5 @@ export function getScreenSize() {
 }
   
 export function isMobile() {
-  return getScreenSize() <= 820;
+  return getScreenSize() <= 1000;
 }
