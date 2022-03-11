@@ -54,10 +54,42 @@ const fetchJobs = async (thisObject, stateSpecifier) => {
 }
 
 const fetchServices = async (thisObject, stateSpecifier) => {
+    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
     const lastJob = await fetchLastJob();
     for(let i=lastJob; i > 0; i--) {
         const service = await contract.methods.services(i).call();
-        if(service.owner != "0x0000000000000000000000000000000000000000") services.push(service);
+        if(service.owner != "0x0000000000000000000000000000000000000000") {
+            console.log('ring ring')
+            let 
+            selectedDsps = [], 
+            noError=true, 
+            i = 0;
+            while(noError && accounts[0]) {
+                try {
+                    const dsp = await contract.methods.providers(accounts[0],i).call();
+                    selectedDsps.push(dsp)
+                    i++;
+                } catch(e) {
+                    noError = false;
+                }
+            }
+            let endpoints = [];
+            for(const el of selectedDsps) {
+                const port = await contract.methods.getPortForDSP(i,el).call();
+                const endpoint = await contract.methods.getDSPEndpoint(
+                    el
+                ).call();
+                endpoints.push({
+                    dsp: el,
+                    endpoint: `${endpoint}:${port}`
+                })
+            }
+            services.push({
+                ...service,
+                endpoints
+            });
+            console.log(services)
+        }
     }
     services = uniq(services);
     thisObject.setState({
@@ -116,7 +148,7 @@ const fetchDspsByConsumer = async (thisObject,stateSelector) => {
     selectedDsps = [], finalDsps = [], 
     noError=true, 
     serviceErrors=0, jobErrors=0, 
-    i = 0;
+    i = 0, port = '';
     while(noError && accounts[0]) {
         try {
             const dsp = await contract.methods.providers(accounts[0],i).call();
@@ -163,7 +195,8 @@ const fetchDspsByConsumer = async (thisObject,stateSelector) => {
             servicesCompleted,
             dappGas,
             jobErrors,
-            serviceErrors
+            serviceErrors,
+            port
         });
     }
     thisObject.setState({
