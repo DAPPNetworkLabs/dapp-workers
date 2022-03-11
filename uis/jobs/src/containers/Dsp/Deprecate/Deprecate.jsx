@@ -38,8 +38,8 @@ class Deprecate extends Component {
 
     componentDidMount() {
         const accounts = ethereum.request({ method: 'eth_requestAccounts' });
-        lib.web3.fetchJobs(this);
-        lib.web3.fetchServices(this);
+        
+        
         lib.metamask.runHandlers(this);
         this.setState({ account: accounts[0] });
     }

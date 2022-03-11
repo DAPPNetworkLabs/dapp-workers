@@ -4,10 +4,17 @@ import classes from './Jobs.module.scss';
 const Jobs = (props) => {
     let jobs;
     if(props.jobs) {
+        console.log(props.jobs);
         jobs = props.jobs.map((el,i)=>{
             return (
                 <div>
-                    {el.job}
+                    {el.owner}
+                    {el.consumer}
+                    {el.imageName}
+                    {el.callback}
+                    {el.requireConsistent}
+                    {el.gasLimit}
+                    {el.resultsCount}
                 </div>
             )
         })

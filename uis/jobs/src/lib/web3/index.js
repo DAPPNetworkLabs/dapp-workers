@@ -29,22 +29,34 @@ const fetchLastJob = async () => {
     return id;
 }
 
-const fetchJobs = async (thisObject) => {
-    for(let i=0; i < await fetchLastJob(); i++) {
+const fetchJobs = async (thisObject, stateSpecifier) => {
+    const lastJob = await fetchLastJob();
+    for(let i=lastJob; i > 0; i--) {
         const job = await contract.methods.jobs(i).call();
         jobs.push(job);
     }
     console.log(JSON.stringify(jobs));
-    thisObject.setState({jobs: JSON.stringify(jobs)});
+    thisObject.setState({
+        [stateSpecifier]: {
+            ...thisObject.state[stateSpecifier],
+            jobs
+        }
+    });
 }
 
-const fetchServices = async (thisObject) => {
-    for(let i=0; i < await fetchLastJob(); i++) {
+const fetchServices = async (thisObject, stateSpecifier) => {
+    const lastJob = await fetchLastJob();
+    for(let i=lastJob; i > 0; i--) {
         const job = await contract.methods.services(i).call();
         services.push(job);
     }
     console.log(JSON.stringify(services));
-    thisObject.setState({services: JSON.stringify(services)});
+    thisObject.setState({
+        [stateSpecifier]: {
+            ...thisObject.state[stateSpecifier],
+            services
+        }
+    });
 }
 
 // const fetchJobImage = async (thisObject) => {

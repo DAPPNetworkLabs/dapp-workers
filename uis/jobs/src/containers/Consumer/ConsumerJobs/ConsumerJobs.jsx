@@ -42,8 +42,7 @@ class ConsumerJobs extends Component {
 
     componentDidMount() {
         const accounts = ethereum.request({ method: 'eth_requestAccounts' });
-        lib.web3.fetchJobs(this);
-        lib.web3.fetchServices(this);
+        lib.web3.fetchJobs(this, stateSelector);
         lib.metamask.runHandlers(this);
         this.setState({ account: accounts[0] });
     }
@@ -58,6 +57,7 @@ class ConsumerJobs extends Component {
   
     render() {
         const isMobile = helpers.isMobile();
+        console.log(this.state[stateSelector].jobs);
         return (
             <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
                 <div className={classes.flex}>
