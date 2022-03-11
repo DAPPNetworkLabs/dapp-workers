@@ -63,3 +63,26 @@ $color-error: red;
   margin-right: 20px;
   margin-left: 20px;
 }
+
+table, th, td {
+  border: 5px solid $color-blue;
+  border-collapse: collapse;
+}
+
+th,td {
+  padding: 5px;
+}
+
+th {
+  background-color: $color-dark-blue;
+  color: $color-white;
+}
+
+table {
+  margin-top: 20px;
+}
+
+.overflow {
+    overflow-x: auto;
+    width: 100%;
+}

@@ -102,6 +102,7 @@ class ConsumerServices extends Component {
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
                         <Services
                             services={this.state[stateSelector].services}
+                            isMobile={isMobile}
                         />
                     </div>
                     <Footer

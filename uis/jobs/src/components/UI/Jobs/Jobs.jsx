@@ -7,22 +7,32 @@ const Jobs = (props) => {
         console.log(props.jobs);
         jobs = props.jobs.map((el,i)=>{
             return (
-                <div>
-                    {el.owner}
-                    {el.consumer}
-                    {el.imageName}
-                    {el.callback}
-                    {el.requireConsistent}
-                    {el.gasLimit}
-                    {el.resultsCount}
-                </div>
+                <tr>
+                    <td>{`${el.owner.slice(0,4)}..${el.owner.slice(-4)}`}</td>
+                    <td>{`${el.consumer.slice(0,4)}..${el.consumer.slice(-4)}`}</td>
+                    <td>{el.imageName}</td>
+                    <td>{el.callback.toString()}</td>
+                    <td>{el.requireConsistent.toString()}</td>
+                    <td>{el.gasLimit}</td>
+                    <td>{el.resultsCount}</td>
+                </tr>
             )
         })
     }
     return (
-        <div>
-            <div>Jobs:</div>
-            <div>{jobs}</div>
+        <div className={props.isMobile ? classes.overflow : ''}>
+            <table>
+                <tr>
+                    <th>OWNER</th> 
+                    <th>CONSUMER</th>
+                    <th>IMAGE</th>
+                    <th>CALLBACK</th>
+                    <th>CONSISTENT</th>
+                    <th>GAS LIMIT</th>
+                    <th>RESULTS</th>
+                </tr>
+                {jobs}
+            </table>
         </div>
     );
 };

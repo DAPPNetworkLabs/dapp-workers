@@ -74,6 +74,7 @@ class ConsumerJobs extends Component {
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
                         <Jobs
                             jobs={this.state[stateSelector].jobs}
+                            isMobile={isMobile}
                         />
                     </div>
                     <Footer
