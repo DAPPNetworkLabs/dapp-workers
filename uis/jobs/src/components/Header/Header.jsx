@@ -1,5 +1,6 @@
 import React from 'react';
 import classes from './Header.module.scss';
+import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { withLocalize } from 'react-localize-redux';
 
@@ -181,7 +182,7 @@ class Header extends React.Component {
       body = (
       <div className={[this.props.isDayNight ? classes.containerMobileDay : classes.containerMobileNight,classes.open].join(' ')}>
         <div className={classes.flexOpen}>
-          <img className={classes.logoMobile} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/>
+          <NavLink to="/"><img className={classes.logoMobile} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></NavLink>
           <MobileMenuToggleButton isDayNight={this.props.isDayNight} onToggleButtonClick={this.props.openClose} />
         </div>
         <div className={classes.mobileButtons}>
@@ -220,15 +221,15 @@ class Header extends React.Component {
       body = (
         <>
           <div className={classes.flexForm}>
-            <img className={classes.logoMobile} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/>
+            <NavLink to="/"><img className={classes.logoMobile} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></NavLink>
             <MobileMenuToggleButton isDayNight={this.props.isDayNight} onToggleButtonClick={this.props.openClose} />
           </div>
         </>
       )
-    } else {
+        } else {
       body = (
       <div className={classes.container}>
-        <div><img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></div>
+        <div><NavLink to="/"><img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></NavLink></div>
           <div className={classes.dropdown}>
             <Button 
                 wide={false}
