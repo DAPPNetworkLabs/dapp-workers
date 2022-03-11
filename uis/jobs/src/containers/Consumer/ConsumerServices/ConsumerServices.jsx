@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import classes from './ConsumerServices.module.scss';
 import Header from '@components/Header/Header';
-import Form from '@components/UI/Form/Form';
+import Services from '@components/UI/Services/Services';
 import Title from '@components/UI/Title/Title';
 import SubTitle from '@components/UI/SubTitle/SubTitle';
 import Footer from '@components/Footer/Footer';
@@ -85,24 +85,6 @@ class ConsumerServices extends Component {
   
     render() {
         const isMobile = helpers.isMobile();
-        const forms = this.forms.map(el => {
-            return (
-                <Form
-                    wide={true}
-                    onClick={el.onClick}
-                    onChange={this.handleChange}
-                    buttonText={loc(`${section}.${page}.button`,this.props.lang)}
-                    stateSelector={el.stateSelector}
-                    inputs={el.inputs}
-                    previews={loc(`${section}.${page}.previews`,this.props.lang)}
-                    isDayNight={this.props.isDayNight}
-                    previewValues={this.separateObject(this.state[stateSelector])} // update
-                    isMobile={isMobile}
-                    openClose={this.openClose}
-                    show={this.state.show}
-                />
-            )
-        });
         return (
             <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
                 <div className={classes.flex}>
@@ -118,7 +100,9 @@ class ConsumerServices extends Component {
                     <div className={isMobile ? classes.centerMobile : classes.center}>
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
-                        {forms}
+                        <Services
+                            services={this.state[stateSelector].services}
+                        />
                     </div>
                     <Footer
                         isDayNight={this.props.isDayNight}

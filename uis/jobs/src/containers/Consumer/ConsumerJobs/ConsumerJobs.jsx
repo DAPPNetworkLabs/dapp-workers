@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 import classes from './ConsumerJobs.module.scss';
 import Header from '@components/Header/Header';
-import Form from '@components/UI/Form/Form';
 import Jobs from '@components/UI/Jobs/Jobs';
 import Title from '@components/UI/Title/Title';
 import SubTitle from '@components/UI/SubTitle/SubTitle';
