@@ -40,7 +40,7 @@
             "previews":[
                 { "name":"OWNER","type": "address","short":"Address requesting service."},
                 { "name":"IMAGE","type": "string","short":"Docker image service will use."},
-                { "name":"UPLOAD/DOWNLOAD MB","type": "uint","short":"Amount in megabytes of upload/download bandwidth."},
+                { "name":"UP/DOWNLOAD MB","type": "uint","short":"Amount in megabytes of upload/download bandwidth."},
                 { "name":"STORAGE MB","type": "uint","short":"Amount in megabytes of total storage for the service."},
                 { "name":"INPUT","type": "string","short":"Input command for docker image."},
                 { "name":"ARGUMENTS","type": "array","short":"Arguments to provide docker image comma separated."},
@@ -55,7 +55,7 @@
                 { "name":"SERVICE ID","type": "uint","short":"ID of service to extend."},
                 { "name":"IMAGE","type": "string","short":"Docker image service used."},
                 { "name":"MONTHS","type": "uint","short":"Months to extend service for, covers base cost, DOES multiply upload/download/storage costs per month."},
-                { "name":"UPLOAD/DOWNLOAD MB","type": "uint","short":"Amount in megabytes of upload/download bandwidth."},
+                { "name":"UP/DOWNLOAD MB","type": "uint","short":"Amount in megabytes of upload/download bandwidth."},
                 { "name":"STORAGE MB","type": "uint","short":"Amount in megabytes of additional storage for the service."}
             ]
         },

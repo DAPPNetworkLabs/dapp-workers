@@ -1,8 +1,8 @@
 import Web3 from 'web3';
 import NexusJSON from '../../abi/Nexus.json';
 
-const jobs = [];
-const services = [];
+let jobs = [];
+let services = [];
 const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR || 'ws://localhost:8545');
 const web3 = new Web3(provider);
 // const web3 = new Web3(process.env.ETH_ADDR || 'http://localhost:8545');
@@ -23,6 +23,15 @@ const subscribeContractEvent = (eventName,thisObject) => {
     });
 }
 
+const uniq = (arr) =>  {
+    let jsonObject = arr.map(JSON.stringify);
+      
+    console.log(jsonObject);
+
+    let uniqueSet = new Set(jsonObject);
+    return Array.from(uniqueSet).map(JSON.parse);
+}
+
 const fetchLastJob = async () => {
     const id = await contract.methods.lastJobID().call();
     console.log(id);
@@ -33,9 +42,9 @@ const fetchJobs = async (thisObject, stateSpecifier) => {
     const lastJob = await fetchLastJob();
     for(let i=lastJob; i > 0; i--) {
         const job = await contract.methods.jobs(i).call();
-        jobs.push(job);
+        if(job.owner != "0x0000000000000000000000000000000000000000") jobs.push(job);
     }
-    console.log(JSON.stringify(jobs));
+    jobs = uniq(jobs);
     thisObject.setState({
         [stateSpecifier]: {
             ...thisObject.state[stateSpecifier],
@@ -47,10 +56,10 @@ const fetchJobs = async (thisObject, stateSpecifier) => {
 const fetchServices = async (thisObject, stateSpecifier) => {
     const lastJob = await fetchLastJob();
     for(let i=lastJob; i > 0; i--) {
-        const job = await contract.methods.services(i).call();
-        services.push(job);
+        const service = await contract.methods.services(i).call();
+        if(service.owner != "0x0000000000000000000000000000000000000000") services.push(service);
     }
-    console.log(JSON.stringify(services));
+    services = uniq(services);
     thisObject.setState({
         [stateSpecifier]: {
             ...thisObject.state[stateSpecifier],

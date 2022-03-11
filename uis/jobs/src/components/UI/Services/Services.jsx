@@ -30,7 +30,7 @@ const Services = (props) => {
                     <th>MONTHS</th>
                     <th>STARTED</th>
                     <th>I/O LIMIT</th>
-                    <th>STORAG LIMIT</th>
+                    <th>STORAGE LIMIT</th>
                     <th>END DATE</th>
                 </tr>
                 {services}

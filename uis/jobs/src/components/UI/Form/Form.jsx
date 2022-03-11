@@ -49,7 +49,14 @@ const Form = (props) => {
                 value = props.previewValues[i].key;
             }
         } else if(props.previews[i].type == "array") {
-            value = props.previewValues[i].key.toString();
+            const item = props.previewValues[i].key.toString()
+            if(props.previewValues[i].key && item.length > 30 && !props.isMobile) {
+                value = `${item.slice(0,12)}..${item.slice(-12)}`
+            } else if(props.previewValues[i].key && item.length > 10 && props.isMobile) {
+                value = `${item.slice(0,4)}..${item.slice(-4)}`
+            } else {
+                value = item;
+            }
         } else if(props.previews[i].type == "uint") {
             value = (Number(props.previewValues[i].key));
         } else {

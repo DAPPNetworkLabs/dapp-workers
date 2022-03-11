@@ -56,15 +56,18 @@ class RequestService extends Component {
         lib.metamask.rmHandlers();
     }
 
-    handleChange(event, func) {
-        let { name, value, type } = event.target;
-        if(type=="checkbox") value = event.target.checked;
-        this.setState({
-            [func]: {
-                ...this.state[func],
-                [name]: value
-            },
-        });
+    handleChange(event, func, valType) {	
+        let { name, value, type } = event.target;	
+        if(valType.includes('array')) {	
+            value.includes(',') ? value = value.split(',') : value = [value];	
+        }	
+        if(type == "checkbox") value = event.target.checked;	
+        this.setState({	
+            [func]: {	
+                ...this.state[func],	
+                [name]: value	
+            },	
+        });	
     }
 
     openClose = () => {
