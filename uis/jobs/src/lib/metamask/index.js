@@ -22,8 +22,8 @@ const handleDisconnect = (thisObject) => {
 }
 
 const handleAccountChange = (thisObject) => {
-    ethereum.on('accountsChanged', (account) => {
-        thisObject.setState({ account });
+    ethereum.on('accountsChanged', (accounts) => {
+        thisObject.setState({ account: accounts[0] });
     });
 }
 

@@ -1,24 +1,11 @@
 import React from 'react';
 import classes from './Services.module.scss';
-let test = [
-    {
-        "dsp": "0xE26f809e5826fd8E1c0dA1E6d9f308da9D86De4f",
-        "endpoint": "asdf:0"
-    },
-    {
-        "dsp": "0xE26f809e5826fd8E1c0dA1E6d9f308da9D86De4f",
-        "endpoint": "asdf:0"
-    },
-    {
-        "dsp": "0xE26f809e5826fd8E1c0dA1E6d9f308da9D86De4f",
-        "endpoint": "asdf:0"
-    }
-        ]
+
 const Services = (props) => {
     let services;
     if(props.services) {
         services = props.services.map((el,i) => {
-            const dsps = test.map((dsp,index) => {
+            const dsps = el.endpoints.map((dsp,index) => {
                 return (
                     <div>{`${dsp.dsp.slice(0,4)}..${dsp.dsp.slice(-4)} | ${dsp.endpoint}`}</div>
                 );

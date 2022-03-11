@@ -32,8 +32,7 @@ class ConsumerJobs extends Component {
             chainId: null,
             // update
             [stateSelector]: {
-                lastJobId: 0,
-                jobs: null
+                lastJobId: 0
             },
             show: false
         }
