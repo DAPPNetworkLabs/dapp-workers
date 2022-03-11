@@ -230,7 +230,7 @@ class Header extends React.Component {
       body = (
       <div className={classes.container}>
           <div>
-            <NavLink to="/">
+            <NavLink to="/" className={this.props.isDayNight ?  '' : classes.logoNight}>
               <img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/>
             </NavLink>
           </div>

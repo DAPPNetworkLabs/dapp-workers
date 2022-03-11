@@ -36,12 +36,13 @@
   transform: translateX(0);
 }
 
-.logo, .logoMobile {
+.logo,.logoMobile {
     width: 143px;
     height: 24px;
 }
 
-.logoMobile {
+.logoNight:hover{
+  background-color: $color-grey;
 }
 
 .headerButtons {
