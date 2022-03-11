@@ -836,6 +836,12 @@ describe("Nexus", function(done) {
     expect(postDspBal).is.above(preDspBal);
   });
 
+  it("Get dsp amount", async function() {
+    const amount = await nexusContract.getDSPAmount(addr1.address,dsp1.address);
+    
+    expect(amount).is.above(0);
+  });
+
   it("Get image approved for dsp", async function() {
     const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"runner");
     

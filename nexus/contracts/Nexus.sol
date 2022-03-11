@@ -495,7 +495,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         jd.owner = args.owner;
         jd.imageName = args.imageName;
         jd.gasLimit = args.gasLimit;
-        
 
         for(uint i=0;i<dsps.length;i++) {
             require(isImageApprovedForDSP(dsps[i], args.imageName), "not approved");
@@ -585,11 +584,10 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         }
         
         uint gasUsed;
-        bool success;
 
         if(jd.callback){
             gasUsed = gasleft();
-            success = callWithExactGas(jd.gasLimit, jd.consumer, abi.encodeWithSignature(
+            callWithExactGas(jd.gasLimit, jd.consumer, abi.encodeWithSignature(
                 "_dspcallback(string,string)",
                 args.outputFS,
                 args.outputHash
@@ -1308,6 +1306,13 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             services[id].dspServiceData[dsp].ioMegaBytesLimit,
             services[id].dspServiceData[dsp].storageMegaBytesLimit
         );
+    }
+    
+    /**
+     * @dev returns dsp amount
+     */
+    function getDSPAmount(address account, address dsp) external view returns (uint) {
+        return dspData[account][dsp].amount;
     }
     
     /**
