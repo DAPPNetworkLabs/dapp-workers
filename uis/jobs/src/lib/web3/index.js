@@ -110,6 +110,69 @@ const fetchDspInfo = async (thisObject) => {
     thisObject.setState({dspInfo});
 }
 
+const fetchDspsByConsumer = async (thisObject,stateSelector) => {
+    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+    let 
+    selectedDsps = [], finalDsps = [], 
+    noError=true, 
+    serviceErrors=0, jobErrors=0, 
+    i = 0;
+    while(noError && accounts[0]) {
+        try {
+            const dsp = await contract.methods.providers(accounts[0],i).call();
+            selectedDsps.push(dsp)
+            i++;
+        } catch(e) {
+            noError = false;
+        }
+    }
+    for(const el of selectedDsps) {
+        const endpoint = await contract.methods.getDSPEndpoint(
+            el
+        ).call();
+        let jobsCompleted = 0, servicesCompleted = 0, dappGas;
+        dappGas = await contract.methods.getDSPAmount(
+            accounts[0],
+            el
+        ).call();
+        const lastJob = await fetchLastJob();
+        for(let i=lastJob; i > 0; i--) {
+            const service = await contract.methods.services(i).call();
+            if(
+                service.owner != "0x0000000000000000000000000000000000000000" && 
+                service.owner.toLowerCase() == accounts[0].toLowerCase()
+            ) {
+                const completed = await contract.methods.jobServiceCompleted(i,el,false).call();
+                if(completed) servicesCompleted++;
+                if(completed && service.started) serviceErrors++;
+            }
+            const job = await contract.methods.jobs(i).call();
+            if(
+                job.owner != "0x0000000000000000000000000000000000000000" && 
+                job.owner.toLowerCase() == accounts[0].toLowerCase()
+            ) {
+                const completed = await contract.methods.jobServiceCompleted(i,el,true).call();
+                if(completed) jobsCompleted++;
+                jobErrors = selectedDsps.length - job.resultsCount
+            }
+        }
+        finalDsps.push({
+            dsp: el,
+            endpoint,
+            jobsCompleted,
+            servicesCompleted,
+            dappGas,
+            jobErrors,
+            serviceErrors
+        });
+    }
+    thisObject.setState({
+        [stateSelector]: {
+            ...thisObject.state[stateSelector],
+            dsps: finalDsps
+    },});
+}
+
 const fetchDspData = async (thisObject) => {
     const dspData = await contract.methods.dspData(
         thisObject.state.dspDataForm.account,
@@ -428,6 +491,7 @@ export default {
     buyGasFor,
     setConsumerPermissions,
     setQuorum,
+    fetchDspsByConsumer,
     fetchJobServiceCompleted,
     fetchGetMinBalance,
     fetchIsServiceDone,

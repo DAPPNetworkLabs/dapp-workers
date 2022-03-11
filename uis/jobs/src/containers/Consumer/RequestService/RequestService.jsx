@@ -31,13 +31,13 @@ class RequestService extends Component {
             chainId: null,
             // update
             queueService: {
-                owner: null,
-                imageName: null,
-                ioMegaBytes: null,
-                storageMegaBytes: null,
-                inputFS: null,
-                args: [],
-                months: null
+                owner: '0x21dfA04241ca05320E9dCd529F15f6F55115bbC3',
+                imageName: 'wasi-service',
+                ioMegaBytes: 1,
+                storageMegaBytes: 1,
+                inputFS: 'QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx',
+                args: ["target/wasm32-wasi/release/test"],
+                months: 1
             },
             show: false
         }

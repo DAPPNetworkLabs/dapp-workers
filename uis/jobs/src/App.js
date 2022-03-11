@@ -20,6 +20,7 @@ import SetConfig from './containers/Admin/SetConfig/SetConfig';
 import UnapproveImage from './containers/Admin/UnapproveImage/UnapproveImage';
 
 // Consumer
+import DspInfo from './containers/Consumer/DspInfo/DspInfo';
 import BuyGas from './containers/Consumer/BuyGas/BuyGas';
 import ExtendService from './containers/Consumer/ExtendService/ExtendService';
 import ConsumerJobs from './containers/Consumer/ConsumerJobs/ConsumerJobs';
@@ -47,6 +48,7 @@ function App() {
           <Route path="/admin/approve-image" exact element={<ApproveImage/>} />
           <Route path="/admin/unapprove-image" exact element={<UnapproveImage/>} />
 
+          <Route path="/consumer/dsp-info" exact element={<DspInfo/>} />
           <Route path="/consumer/buy-gas" exact element={<BuyGas/>} />
           <Route path="/consumer/sell-gas" exact element={<SellGas/>} />
           <Route path="/consumer/request-job" exact element={<RequestJob/>} />

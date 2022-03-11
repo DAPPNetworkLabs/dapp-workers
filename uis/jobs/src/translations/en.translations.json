@@ -1,5 +1,10 @@
 {
     "consumer": {
+        "dsp info": {
+            "title": "DSP INFO",
+            "subtitle": "Information on selected DSPs.",
+            "button": ""
+        },
         "buy gas": {
             "title": "BUY GAS FOR DSP",
             "subtitle": "Provide amount, consumer address, and DSP account to fund a DSP to use DAPP Network jobs & services.",

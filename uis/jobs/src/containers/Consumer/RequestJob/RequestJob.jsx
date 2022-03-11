@@ -31,13 +31,13 @@ class RequestJob extends Component {
             chainId: null,
             // update
             queueJob: {
-                owner: '0xe26f809e5826fd8e1c0da1e6d9f308da9d86de4f',
-                imageName: 'rust-compiler',
+                owner: '0x21dfA04241ca05320E9dCd529F15f6F55115bbC3',
+                imageName: 'runner',
                 inputFS: 'QmUm1JD5os8p6zu6gQBPr7Rov2VD6QzMeRBH5j4ojFBzi6',
                 callback: false,
                 gasLimit: 1000000,
                 requireConsistent: false,
-                args: ["arg1","arg2"]
+                args: [""]
             },
             show: false
         }

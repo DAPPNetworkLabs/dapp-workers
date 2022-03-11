@@ -84,6 +84,10 @@ class Header extends React.Component {
         'text':'Consumer',
         'dropdown': [
           {
+            'name': 'Dsp Info',
+            'path': '/consumer/dsp-info'
+          },
+          {
             'name': 'Buy Gas',
             'path': '/consumer/buy-gas'
           },

@@ -6,6 +6,8 @@ const Services = (props) => {
     if(props.services) {
         console.log(props.services);
         services = props.services.map((el,i)=>{
+            console.log(el.endDate);
+            console.log(typeof(el.endDate))
             return (
                 <tr>
                     <td>{`${el.owner.slice(0,4)}..${el.owner.slice(-4)}`}</td>
@@ -15,7 +17,7 @@ const Services = (props) => {
                     <td>{el.started.toString()}</td>
                     <td>{el.ioMegaBytes}</td>
                     <td>{el.storageMegaBytes}</td>
-                    <td>{el.endDate}</td>
+                    <td>{new Date(Number(el.endDate)*1000).toLocaleDateString()}</td>
                 </tr>
             )
         })
