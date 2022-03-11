@@ -23,7 +23,7 @@ const Form = (props) => {
     });
     const previewItems = props.inputs.map((el,i) => {
         let text, value;
-        text = props.previews[i].name
+        text = props.previews[i].name;
         if(props.previews[i].type == "address"){
             value = props.previewValues[i].key ? `${props.previewValues[i].key.slice(0,4)}..${props.previewValues[i].key.slice(-4)}` : '0x'
         } else if(props.previews[i].type == "array_addresses"){
@@ -72,6 +72,10 @@ const Form = (props) => {
             >
             <div className={classes.keyValue}>
                 {text}
+                <span className={classes.formSpan}>
+                    i
+                    <span class={classes.tooltiptext}>{props.previews[i].short}</span>
+                </span>
             </div>
             <div className={classes.keyValue}>
                 {value}

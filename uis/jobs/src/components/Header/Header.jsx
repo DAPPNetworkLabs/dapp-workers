@@ -229,7 +229,11 @@ class Header extends React.Component {
         } else {
       body = (
       <div className={classes.container}>
-        <div><NavLink to="/"><img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></NavLink></div>
+          <div>
+            <NavLink to="/">
+              <img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/>
+            </NavLink>
+          </div>
           <div className={classes.dropdown}>
             <Button 
                 wide={false}
