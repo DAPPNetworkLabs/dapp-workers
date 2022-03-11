@@ -76,7 +76,7 @@ describe("Nexus", function(done) {
       dsp1 = new ethers.Wallet(process.env.PRIVATE_KEY,dsp1.provider);
       consumer1 = new ethers.Wallet("0xc327bdb598a257632f48e4368ebe7be66a40daff34569c2f2ba36ee96e893674",dsp1.provider);
       // 10000 ETH
-      const dapps = ethers.utils.parseUnits("800000",4);
+      const dapps = ethers.utils.parseUnits("80000000",4);
       await dappTokenContract.mint("0x21dfA04241ca05320E9dCd529F15f6F55115bbC3", dapps);
       await dappTokenContract.connect(consumer1).approve(nexusContract.address, dapps);
       // await network.provider.send("hardhat_setBalance", [
@@ -94,6 +94,7 @@ describe("Nexus", function(done) {
     }
 
     console.log(`nexus contract: ${nexusContract.address}`);
+    console.log(`dapp contract: ${dappTokenContract.address}`);
 
     console.log(`process.env.ONLY_CONTRACTS: ${process.env.ONLY_CONTRACTS} ${typeof(process.env.ONLY_CONTRACTS)}`);
 
@@ -221,7 +222,6 @@ describe("Nexus", function(done) {
     await nexusContract.approveImage("rust-compiler","hash");
     await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,100,100);
     
-    console.log('job start')
     await nexusContract.queueJob({
       owner: addr1.address,
       imageName: "rust-compiler",
@@ -231,7 +231,6 @@ describe("Nexus", function(done) {
       requiresConsistent: false,
       args: []
     });
-    console.log('job end')
 
     const eventPromise = new Promise((resolve, reject) => {
         nexusContract.once("JobResult", (
