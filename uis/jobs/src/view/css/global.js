@@ -19,6 +19,5 @@ export const GlobalStyles = createGlobalStyle`
     color: ${props => props.theme.text};
     height: 100%;
     font-family: "IBM Plex Mono", monospace;
-    transition: all 0.25s linear;
     margin: 0;
   }`;
