@@ -32,6 +32,8 @@ services:
       - ./services/orchestrator:/services/orchestrator
   orchestrator:
     image: orchestrator
+    ports:
+      - "8050:8050" 
     build: services/orchestrator
     environment:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact

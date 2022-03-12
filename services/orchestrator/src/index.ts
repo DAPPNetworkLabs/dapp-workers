@@ -8,9 +8,9 @@ import { postTrx } from './postTrx';
 import { callTrx } from './callTrx';
 
 const Web3 = require('web3');
-let abi = require(process.env.NEXUS_PATH || '/nexus/abi/contracts/Nexus.sol/Nexus.json');
-// abi = JSON.stringify(abi);
+let abi = require(process.env.NEXUS_PATH || '/nexus/artifacts/contracts/Nexus.sol/Nexus.json');
 
+export { address };
 const dal = require('./dal/models/index');
 const { fetchAllUsageInfo, updateUsageInfo, removeUsageInfo } = require('./dal/dal')
 import { execPromise } from './exec';
@@ -39,7 +39,7 @@ let startup = true;
 const address = process.env.ADDRESS;
 const fromBlock = process.env.FROM_BLOCK || 0; // load and save to file
 const theContract = new web3.eth.Contract(
-    abi,
+    abi.abi,
     address,
     {}
 );
@@ -189,8 +189,6 @@ const intervalCallback = async () => {
         await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
     }
 }
-
-export { abi, address };
 let dspAccount;
 let ownerAccount;
 const run = () => {
@@ -396,3 +394,49 @@ function subscribe(theContract: any) {
         }
     });
 }
+
+const express = require('express');
+const app = express();
+const port = 8050;
+
+app.get('/dapp-workers/io', async function(req, res, next) {
+    try {
+        const jobs = await fetchAllUsageInfo();
+        const job = jobs.find(el => el.key == req.params.id);
+      
+        const cmd = `docker stats --no-stream --format "{{.NetIO}}" ${job.dockerId}`;
+    
+        const ioInfo: any = await execPromise(cmd,{});
+    
+        const inputUsage = toMegaBytes(ioInfo.split(' / ')[0].replace(/[\n\r]/g, ''));
+        const outputUsage = toMegaBytes(ioInfo.split(' / ')[1].replace(/[\n\r]/g, ''));
+                
+        res.send({
+            io_usage: Math.floor((inputUsage + outputUsage) + job.last_io_usage)
+        })
+    } catch(e) {
+        next(e);
+    }
+});
+
+app.get('/dapp-workers/storage', async function(req, res, next) {
+    try {
+        const jobs = await fetchAllUsageInfo();
+        const job = jobs.find(el => el.key == req.params.id);
+        const storageUsed: any = await execPromise(`docker ps --size --filter "id=${job.dockerId}" --format "{{.Size}}"`,{});
+                
+        res.send({
+            storage_usage: Math.floor(toMegaBytes(storageUsed.split(' ')[0]))
+        })
+    } catch(e) {
+        next(e);
+    }
+});
+
+app.get('/', function(req, res) {
+  res.send('Hello World!')
+});
+
+app.listen(port, function() {
+  console.log(`Example app listening on port ${port}!`)
+});

@@ -4,8 +4,6 @@ const { network, ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
 const fetch =require('node-fetch');
 
-let nexusAbi = require('../abi/contracts/Nexus.sol/Nexus.json')
-
 const fs = require('fs');
 const path = require('path');
 const { hexValue } = require("ethers/lib/utils");
