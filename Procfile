@@ -1,1 +1,1 @@
-web: npm postinstall
+web: bin/boot
