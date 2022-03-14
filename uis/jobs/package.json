@@ -25,7 +25,9 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "lint": "eslint src/**/*.js src/**/*.jsx --fix"
+    "lint": "eslint src/**/*.js src/**/*.jsx --fix",
+    "deploy": "mkdir -p ../api/public && cp -r ./build/* ../api/public",
+    "postinstall": "npm run build && npm run deploy && echo 'Client deployed!'"
   },
   "eslintConfig": {
     "extends": [
@@ -49,6 +51,7 @@
     "node-sass": "^6.0.1",
     "react-app-rewire-alias": "^1.1.7",
     "react-app-rewired": "^2.2.1",
-    "sass-loader": "^12.3.0"
+    "sass-loader": "^12.3.0",
+    "serve": "^13.0.2"
   }
 }
