@@ -26,8 +26,7 @@
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
     "lint": "eslint src/**/*.js src/**/*.jsx --fix",
-    "deploy": "mkdir -p ../api/public && cp -r ./build/* ../api/public",
-    "postinstall": "npm run build && npm run deploy && echo 'Client deployed!'"
+    "postinstall": "npm run build"
   },
   "eslintConfig": {
     "extends": [
