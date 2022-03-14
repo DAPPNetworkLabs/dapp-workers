@@ -1,1 +1,1 @@
-web: node app.js
+web: node /app/uis/jobs/app.js
