@@ -93,6 +93,7 @@ describe("Nexus", function(done) {
 
     console.log(`nexus contract: ${nexusContract.address}`);
     console.log(`dapp contract: ${dappTokenContract.address}`);
+    console.log(`consumer contract: ${consumerContract.address}`);
 
     console.log(`process.env.ONLY_CONTRACTS: ${process.env.ONLY_CONTRACTS} ${typeof(process.env.ONLY_CONTRACTS)}`);
 
