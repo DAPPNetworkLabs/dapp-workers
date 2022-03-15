@@ -33,9 +33,9 @@ class RequestService extends Component {
             queueService: {
                 owner: '0x21dfA04241ca05320E9dCd529F15f6F55115bbC3',
                 imageName: 'wasi-service',
-                ioMegaBytes: 1,
-                storageMegaBytes: 1,
-                inputFS: 'QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx',
+                ioMegaBytes: 100,
+                storageMegaBytes: 100,
+                inputFS: 'QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM',
                 args: ["target/wasm32-wasi/release/test"],
                 months: 1
             },

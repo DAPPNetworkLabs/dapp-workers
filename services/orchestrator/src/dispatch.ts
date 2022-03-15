@@ -99,6 +99,7 @@ const killIfRunning = async (port) => {
 
 export async function dispatchService(id, dockerImage, ipfsInput, args): Promise<any> {
   const docker = new Docker();
+  args = [...args,port]
   console.log("running service", dockerImage,ipfsInput, args);
 
   const writableStream = new Stream.Writable()

@@ -22,6 +22,8 @@ const app = express();
 // Initialize Swagger Express Middleware with our Swagger file
 let swaggerFile = path.join("/tmp1", 'swagger.yaml');
 let wasmFile = path.resolve(process.argv[2]);
+console.log(process.argv[3]);
+console.log(typeof(process.argv[3]));
 let wasmmodule;
 const loadwasm = async ()=>{  
   const wasmBuffer = fs.readFileSync(wasmFile);
@@ -90,8 +92,8 @@ createMiddleware(swaggerFile, app, (err, middleware) => {
       app.get('/', function (req, res) {
           res.send('foo');
       });
-      app.listen(9000, '0.0.0.0', () => {
-        console.log('running at http://0.0.0.0:9000');
+      app.listen(process.argv[3], '0.0.0.0', () => {
+        console.log(`running at http://0.0.0.0:${process.argv[3]}`);
       });
     })
 });
