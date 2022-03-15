@@ -1,8 +1,6 @@
 import Web3 from 'web3';
 import NexusJSON from '../../abi/Nexus.json';
 
-let jobs = [];
-let services = [];
 const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR || 'ws://localhost:8545');
 const web3 = new Web3(provider);
 // const web3 = new Web3(process.env.ETH_ADDR || 'http://localhost:8545');
@@ -39,12 +37,12 @@ const fetchLastJob = async () => {
 }
 
 const fetchJobs = async (thisObject, stateSpecifier) => {
+    let jobs = [];
     const lastJob = await fetchLastJob();
     for(let i=lastJob; i > 0; i--) {
         const job = await contract.methods.jobs(i).call();
         if(job.owner != "0x0000000000000000000000000000000000000000") jobs.push(job);
     }
-    jobs = uniq(jobs);
     thisObject.setState({
         [stateSpecifier]: {
             ...thisObject.state[stateSpecifier],
@@ -54,6 +52,7 @@ const fetchJobs = async (thisObject, stateSpecifier) => {
 }
 
 const fetchServices = async (thisObject, stateSpecifier) => {
+    let services = [];
     const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
     const lastJob = await fetchLastJob();
     for(let i=lastJob; i > 0; i--) {
@@ -91,7 +90,6 @@ const fetchServices = async (thisObject, stateSpecifier) => {
             console.log(services)
         }
     }
-    services = uniq(services);
     thisObject.setState({
         [stateSpecifier]: {
             ...thisObject.state[stateSpecifier],
