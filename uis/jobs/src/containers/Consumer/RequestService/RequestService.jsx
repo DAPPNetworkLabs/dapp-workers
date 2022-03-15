@@ -35,7 +35,7 @@ class RequestService extends Component {
                 imageName: 'wasi-service',
                 ioMegaBytes: 100,
                 storageMegaBytes: 100,
-                inputFS: 'QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM',
+                inputFS: 'QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqxz',
                 args: ["target/wasm32-wasi/release/test"],
                 months: 1
             },
@@ -48,12 +48,12 @@ class RequestService extends Component {
         const accounts = ethereum.request({ method: 'eth_requestAccounts' });
         
         
-        lib.metamask.runHandlers(this);
+        //  lib.metamask.runHandlers(this);
         this.setState({ account: accounts[0] });
     }
 
     componentWillUnmount() {
-        lib.metamask.rmHandlers();
+        //  lib.metamask.rmHandlers();
     }
 
     handleChange(event, func, valType) {	

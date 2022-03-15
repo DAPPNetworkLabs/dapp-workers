@@ -42,12 +42,12 @@ class SetConsumer extends Component {
         const accounts = ethereum.request({ method: 'eth_requestAccounts' });
         
         
-        lib.metamask.runHandlers(this);
+        //  lib.metamask.runHandlers(this);
         this.setState({ account: accounts[0] });
     }
 
     componentWillUnmount() {
-        lib.metamask.rmHandlers();
+        //  lib.metamask.rmHandlers();
     }
 
     handleChange(event, func) {

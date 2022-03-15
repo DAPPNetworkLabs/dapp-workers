@@ -44,7 +44,7 @@ class DspInfo extends Component {
     }
 
     componentWillUnmount() {
-        lib.metamask.rmHandlers();
+        //  lib.metamask.rmHandlers();
     }
 
     openClose = () => {
