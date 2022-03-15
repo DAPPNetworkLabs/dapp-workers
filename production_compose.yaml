@@ -1,5 +1,6 @@
 version: "3"
-services:  runner:
+services:  
+  runner:
     image: runner
     profiles:
       - images
