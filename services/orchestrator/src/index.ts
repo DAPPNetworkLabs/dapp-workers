@@ -16,7 +16,7 @@ const { fetchAllUsageInfo, updateUsageInfo, removeUsageInfo } = require('./dal/d
 import { execPromise } from './exec';
 
 let startup = true;
-const seconds = 60; // interval length
+const seconds = 30; // interval length
 
 // provider.on('error', e => console.log('WS Error', e));
 // function socketError(e) {
