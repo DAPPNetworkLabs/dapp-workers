@@ -5,6 +5,8 @@ services:
     profiles:
       - images
     build: images/runner
+    environment:
+      - IPFS_HOST=$IPFS_HOST
   rust-compiler:
     image: rust-compiler
     profiles:
@@ -12,16 +14,22 @@ services:
     build: images/compiler/rust
     labels:
       kompose.service.type: LoadBalancer
+    environment:
+      - IPFS_HOST=$IPFS_HOST
   wasienv-compiler:
     profiles:
       - images    
     build: images/compiler/wasienv
     image: wasienv-compiler
+    environment:
+      - IPFS_HOST=$IPFS_HOST
   wasi-service:
     profiles:
       - images    
     build: images/wasi-service
     image: wasi-service  
+    environment:
+      - IPFS_HOST=$IPFS_HOST
   ipfs0:
     container_name: ipfs0
     image: ipfs/go-ipfs:latest
