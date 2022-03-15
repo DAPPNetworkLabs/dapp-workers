@@ -54,15 +54,15 @@ services:
       - "eth"
     links:
       - eth
-  dspportal:
-    image: dspportal
-    build: uis/jobs
-    ports:
-      - 8888:80
-    depends_on:
-      - "eth"
-    links:
-      - eth
+  # dspportal:
+  #   image: dspportal
+  #   build: uis/jobs
+  #   ports:
+  #     - 8888:80
+  #   depends_on:
+  #     - "eth"
+  #   links:
+  #     - eth
   postgres:
     image: postgres 
     ports:

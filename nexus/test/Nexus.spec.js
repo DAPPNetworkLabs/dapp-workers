@@ -79,18 +79,20 @@ describe("Nexus", function(done) {
       await dappTokenContract.connect(consumer1).approve(nexusContract.address, dapps);
 
       // preload frontend
-      await nexusContract.approveImage("runner","hash");
-      await nexusContract.approveImage("rust-compiler","hash");
-      await nexusContract.approveImage("wasi-service","hash");
-      await nexusContract.connect(dsp1).regDSP("http://localhost");
-      await nexusContract.setDsps([dsp1.address]);
-      dapps = ethers.utils.parseUnits("800000",4);
-      await dappTokenContract.mint(addr1.address, dapps);
-      await dappTokenContract.approve(nexusContract.address, dapps);
-      await nexusContract.buyGasFor(dapps, addr1.address, dsp1.address);
-      await nexusContract.connect(dsp1).setDockerImage("runner",100000,100000,100000,100000,1,1);
-      await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,1,1);
-      await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
+      if(process.env.RUN_LOCAL) {
+        await nexusContract.approveImage("runner","hash");
+        await nexusContract.approveImage("rust-compiler","hash");
+        await nexusContract.approveImage("wasi-service","hash");
+        await nexusContract.connect(dsp1).regDSP("http://localhost");
+        await nexusContract.setDsps([dsp1.address]);
+        dapps = ethers.utils.parseUnits("800000",4);
+        await dappTokenContract.mint(addr1.address, dapps);
+        await dappTokenContract.approve(nexusContract.address, dapps);
+        await nexusContract.buyGasFor(dapps, addr1.address, dsp1.address);
+        await nexusContract.connect(dsp1).setDockerImage("runner",100000,100000,100000,100000,1,1);
+        await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,1,1);
+        await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
+      }
     }
 
     console.log(`nexus contract: ${nexusContract.address}`);
