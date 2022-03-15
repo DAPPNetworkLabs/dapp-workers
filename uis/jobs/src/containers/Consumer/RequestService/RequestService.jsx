@@ -59,7 +59,8 @@ class RequestService extends Component {
     handleChange(event, func, valType) {	
         let { name, value, type } = event.target;	
         if(valType.includes('array')) {	
-            value.includes(',') ? value = value.split(',') : value = [value];	
+            value.includes(',') ? value = value.split(',') : value = [value];
+            if(value.length && value[0] == '') value = [];	
         }	
         if(type == "checkbox") value = event.target.checked;	
         this.setState({	

@@ -32,12 +32,12 @@ class RequestJob extends Component {
             // update
             queueJob: {
                 owner: '0x21dfA04241ca05320E9dCd529F15f6F55115bbC3',
-                imageName: 'runner',
+                imageName: 'rust-compiler',
                 inputFS: 'QmUm1JD5os8p6zu6gQBPr7Rov2VD6QzMeRBH5j4ojFBzi6',
                 callback: false,
                 gasLimit: 1000000,
                 requireConsistent: false,
-                args: [""]
+                args: []
             },
             show: false
         }
@@ -59,7 +59,10 @@ class RequestJob extends Component {
     handleChange(event, func, valType) {
         let { name, value, type } = event.target;
         if(valType.includes('array')) {
+            
             value.includes(',') ? value = value.split(',') : value = [value];
+            if(value.length && value[0] == '') value = [];
+            if(value.length && value[0] == '') value = [];
         }
         if(type == "checkbox") value = event.target.checked;
         this.setState({

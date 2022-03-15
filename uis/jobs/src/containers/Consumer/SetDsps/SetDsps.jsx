@@ -54,8 +54,8 @@ class SetDsps extends Component {
         let { name, value, type } = event.target;
         console.log({ name, value, type }, valType);
         if(valType.includes('array')) {
-            
             value.includes(',') ? value = value.split(',') : value = [value];
+            if(value.length && value[0] == '') value = [];
         }
         if(type == "checkbox") value = event.target.checked;
         
