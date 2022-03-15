@@ -58,16 +58,15 @@ const fetchServices = async (thisObject, stateSpecifier) => {
     for(let i=lastJob; i > 0; i--) {
         const service = await contract.methods.services(i).call();
         if(service.owner != "0x0000000000000000000000000000000000000000") {
-            console.log('ring ring')
             let 
             selectedDsps = [], 
             noError=true, 
-            i = 0;
+            index = 0;
             while(noError && accounts[0]) {
                 try {
-                    const dsp = await contract.methods.providers(accounts[0],i).call();
+                    const dsp = await contract.methods.providers(accounts[0],index).call();
                     selectedDsps.push(dsp)
-                    i++;
+                    index++;
                 } catch(e) {
                     noError = false;
                 }
