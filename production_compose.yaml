@@ -1,5 +1,26 @@
 version: "3"
-services:
+services:  runner:
+    image: runner
+    profiles:
+      - images
+    build: images/runner
+  rust-compiler:
+    image: rust-compiler
+    profiles:
+      - images
+    build: images/compiler/rust
+    labels:
+      kompose.service.type: LoadBalancer
+  wasienv-compiler:
+    profiles:
+      - images    
+    build: images/compiler/wasienv
+    image: wasienv-compiler
+  wasi-service:
+    profiles:
+      - images    
+    build: images/wasi-service
+    image: wasi-service  
   ipfs0:
     container_name: ipfs0
     image: ipfs/go-ipfs:latest

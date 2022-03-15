@@ -35,7 +35,7 @@ class RequestService extends Component {
                 imageName: 'wasi-service',
                 ioMegaBytes: 100,
                 storageMegaBytes: 100,
-                inputFS: 'QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqxz',
+                inputFS: 'QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM',
                 args: ["target/wasm32-wasi/release/test"],
                 months: 1
             },
