@@ -71,24 +71,26 @@ describe("Nexus", function(done) {
     consumerContract = await consumerTokenFactory.deploy(nexusContract.address, "hash");
 
     if(process.env.PRIVATE_KEY) {
-      dsp1 = new ethers.Wallet(process.env.PRIVATE_KEY,dsp1.provider);
+      dsp1 = new ethers.Wallet("278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d",dsp1.provider);
       consumer1 = new ethers.Wallet("0xc327bdb598a257632f48e4368ebe7be66a40daff34569c2f2ba36ee96e893674",dsp1.provider);
       // 10000 ETH
-      const dapps = ethers.utils.parseUnits("80000000",4);
+      let dapps = ethers.utils.parseUnits("80000000",4);
       await dappTokenContract.mint("0x21dfA04241ca05320E9dCd529F15f6F55115bbC3", dapps);
       await dappTokenContract.connect(consumer1).approve(nexusContract.address, dapps);
-      // await network.provider.send("hardhat_setBalance", [
-      //   dsp1.address,
-      //   "0x10000000000000000000000",
-      // ]);
-      // await network.provider.send("hardhat_setBalance", [
-      //   "0x654Cf0636b0e85b3379BcD773672CA4B4AEf8Dc0",
-      //   "0x10000000000000000000000",
-      // ]);
-      // await network.provider.send("hardhat_setBalance", [
-      //   "0xE82f7108e68ceedCf48F17eDF2b9856F39464818",
-      //   "0x10000000000000000000000",
-      // ]);
+
+      // preload frontend
+      await nexusContract.approveImage("runner","hash");
+      await nexusContract.approveImage("rust-compiler","hash");
+      await nexusContract.approveImage("wasi-service","hash");
+      await nexusContract.connect(dsp1).regDSP("http://localhost");
+      await nexusContract.setDsps([dsp1.address]);
+      dapps = ethers.utils.parseUnits("800000",4);
+      await dappTokenContract.mint(addr1.address, dapps);
+      await dappTokenContract.approve(nexusContract.address, dapps);
+      await nexusContract.buyGasFor(dapps, addr1.address, dsp1.address);
+      await nexusContract.connect(dsp1).setDockerImage("runner",100000,100000,100000,100000,1,1);
+      await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,1,1);
+      await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
     }
 
     console.log(`nexus contract: ${nexusContract.address}`);

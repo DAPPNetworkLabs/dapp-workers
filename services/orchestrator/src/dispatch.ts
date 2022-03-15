@@ -40,7 +40,6 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
       let dockerId
       
       // try {
-        console.log('running docker here')
         docker.run(dockerImage,  [ipfsInput, ...args],  [writableStream, writableStream2],{
           Tty:false,
           AttachStdout: true,
@@ -53,7 +52,6 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
           console.log(`rej error here:`,e);
           rej(e);
         });
-        console.log('stop running docker here')
       // } catch(e) {
       //   console.log(`docker error:`,e);
       //   rej(e);

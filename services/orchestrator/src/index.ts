@@ -16,6 +16,7 @@ const { fetchAllUsageInfo, updateUsageInfo, removeUsageInfo } = require('./dal/d
 import { execPromise } from './exec';
 
 let startup = true;
+const seconds = 60; // interval length
 
 // provider.on('error', e => console.log('WS Error', e));
 // function socketError(e) {
@@ -196,7 +197,7 @@ const run = () => {
     subscribe(theContract);
     setInterval(() => {
         intervalCallback();
-    }, 1000 * 30);
+    }, 1000 * seconds);
 }
 
 run();
