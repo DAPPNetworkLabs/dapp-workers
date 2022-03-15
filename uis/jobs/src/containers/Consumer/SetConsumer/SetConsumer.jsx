@@ -80,8 +80,7 @@ class SetConsumer extends Component {
     forms = [
         // update
         {
-            onClick:()=>lib.web3.setConsumerPermissions(this),
-            buttonText:"Set Consumer Owner",
+            onClick:()=>lib.web3.setConsumerContract(this),
             stateSelector:"setConsumerContract",
             inputs:[
                 { name:"authorized_contract",placeholder: "address authorized_contract"},

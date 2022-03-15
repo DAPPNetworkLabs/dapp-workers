@@ -13,6 +13,6 @@ interface INexus {
     string[] args;
   }
   function queueJob(queueJobArgs calldata args) external;
-  function setConsumerPermissions(address owner) external;
+  function setConsumerContract(address authorized_contract) external;
   function setQuorum(address consumer, address[] calldata dsps) external;
 }

@@ -455,14 +455,6 @@ const buyGasFor = async (thisObject) => {
     await runTrx(data,["BoughtGas"],thisObject);
 }
 
-const setConsumerPermissions = async (thisObject) => {
-    const abi = returnAbi("setConsumerPermissions");
-    const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.setConsumerPermissions.owner
-    ]);
-    await runTrx(data,[],thisObject);
-}
-
 const setQuorum = async (thisObject) => {
     const abi = returnAbi("setQuorum");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
@@ -522,7 +514,6 @@ export default {
     claim,
     sellGas,
     buyGasFor,
-    setConsumerPermissions,
     setQuorum,
     fetchDspsByConsumer,
     fetchJobServiceCompleted,
