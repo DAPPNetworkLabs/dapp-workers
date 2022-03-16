@@ -124,7 +124,7 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
   let dockerId
   
   try {
-    dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name  ${dockerImage}-${id} --rm -d --net=dapp-workers_default -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+    dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${dockerImage}-${id} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
   } catch(e) {
     console.log(`docker error:`,e);
     return { error:e };

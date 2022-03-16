@@ -58,9 +58,6 @@ createMiddleware(swaggerFile, app, (err, middleware) => {
     const doc = yaml.load(fs.readFileSync(swaggerFile, 'utf8'));
     console.log("loaded doc")
     const endpointPaths = Object.keys(doc.paths);
-    // console.log(process.argv);
-    // console.log(process.argv[3]);
-    // console.log(typeof(process.argv[3]));
     
     endpointPaths.forEach(endpointPath => {
       console.log("endpointPath",doc.basePath+ endpointPath)
@@ -93,8 +90,8 @@ createMiddleware(swaggerFile, app, (err, middleware) => {
       app.get('/', function (req, res) {
           res.send('foo');
       });
-      app.listen(9000, '0.0.0.0', () => {
-        console.log(`running at http://0.0.0.0:${9000}`);
+      app.listen(process.env.WORKER_PORT, '0.0.0.0', () => {
+        console.log(`running at http://0.0.0.0:${process.env.WORKER_PORT}`);
       });
     })
 });
