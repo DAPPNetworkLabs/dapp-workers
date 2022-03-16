@@ -8,6 +8,7 @@ const Jobs = (props) => {
         jobs = props.jobs.map((el,i)=>{
             return (
                 <tr>
+                    <td>{`${el.id}`}</td>
                     <td>{`${el.owner.slice(0,4)}..${el.owner.slice(-4)}`}</td>
                     <td>{`${el.consumer.slice(0,4)}..${el.consumer.slice(-4)}`}</td>
                     <td>{el.imageName}</td>
@@ -23,6 +24,7 @@ const Jobs = (props) => {
         <div className={props.isMobile ? classes.overflow : classes.desktopOverflow}>
             <table>
                 <tr>
+                    <th>ID</th> 
                     <th>OWNER</th> 
                     <th>CONSUMER</th>
                     <th>IMAGE</th>

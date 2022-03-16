@@ -12,6 +12,7 @@ const Services = (props) => {
             });
             return (
                 <tr>
+                    <td>{`${el.id}`}</td>
                     <td>{`${el.owner.slice(0,4)}..${el.owner.slice(-4)}`}</td>
                     <td>{`${el.consumer.slice(0,4)}..${el.consumer.slice(-4)}`}</td>
                     <td>{el.imageName}</td>
@@ -29,6 +30,7 @@ const Services = (props) => {
         <div className={props.isMobile ? classes.overflow : classes.desktopOverflow}>
             <table>
                 <tr>
+                    <th>ID</th> 
                     <th>OWNER</th> 
                     <th>CONSUMER</th>
                     <th>IMAGE</th>

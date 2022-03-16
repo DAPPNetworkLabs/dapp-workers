@@ -41,7 +41,10 @@ const fetchJobs = async (thisObject, stateSpecifier) => {
     const lastJob = await fetchLastJob();
     for(let i=lastJob; i > 0; i--) {
         const job = await contract.methods.jobs(i).call();
-        if(job.owner != "0x0000000000000000000000000000000000000000") jobs.push(job);
+        if(job.owner != "0x0000000000000000000000000000000000000000") jobs.push({
+            ...job,
+            id:i
+        });
     }
     thisObject.setState({
         [stateSpecifier]: {
@@ -84,7 +87,8 @@ const fetchServices = async (thisObject, stateSpecifier) => {
             }
             services.push({
                 ...service,
-                endpoints
+                endpoints,
+                id:i
             });
             console.log(services)
         }
