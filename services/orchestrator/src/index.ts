@@ -224,8 +224,8 @@ const getInfo = async (jobId, type) => {
 }
 
 const verifyImageHash = async (image, id, isJob) => {
-    let hash:any = await execPromise(`docker inspect '${image}' | grep '"Id": "sha256:'`,{});
-    hash = hash.slice(22,-3);
+    let hash:any = await execPromise(`docker images --no-trunc --quiet ${image}`,{});
+    hash = hash.slice(7);
     const chainHash = await theContract.methods.approvedImages(image).call({ from: dspAccount.address });
     if(hash != chainHash) {
         if(isJob) {
@@ -254,7 +254,7 @@ const runService = async (returnValues) => {
         const inputFS = returnValues[fidx++];
         const args = returnValues[fidx++];
 
-        await verifyImageHash(imageName, id, false);
+        // await verifyImageHash(imageName, id, false);
         
         const ioMegaBytesUsed = 0;
         const storageMegaBytesUsed = 0;
@@ -318,7 +318,7 @@ function subscribe(theContract: any) {
             args: returnValues[fidx++]
         }
 
-        await verifyImageHash(jobInfo.imageName, jobInfo.jobID, true);
+        // await verifyImageHash(jobInfo.imageName, jobInfo.jobID, true);
 
         const jobType = "job";
 

@@ -80,9 +80,9 @@ describe("Nexus", function(done) {
 
       // preload frontend
       if(process.env.RUN_LOCAL) {
-        await nexusContract.approveImage("runner","15aab65a942d55b580fc05b12e702183eda34db24c334f899e5a896e92ffe609");
-        await nexusContract.approveImage("rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
-        await nexusContract.approveImage("wasi-service","68e1213fe0c05250e9d9bdc8182946227d331c7277e53aab1d88e0e693cf81f5");
+        await nexusContract.approveImage("runner","90f68b2ae2d91b55528012e711f58333b2bf1040b190b6416f5e7f3c4f1ceb85");
+        await nexusContract.approveImage("rust-compiler","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
+        await nexusContract.approveImage("wasi-service","8ada822a2c5d872c904d4def217387dc63400602a44862bb4102507a0e6c5498");
         await nexusContract.connect(dsp1).regDSP("http://localhost");
         await nexusContract.setDsps([dsp1.address]);
         dapps = ethers.utils.parseUnits("80000000",4);
@@ -173,11 +173,11 @@ describe("Nexus", function(done) {
   });
 
   it("Approve image", async function() {
-    await nexusContract.approveImage("runner","15aab65a942d55b580fc05b12e702183eda34db24c334f899e5a896e92ffe609");
+    await nexusContract.approveImage("runner","90f68b2ae2d91b55528012e711f58333b2bf1040b190b6416f5e7f3c4f1ceb85");
 
     const hash = await nexusContract.approvedImages("runner");
 
-    expect(hash).to.equal("15aab65a942d55b580fc05b12e702183eda34db24c334f899e5a896e92ffe609");
+    expect(hash).to.equal("90f68b2ae2d91b55528012e711f58333b2bf1040b190b6416f5e7f3c4f1ceb85");
   });
 
   it("Register image", async function() {
@@ -224,7 +224,7 @@ describe("Nexus", function(done) {
 
   it("Queue job", async function() {
     const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
-    await nexusContract.approveImage("rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
+    await nexusContract.approveImage("rust-compiler","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
     await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
@@ -285,7 +285,7 @@ describe("Nexus", function(done) {
   });
 
   it("Queue job hash mismatch", async function() {
-    await nexusContract.unapproveImage("rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
+    await nexusContract.unapproveImage("rust-compiler","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
     await nexusContract.approveImage("rust-compiler","hash");
     
     await nexusContract.queueJob({
@@ -318,7 +318,7 @@ describe("Nexus", function(done) {
     await completePromise.then();
 
     await nexusContract.unapproveImage("rust-compiler","hash");
-    await nexusContract.approveImage("rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
+    await nexusContract.approveImage("rust-compiler","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
 
     expect(error).to.equal("chain hash mismatch");
     
@@ -360,7 +360,7 @@ describe("Nexus", function(done) {
   });
 
   it("Queue service - try below min bytes", async function() {
-    await nexusContract.approveImage("wasi-service","68e1213fe0c05250e9d9bdc8182946227d331c7277e53aab1d88e0e693cf81f5");
+    await nexusContract.approveImage("wasi-service","8ada822a2c5d872c904d4def217387dc63400602a44862bb4102507a0e6c5498");
     await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
 
     let failed = false;
