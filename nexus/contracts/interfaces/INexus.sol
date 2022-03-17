@@ -13,6 +13,16 @@ interface INexus {
     string[] args;
   }
   function queueJob(queueJobArgs calldata args) external;
+  struct queueServiceArgs {
+      address owner;
+      string imageName;
+      uint ioMegaBytes;
+      uint storageMegaBytes;
+      string inputFS;
+      string[] args;
+      uint months;
+  }
+  function queueService(queueServiceArgs calldata args) external;
   function setConsumerContract(address authorized_contract) external;
   function setQuorum(address consumer, address[] calldata dsps) external;
 }

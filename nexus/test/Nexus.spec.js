@@ -419,6 +419,49 @@ describe("Nexus", function(done) {
     expect(body).to.equal("foo");
   });
 
+  it("Queue service with callback", async function() {
+    const dapps = ethers.utils.parseUnits("250000",4);
+    await dappTokenContract.mint(addr2.address, dapps);
+    await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
+    await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, dsp1.address);
+    await nexusContract.connect(addr2).setDsps([dsp1.address]);
+
+    await consumerContract.queueService(addr2.address, "QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM");
+    
+    const servicePromise = new Promise((resolve, reject) => {
+        nexusContract.once("ServiceRunning", (
+            consumer, 
+            dsp, 
+            serviceId, 
+            port
+          ) => {
+            resolve();
+          }
+        );
+    });
+
+    await servicePromise.then();
+
+    const port = await nexusContract.getPortForDSP(jobId,dsp1.address);
+
+    expect(port).to.equal(9001);
+
+    const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
+
+    expect(endpoint).to.equal(`${endpoint}`);
+    
+    console.log(`endpoint1: ${endpoint}-${jobId}:${port}`,jobId);
+    
+    await delay(20);
+
+    const response = await fetch(`${endpoint}-${jobId}:${port}`, {method: 'GET'});
+    const body = await response.text();
+
+    expect(body).to.equal("foo");
+    
+    jobId++;
+  });
+
   it("Min job balance", async function() {
     const min = await nexusContract.getMinBalance(2,"job",dsp1.address);
 

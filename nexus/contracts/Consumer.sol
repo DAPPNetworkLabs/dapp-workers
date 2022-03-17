@@ -27,6 +27,12 @@ contract Consumer {
         nexus.queueJob(INexus.queueJobArgs(owner,"rust-compiler",inputFS,true,1000000,false,arr));
     }
 
+    function queueService(address owner, string calldata inputFS) external {
+        string[] memory arr = new string[](1);
+        arr[0] = "target/wasm32-wasi/release/test";
+        nexus.queueService(INexus.queueServiceArgs(owner,"wasi-service",100,100,inputFS,arr,1));
+    }
+
     function _dspcallback(string calldata outputFS, string  calldata outputHash) external {
         lastHash = outputFS;
 
