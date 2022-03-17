@@ -1240,8 +1240,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         (, feedValue, , timestamp, ) = FAST_GAS_FEED.latestRoundData();
         
         if ((staleFallback && stalenessSeconds < block.timestamp - timestamp) || feedValue <= 0) {
-            revert('feed stale');
-            // return s_fallbackGasPrice;
+            return s_fallbackGasPrice;
         } else {
             return uint256(feedValue);
         }

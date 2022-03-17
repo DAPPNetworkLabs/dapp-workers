@@ -828,7 +828,7 @@ describe("Nexus", function(done) {
   });
 
   // test relies on above increase time to assume the feed is stale
-  it.skip("Get get max payment for gas with fallback time", async function() {
+  it("Get get max payment for gas with fallback time", async function() {
     const data = await nexusContract.getMaxPaymentForGas("1000000","runner",dsp1.address);
     
     expect(data).is.above(100000000);
