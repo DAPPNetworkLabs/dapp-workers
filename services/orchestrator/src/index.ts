@@ -18,25 +18,6 @@ import { execPromise } from './exec';
 let startup = true;
 const seconds = 30; // interval length
 
-// provider.on('error', e => console.log('WS Error', e));
-// function socketError(e) {
-//     console.log('WS closed');
-//     console.log('Attempting to reconnect...');
-//     const provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR);
-
-//     provider.on('connect', function () {
-//         console.log('WSS Reconnected');
-//     });
-//     provider.on('end', socketError);
-//     provider.on('close', socketError);
-
-//     web3.setProvider(provider);
-//     if (theContract)
-//         subscribe(theContract);
-// }
-// provider.on('end', socketError);
-// provider.on('close', socketError);
-
 const address = process.env.ADDRESS;
 const fromBlock = process.env.FROM_BLOCK || 0; // load and save to file
 const theContract = new web3.eth.Contract(
@@ -300,19 +281,6 @@ const runService = async (returnValues) => {
             });
             return;
         }
-
-        /*
-        
-            - check if already processed jobID, replay
-                if not, ensure DSP selected by owner
-                    if so, continue
-                    if not, do not process
-            - check if consumer balance sufficient
-            - run docker job
-                if error run job error with output
-            - run job callback with output of docker job
-        
-        */
 
         const serviceResults = await dispatchService(id, imageName, inputFS, args);
         
