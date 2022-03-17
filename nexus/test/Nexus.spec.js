@@ -284,6 +284,47 @@ describe("Nexus", function(done) {
     expect(postTotalDappGasPaid).is.above(prevTotalDappGasPaid);
   });
 
+  it("Queue job hash mismatch", async function() {
+    await nexusContract.unapproveImage("rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
+    await nexusContract.approveImage("rust-compiler","hash");
+    
+    await nexusContract.queueJob({
+      owner: addr1.address,
+      imageName: "rust-compiler",
+      inputFS: loadfsRoot("pngWriterTest"),
+      callback: false,
+      gasLimit: 1000000,
+      requiresConsistent: false,
+      args: []
+    });
+    
+    const completePromise = new Promise((resolve, reject) => {
+        nexusContract.on("JobError", (
+            consumer,
+            stdErr, 
+            outputFS, 
+            id
+          ) => {
+            if(Number(id) == Number(jobId++)) {
+              console.log('hit job error')
+              resolve();
+            }
+          }
+        );
+    });
+
+    let outputFSRes;
+
+    await completePromise.then(val => {
+      outputFSRes = val;
+    });
+
+    await nexusContract.unapproveImage("rust-compiler","hash");
+    await nexusContract.approveImage("rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
+
+    expect(outputFSRes).to.equal("chain hash mismatch");
+  });
+
   it("Queue job with callback", async function() {
     const dapps = ethers.utils.parseUnits("250000",4);
     await dappTokenContract.mint(addr2.address, dapps);
