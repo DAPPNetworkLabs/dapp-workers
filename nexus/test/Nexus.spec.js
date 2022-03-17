@@ -297,6 +297,8 @@ describe("Nexus", function(done) {
       requiresConsistent: false,
       args: []
     });
+
+    let error;
     
     const completePromise = new Promise((resolve, reject) => {
         nexusContract.on("JobError", (
@@ -305,24 +307,22 @@ describe("Nexus", function(done) {
             outputFS, 
             id
           ) => {
-            if(Number(id) == Number(jobId++)) {
-              console.log('hit job error')
+            if(Number(id) == Number(jobId)) {
+              error = stdErr
               resolve();
             }
           }
         );
     });
-
-    let outputFSRes;
-
-    await completePromise.then(val => {
-      outputFSRes = val;
-    });
+    
+    await completePromise.then();
 
     await nexusContract.unapproveImage("rust-compiler","hash");
     await nexusContract.approveImage("rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
 
-    expect(outputFSRes).to.equal("chain hash mismatch");
+    expect(error).to.equal("chain hash mismatch");
+    
+    jobId++;
   });
 
   it("Queue job with callback", async function() {
@@ -522,7 +522,7 @@ describe("Nexus", function(done) {
   });
 
   it("Min service balance", async function() {
-    const min = await nexusContract.getMinBalance(5,"service",dsp1.address);
+    const min = await nexusContract.getMinBalance(6,"service",dsp1.address);
 
     // console.log(min.toString());
     // 9,315.0201 * 0.00730 $/DAPP = $68.00
@@ -653,23 +653,23 @@ describe("Nexus", function(done) {
   });
 
   it("Extend service", async function() {
-    const preDspEnDate = (await nexusContract.services(5)).endDate;
-    const preDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
-    const preDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
+    const preDspEnDate = (await nexusContract.services(6)).endDate;
+    const preDspIoLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).ioMegaBytesLimit;
+    const preDspStorageLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).storageMegaBytesLimit;
 
     const dapps = ethers.utils.parseUnits("200000",4);
     await dappTokenContract.approve(nexusContract.address, dapps);
     await nexusContract.extendService(
-      5,
+      6,
       "wasi-service",
       1,
       100,
       100
     );
 
-    const postDspEnDate = (await nexusContract.services(5)).endDate;
-    const postDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
-    const postDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
+    const postDspEnDate = (await nexusContract.services(6)).endDate;
+    const postDspIoLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).ioMegaBytesLimit;
+    const postDspStorageLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).storageMegaBytesLimit;
     
     expect(postDspEnDate).is.above(preDspEnDate);
     expect(postDspIoLimit).is.above(preDspIoLimit);
@@ -677,23 +677,23 @@ describe("Nexus", function(done) {
   });
 
   it("Extend service same month", async function() {
-    const preDspEnDate = (await nexusContract.services(5)).endDate;
-    const preDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
-    const preDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
+    const preDspEnDate = (await nexusContract.services(6)).endDate;
+    const preDspIoLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).ioMegaBytesLimit;
+    const preDspStorageLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).storageMegaBytesLimit;
 
     const dapps = ethers.utils.parseUnits("200000",4);
     await dappTokenContract.approve(nexusContract.address, dapps);
     await nexusContract.extendService(
-      5,
+      6,
       "wasi-service",
       0,
       1,
       1
     );
 
-    const postDspEnDate = (await nexusContract.services(5)).endDate;
-    const postDspIoLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).ioMegaBytesLimit;
-    const postDspStorageLimit = (await nexusContract.getDSPDataLimits(5,dsp1.address)).storageMegaBytesLimit;
+    const postDspEnDate = (await nexusContract.services(6)).endDate;
+    const postDspIoLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).ioMegaBytesLimit;
+    const postDspStorageLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).storageMegaBytesLimit;
     
     expect(postDspEnDate).to.equal(preDspEnDate);
     expect(postDspIoLimit).is.above(preDspIoLimit);
@@ -949,7 +949,7 @@ describe("Nexus", function(done) {
   });
 
   it("Get dsp port", async function() {
-    const port = await nexusContract.getPortForDSP(5,dsp1.address);
+    const port = await nexusContract.getPortForDSP(6,dsp1.address);
 
     expect(port).to.equal(9000);
   });

@@ -866,7 +866,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev gov approve image
      */
     function approveImage(string calldata imageName, string calldata imageHash) external onlyOwner {
-        require(bytes(approvedImages[imageName]).length == 0, "image exists");
         require(bytes(imageHash).length != 0, "invalid hash");
 
         approvedImages[imageName] = imageHash;
@@ -876,7 +875,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev gov unapprove image
      */
     function unapproveImage(string calldata imageName, string calldata imageHash) external onlyOwner {
-        require(bytes(approvedImages[imageName]).length == 0, "image exists");
         require(bytes(imageHash).length != 0, "invalid hash");
 
         delete approvedImages[imageName];
