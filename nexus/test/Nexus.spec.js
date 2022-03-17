@@ -80,9 +80,9 @@ describe("Nexus", function(done) {
 
       // preload frontend
       if(process.env.RUN_LOCAL) {
-        await nexusContract.approveImage("runner","hash");
-        await nexusContract.approveImage("rust-compiler","hash");
-        await nexusContract.approveImage("wasi-service","hash");
+        await nexusContract.approveImage("runner","15aab65a942d55b580fc05b12e702183eda34db24c334f899e5a896e92ffe609");
+        await nexusContract.approveImage("rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
+        await nexusContract.approveImage("wasi-service","68e1213fe0c05250e9d9bdc8182946227d331c7277e53aab1d88e0e693cf81f5");
         await nexusContract.connect(dsp1).regDSP("http://localhost");
         await nexusContract.setDsps([dsp1.address]);
         dapps = ethers.utils.parseUnits("80000000",4);
@@ -173,11 +173,11 @@ describe("Nexus", function(done) {
   });
 
   it("Approve image", async function() {
-    await nexusContract.approveImage("runner","hash");
+    await nexusContract.approveImage("runner","15aab65a942d55b580fc05b12e702183eda34db24c334f899e5a896e92ffe609");
 
     const hash = await nexusContract.approvedImages("runner");
 
-    expect(hash).to.equal("hash");
+    expect(hash).to.equal("15aab65a942d55b580fc05b12e702183eda34db24c334f899e5a896e92ffe609");
   });
 
   it("Register image", async function() {
@@ -224,7 +224,7 @@ describe("Nexus", function(done) {
 
   it("Queue job", async function() {
     const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
-    await nexusContract.approveImage("rust-compiler","hash");
+    await nexusContract.approveImage("rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
     await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
@@ -319,7 +319,7 @@ describe("Nexus", function(done) {
   });
 
   it("Queue service - try below min bytes", async function() {
-    await nexusContract.approveImage("wasi-service","hash");
+    await nexusContract.approveImage("wasi-service","68e1213fe0c05250e9d9bdc8182946227d331c7277e53aab1d88e0e693cf81f5");
     await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
 
     let failed = false;
