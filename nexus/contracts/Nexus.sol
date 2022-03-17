@@ -299,6 +299,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     mapping(address => mapping(string => DspDockerImage)) public dspApprovedImages;
 
     uint public totalDsps;
+    uint public totalDappGasPaid;
 
     uint public lastJobID;
 
@@ -1327,6 +1328,8 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         dspData[_consumer][_dsp].amount -= _amountToUse;
         registeredDSPs[_dsp].claimableDapp += _amountToUse;
+
+        totalDappGasPaid += _amountToUse;
 
         emit UsedGas(_consumer, _dsp, _amountToUse);
     }

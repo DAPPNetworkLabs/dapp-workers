@@ -223,6 +223,7 @@ describe("Nexus", function(done) {
   });
 
   it("Queue job", async function() {
+    const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
     await nexusContract.approveImage("rust-compiler","hash");
     await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,100,100);
     
@@ -278,6 +279,9 @@ describe("Nexus", function(done) {
     expect(job2.callback).to.equal(false);
     expect(job2.resultsCount.toString()).to.equal('0');
     expect(job2.imageName).to.equal("runner");
+
+    const postTotalDappGasPaid = await nexusContract.totalDappGasPaid();
+    expect(postTotalDappGasPaid).is.above(prevTotalDappGasPaid);
   });
 
   it("Queue job with callback", async function() {
