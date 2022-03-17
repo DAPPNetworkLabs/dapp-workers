@@ -242,6 +242,15 @@ const getInfo = async (jobId, type) => {
     }
 }
 
+const verifyImageHash = async (image) => {
+    let hash:any = await execPromise(`docker inspect '${image}' | grep '"Id": "sha256:'`,{});
+    hash = hash.slice(22,-2);
+    console.log('hash',hash)
+    const chainHash = await theContract.methods.approvedImages(image).call({ from: dspAccount.address });
+    console.log('chainHash',chainHash)
+    if(hash != chainHash) throw Error("chain hash mismatch");
+}
+
 const runService = async (returnValues) => {
         let fidx = 0;
         const consumer = returnValues[fidx++];
@@ -252,6 +261,8 @@ const runService = async (returnValues) => {
         const id = returnValues[fidx++];
         const inputFS = returnValues[fidx++];
         const args = returnValues[fidx++];
+
+        await verifyImageHash(imageName);
         
         const ioMegaBytesUsed = 0;
         const storageMegaBytesUsed = 0;
@@ -311,8 +322,6 @@ const runService = async (returnValues) => {
         }
 }
 
-// todo: subscribe to Kill
-
 function subscribe(theContract: any) {
     theContract.events["QueueJob"]({}, async function (error, result) {
         if (error) {
@@ -329,6 +338,9 @@ function subscribe(theContract: any) {
             inputFS: returnValues[fidx++],
             args: returnValues[fidx++]
         }
+
+        await verifyImageHash(jobInfo.imageName);
+
         const jobType = "job";
 
         const job = await getInfo(jobInfo.jobID, jobType);

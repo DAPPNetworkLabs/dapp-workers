@@ -74,7 +74,7 @@
         },
         "set consumer": {
             "title": "SET CONSUMER",
-            "subtitle": "Set consumer to use DAPP gas of user.",
+            "subtitle": "Set consumer contract address to use DAPP gas of account.",
             "button": "SET CONSUMER",
             "previews":[
                 { "name":"CONSUMER CONTRACT","type": "address","short":"Contract address to consumer DAPP Gas for jobs and services."}
