@@ -12,7 +12,7 @@ let abi = require(process.env.NEXUS_PATH || '/nexus/artifacts/contracts/Nexus.so
 
 export { address };
 const dal = require('./dal/models/index');
-const { fetchAllUsageInfo, updateUsageInfo, removeUsageInfo } = require('./dal/dal')
+const { fetchAllUsageInfo, getUsageInfo, updateUsageInfo, removeUsageInfo } = require('./dal/dal')
 import { execPromise } from './exec';
 
 let startup = true;
@@ -393,8 +393,7 @@ const port = 8050;
 
 app.get('/dapp-workers/io', async function(req, res, next) {
     try {
-        const jobs = await fetchAllUsageInfo();
-        const job = jobs.find(el => el.key == req.query.id);
+        const job = await getUsageInfo(req.query.id);
       
         const cmd = `docker stats --no-stream --format "{{.NetIO}}" ${job.dockerId}`;
     
@@ -413,8 +412,7 @@ app.get('/dapp-workers/io', async function(req, res, next) {
 
 app.get('/dapp-workers/storage', async function(req, res, next) {
     try {
-        const jobs = await fetchAllUsageInfo();
-        const job = jobs.find(el => el.key == req.query.id);
+        const job = await getUsageInfo(req.query.id);
         const storageUsed: any = await execPromise(`docker ps --size --filter "id=${job.dockerId}" --format "{{.Size}}"`,{});
                 
         res.send({
