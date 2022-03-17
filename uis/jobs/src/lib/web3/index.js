@@ -37,68 +37,76 @@ const fetchLastJob = async () => {
 }
 
 const fetchJobs = async (thisObject, stateSpecifier) => {
-    let jobs = [];
-    const lastJob = await fetchLastJob();
-    for(let i=lastJob; i > 0; i--) {
-        const job = await contract.methods.jobs(i).call();
-        if(job.owner != "0x0000000000000000000000000000000000000000") jobs.push({
-            ...job,
-            id:i
-        });
-    }
-    thisObject.setState({
-        [stateSpecifier]: {
-            ...thisObject.state[stateSpecifier],
-            jobs
+    try {
+        let jobs = [];
+        const lastJob = await fetchLastJob();
+        for(let i=lastJob; i > 0; i--) {
+            const job = await contract.methods.jobs(i).call();
+            if(job.owner != "0x0000000000000000000000000000000000000000") jobs.push({
+                ...job,
+                id:i
+            });
         }
-    });
+        thisObject.setState({
+            [stateSpecifier]: {
+                ...thisObject.state[stateSpecifier],
+                jobs
+            }
+        });
+    } catch(e) {
+        console.log(e);
+    }
 }
 
 const fetchServices = async (thisObject, stateSpecifier) => {
-    let services = [];
-    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-    const lastJob = await fetchLastJob();
-    for(let i=lastJob; i > 0; i--) {
-        const service = await contract.methods.services(i).call();
-        if(service.owner != "0x0000000000000000000000000000000000000000") {
-            let 
-            selectedDsps = [], 
-            noError=true, 
-            index = 0;
-            while(noError && accounts[0]) {
-                try {
-                    const dsp = await contract.methods.providers(accounts[0],index).call();
-                    selectedDsps.push(dsp)
-                    index++;
-                } catch(e) {
-                    noError = false;
+    try {
+        let services = [];
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+        const lastJob = await fetchLastJob();
+        for(let i=lastJob; i > 0; i--) {
+            const service = await contract.methods.services(i).call();
+            if(service.owner != "0x0000000000000000000000000000000000000000") {
+                let 
+                selectedDsps = [], 
+                noError=true, 
+                index = 0;
+                while(noError && accounts[0]) {
+                    try {
+                        const dsp = await contract.methods.providers(accounts[0],index).call();
+                        selectedDsps.push(dsp)
+                        index++;
+                    } catch(e) {
+                        noError = false;
+                    }
                 }
+                let endpoints = [];
+                for(const el of selectedDsps) {
+                    const port = await contract.methods.getPortForDSP(i,el).call();
+                    const endpoint = await contract.methods.getDSPEndpoint(
+                        el
+                    ).call();
+                    endpoints.push({
+                        dsp: el,
+                        endpoint: `${endpoint}:${port}`
+                    })
+                }
+                services.push({
+                    ...service,
+                    endpoints,
+                    id:i
+                });
+                console.log(services)
             }
-            let endpoints = [];
-            for(const el of selectedDsps) {
-                const port = await contract.methods.getPortForDSP(i,el).call();
-                const endpoint = await contract.methods.getDSPEndpoint(
-                    el
-                ).call();
-                endpoints.push({
-                    dsp: el,
-                    endpoint: `${endpoint}:${port}`
-                })
-            }
-            services.push({
-                ...service,
-                endpoints,
-                id:i
-            });
-            console.log(services)
         }
+        thisObject.setState({
+            [stateSpecifier]: {
+                ...thisObject.state[stateSpecifier],
+                services
+            }
+        });
+    } catch(e) {
+        console.log(e);
     }
-    thisObject.setState({
-        [stateSpecifier]: {
-            ...thisObject.state[stateSpecifier],
-            services
-        }
-    });
 }
 
 // const fetchJobImage = async (thisObject) => {
@@ -412,7 +420,7 @@ const updateDockerImage = async (thisObject) => {
 const unapproveDockerImage = async (thisObject) => {
     const abi = returnAbi("unapproveDockerForDSP");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.unapproveDockerForDSP.imageName
+        thisObject.state.unapproveImage.imageName
     ]);
     await runTrx(data,["DockerApprovalChanged"],thisObject);
 }

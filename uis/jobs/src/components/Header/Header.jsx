@@ -89,6 +89,14 @@ class Header extends React.Component {
             'path': '/consumer/dsp-info'
           },
           {
+            'name': 'Jobs',
+            'path': '/consumer/jobs'
+          },
+          {
+            'name': 'Services',
+            'path': '/consumer/services'
+          },
+          {
             'name': 'Buy Gas',
             'path': '/consumer/buy-gas'
           },
@@ -109,14 +117,6 @@ class Header extends React.Component {
             'path': '/consumer/extend-service'
           },
           {
-            'name': 'Jobs',
-            'path': '/consumer/jobs'
-          },
-          {
-            'name': 'Services',
-            'path': '/consumer/services'
-          },
-          {
             'name': 'Set Consumer',
             'path': '/consumer/set-consumer'
           },
@@ -129,6 +129,14 @@ class Header extends React.Component {
     {
       'text':'DSP',
       'dropdown': [
+        {
+          'name': 'Jobs',
+          'path': '/dsp/jobs'
+        },
+        {
+          'name': 'Services',
+          'path': '/dsp/services'
+        },
         {
           'name': 'Register DSP',
           'path': '/dsp/register'
@@ -144,14 +152,6 @@ class Header extends React.Component {
         {
           'name': 'Update Image',
           'path': '/dsp/update-image'
-        },
-        {
-          'name': 'Jobs',
-          'path': '/dsp/jobs'
-        },
-        {
-          'name': 'Services',
-          'path': '/dsp/services'
         }
       ]
     },

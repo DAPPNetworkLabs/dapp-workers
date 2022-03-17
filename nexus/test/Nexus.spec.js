@@ -85,13 +85,14 @@ describe("Nexus", function(done) {
         await nexusContract.approveImage("wasi-service","hash");
         await nexusContract.connect(dsp1).regDSP("http://localhost");
         await nexusContract.setDsps([dsp1.address]);
-        dapps = ethers.utils.parseUnits("800000",4);
+        dapps = ethers.utils.parseUnits("80000000",4);
         await dappTokenContract.mint(addr1.address, dapps);
         await dappTokenContract.approve(nexusContract.address, dapps);
         await nexusContract.buyGasFor(dapps, addr1.address, dsp1.address);
         await nexusContract.connect(dsp1).setDockerImage("runner",100000,100000,100000,100000,1,1);
         await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,1,1);
         await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
+        await dappTokenContract.approve(nexusContract.address, ethers.utils.parseUnits("80000000",4));
       }
     }
 

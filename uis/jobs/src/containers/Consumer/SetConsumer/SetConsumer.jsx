@@ -31,7 +31,7 @@ class SetConsumer extends Component {
             chainId: null,
             // update
             setConsumerContract: {
-                authorized_contract:null
+                authorized_contract:'0x0000000000000000000000000000000000000000'
             },
             show: false
         }
@@ -53,6 +53,7 @@ class SetConsumer extends Component {
     handleChange(event, func) {
         let { name, value, type } = event.target;
         if(type=="checkbox") value = event.target.checked;
+        if(value == '') value = '0x0000000000000000000000000000000000000000'
         this.setState({
             [func]: {
                 ...this.state[func],
