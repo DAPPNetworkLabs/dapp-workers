@@ -85,9 +85,17 @@ const fetchServices = async (thisObject, stateSpecifier) => {
                     const endpoint = await contract.methods.getDSPEndpoint(
                         el
                     ).call();
+                    let response = await fetch(`${endpoint}:${process.env.ALT_API_PORT || 8050}/dapp-workers/io?id=${i}`);
+                    const ioUsed =  await response.json();
+                    response = await fetch(`${endpoint}:${process.env.ALT_API_PORT || 8050}/dapp-workers/storage?id=${i}`);
+                    const storageUsed =  await response.json();
+                    console.log(ioUsed.io_usage);
+                    console.log(storageUsed.storage_usage);
                     endpoints.push({
                         dsp: el,
-                        endpoint: `${endpoint}:${port}`
+                        endpoint: `${endpoint}:${port}`,
+                        ioUsed: ioUsed.io_usage,
+                        storageUsed: storageUsed.storage_usage
                     })
                 }
                 services.push({

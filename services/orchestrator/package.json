@@ -64,6 +64,7 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.2",
     "bip39": "^3.0.4",
+    "cors": "^2.8.5",
     "docker-client": "^1.38.1",
     "dockerode": "^3.3.1",
     "ethereumjs-wallet": "^1.0.1",

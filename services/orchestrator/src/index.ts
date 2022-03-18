@@ -388,7 +388,9 @@ function subscribe(theContract: any) {
 }
 
 const express = require('express');
+const cors = require('cors');
 const app = express();
+app.use(cors());
 const port = 8050;
 
 app.get('/dapp-workers/io', async function(req, res, next) {

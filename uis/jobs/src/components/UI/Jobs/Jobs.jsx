@@ -8,14 +8,14 @@ const Jobs = (props) => {
         jobs = props.jobs.map((el,i)=>{
             return (
                 <tr>
-                    <td>{`${el.id}`}</td>
-                    <td>{`${el.owner.slice(0,4)}..${el.owner.slice(-4)}`}</td>
-                    <td>{`${el.consumer.slice(0,4)}..${el.consumer.slice(-4)}`}</td>
-                    <td>{el.imageName}</td>
-                    <td>{el.callback.toString()}</td>
-                    <td>{el.requireConsistent.toString()}</td>
-                    <td>{el.gasLimit}</td>
-                    <td>{el.resultsCount}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.id}`)}}>{`${el.id}`}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.owner}`)}}>{`${el.owner.slice(0,4)}..${el.owner.slice(-4)}`}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.consumer}`)}}>{`${el.consumer.slice(0,4)}..${el.consumer.slice(-4)}`}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.imageName}`)}}>{el.imageName}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.callback.toString()}`)}}>{el.callback.toString()}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.requireConsistent.toString()}`)}}>{el.requireConsistent.toString()}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.gasLimit}`)}}>{el.gasLimit}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.resultsCount}`)}}>{el.resultsCount}</td>
                 </tr>
             )
         })

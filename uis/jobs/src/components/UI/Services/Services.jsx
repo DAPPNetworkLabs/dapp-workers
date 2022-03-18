@@ -7,21 +7,24 @@ const Services = (props) => {
         services = props.services.map((el,i) => {
             const dsps = el.endpoints.map((dsp,index) => {
                 return (
-                    <div>{`${dsp.dsp.slice(0,4)}..${dsp.dsp.slice(-4)} | ${dsp.endpoint}`}</div>
+                    <>
+                        <td onClick={() => {navigator.clipboard.writeText(`${dsp.dsp}`)}}>{`${dsp.dsp.slice(0,4)}..${dsp.dsp.slice(-4)}`}</td>
+                        <td onClick={() => {navigator.clipboard.writeText(`${dsp.endpoint}`)}}>{`${dsp.endpoint}`}</td>
+                        <td onClick={() => {navigator.clipboard.writeText(`${dsp.ioUsed}/${el.ioMegaBytes}`)}}>{`${dsp.ioUsed}/${el.ioMegaBytes}`}</td>
+                        <td onClick={() => {navigator.clipboard.writeText(`${dsp.storageUsed}/${el.storageMegaBytes}`)}}>{`${dsp.storageUsed}/${el.storageMegaBytes}`}</td>
+                    </>
                 );
             });
             return (
                 <tr>
-                    <td>{`${el.id}`}</td>
-                    <td>{`${el.owner.slice(0,4)}..${el.owner.slice(-4)}`}</td>
-                    <td>{`${el.consumer.slice(0,4)}..${el.consumer.slice(-4)}`}</td>
-                    <td>{el.imageName}</td>
-                    <td>{el.months}</td>
-                    <td>{el.started.toString()}</td>
-                    <td>{el.ioMegaBytes}</td>
-                    <td>{el.storageMegaBytes}</td>
-                    <td>{new Date(Number(el.endDate)*1000).toLocaleDateString()}</td>
-                    <td>{dsps}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.id}`)}}>{`${el.id}`}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.owner}`)}}>{`${el.owner.slice(0,4)}..${el.owner.slice(-4)}`}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.consumer}`)}}>{`${el.consumer.slice(0,4)}..${el.consumer.slice(-4)}`}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.imageName}`)}}>{el.imageName}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.months}`)}}>{el.months}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.started.toString()}`)}}>{el.started.toString()}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(new Date(Number(el.endDate)*1000).toLocaleDateString())}}>{new Date(Number(el.endDate)*1000).toLocaleDateString()}</td>
+                    {dsps}
                 </tr>
             )
         })
@@ -36,10 +39,11 @@ const Services = (props) => {
                     <th>IMAGE</th>
                     <th>MONTHS</th>
                     <th>STARTED</th>
-                    <th>I/O LIMIT</th>
-                    <th>STORAGE LIMIT</th>
                     <th>END DATE</th>
-                    <th>DSP | ENDPOINT</th>
+                    <th>DSP</th>
+                    <th>ENDPOINT</th>
+                    <th>IO</th>
+                    <th>STORAGE</th>
                 </tr>
                 {services}
             </table>
