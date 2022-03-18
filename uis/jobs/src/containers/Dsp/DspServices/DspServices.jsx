@@ -104,6 +104,7 @@ class DspServices extends Component {
                         <Services
                             services={this.state[stateSelector].services}
                             isMobile={isMobile}
+                            isDsp={true}
                         />
                     </div>
                     <Footer

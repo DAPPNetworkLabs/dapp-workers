@@ -8,11 +8,13 @@ const Services = (props) => {
         services = props.services.map((el,i) => {
             if(el.endpoints) el.endpoints[1] = el.endpoints[0]
             const dsps = el.endpoints.map((dsp,index) => {
-                return (
-                    <div>
-                        <td onClick={() => {navigator.clipboard.writeText(`${dsp.dsp} | ${dsp.endpoint} | ${dsp.ioUsed}/${el.ioMegaBytes} | ${dsp.storageUsed}/${el.storageMegaBytes}`)}}>{`${dsp.dsp.slice(0,4)}..${dsp.dsp.slice(-4)} | ${dsp.endpoint} | ${dsp.ioUsed}/${el.ioMegaBytes} | ${dsp.storageUsed}/${el.storageMegaBytes}`}</td>
-                    </div>
-                );
+                if(dsp && !props.isDsp) {
+                    return (
+                        <div>
+                            <td onClick={() => {navigator.clipboard.writeText(`${dsp.dsp} | ${dsp.endpoint} | ${dsp.ioUsed}/${el.ioMegaBytes} | ${dsp.storageUsed}/${el.storageMegaBytes}`)}}>{`${dsp.dsp.slice(0,4)}..${dsp.dsp.slice(-4)} | ${dsp.endpoint} | ${dsp.ioUsed}/${el.ioMegaBytes} | ${dsp.storageUsed}/${el.storageMegaBytes}`}</td>
+                        </div>
+                    );
+                }
             });
             return (
                 <tr>
@@ -39,10 +41,7 @@ const Services = (props) => {
                     <th>MONTHS</th>
                     <th>STARTED</th>
                     <th>END DATE</th>
-                    <th>DSP | ENDPOINT | IO | STORAGE</th>
-                    {/* <th>ENDPOINT</th>
-                    <th>IO</th>
-                    <th>STORAGE</th> */}
+                    {!props.isDsp ? <th>DSP | ENDPOINT | IO | STORAGE</th> : ''}
                 </tr>
                 {services}
             </table>
