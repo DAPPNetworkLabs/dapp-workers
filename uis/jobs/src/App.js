@@ -21,6 +21,7 @@ import UnapproveImage from './containers/Admin/UnapproveImage/UnapproveImage';
 
 // Consumer
 import DspInfo from './containers/Consumer/DspInfo/DspInfo';
+import DspImages from './containers/Consumer/DspImages/DspImages';
 import BuyGas from './containers/Consumer/BuyGas/BuyGas';
 import ExtendService from './containers/Consumer/ExtendService/ExtendService';
 import ConsumerJobs from './containers/Consumer/ConsumerJobs/ConsumerJobs';
@@ -49,6 +50,7 @@ function App() {
           <Route path="/admin/unapprove-image" exact element={<UnapproveImage/>} />
 
           <Route path="/consumer/dsp-info" exact element={<DspInfo/>} />
+          <Route path="/consumer/images" exact element={<DspImages/>} />
           <Route path="/consumer/buy-gas" exact element={<BuyGas/>} />
           <Route path="/consumer/sell-gas" exact element={<SellGas/>} />
           <Route path="/consumer/request-job" exact element={<RequestJob/>} />

@@ -8,6 +8,8 @@ const contractAddress = process.env.ADDRESS || '0x2751cAA3ECfbd0AAC09f60420f7A51
 const contract = new web3.eth.Contract(NexusJSON.abi,contractAddress);
 const ethereum = window.ethereum;
 
+const {approvedImages} = require('./approvedImages')
+
 // START GETTER
 
 const returnAbi = (func) => {
@@ -151,12 +153,91 @@ const fetchEndpointForDSP = async (thisObject) => {
     thisObject.setState({endpoint});
 }
 
+const fetchDsps = async () => {
+    const dsps = [];
+    const totalDsps = await contract.methods.totalDsps().call();
+    for(let i = 0; i < totalDsps; i++) {
+        const dsp = await contract.methods.dspList(i).call();
+        dsps.push(dsp);
+    }
+    return dsps;
+}
+
+const fetchImages = async (thisObject,stateSelector) => {
+    const dsps = await fetchDsps();
+    let jobImages = [], serviceImages = [];
+    for(const dsp of dsps){
+        for(const image of approvedImages){
+            if(image.type == "job") {
+                const info = await contract.methods.dspApprovedImages(dsp,image.name).call();
+                if(Number(info.jobFee) > 0) {
+                    jobImages.push({
+                        ...info,
+                        image: image.name,
+                        dsp
+                    });
+                }
+            } else if(image.type == "service") {
+                const info = await contract.methods.dspApprovedImages(dsp,image.name).call();
+                if(Number(info.baseFee) > 0) {
+                    serviceImages.push({
+                        ...info,
+                        image: image.name,
+                        dsp
+                    });
+                }
+            }
+        }
+    }
+    thisObject.setState({
+        [stateSelector]: {
+            ...thisObject.state[stateSelector],
+            jobImages,
+            serviceImages
+    },});
+}
+
 const fetchDspInfo = async (thisObject) => {
     const dspInfo = await contract.methods.registeredDSPs(
         thisObject.state.registeredDSPs.dsp
     ).call()
     console.log(dspInfo);
     thisObject.setState({dspInfo});
+}
+
+const fetchAllDsps = async(thisObject,stateSelector) => {
+    const totalDsps = await contract.methods.totalDsps().call();
+    let allDspInfo = [];
+    let 
+    selectedDsps = [], finalDsps = [], 
+    noError=true, 
+    serviceErrors=0, jobErrors=0, 
+    i = 0;
+    let jobsCompleted = 0, servicesCompleted = 0, dappGas;
+    for(let i = 0; i < totalDsps; i++) {
+        let obj = {
+            dsp:'',
+            images: []
+        };
+        const dsp = await contract.methods.dspList(i).call();
+        obj.dsp = dsp;
+        const endpoint = await contract.methods.getDSPEndpoint(
+            dsp
+        ).call();
+        allDspInfo.push({
+            ...obj,
+            endpoint,
+            jobsCompleted,
+            servicesCompleted,
+            jobErrors,
+            serviceErrors
+        });
+    }
+    thisObject.setState({
+        [stateSelector]: {
+            ...thisObject.state[stateSelector],
+            allDspInfo
+    },});
 }
 
 const fetchDspsByConsumer = async (thisObject,stateSelector) => {
@@ -515,6 +596,7 @@ const runTrx = async (data,events,thisObject) => {
 }
 
 export default { 
+    fetchAllDsps,
     fetchJobs,
     fetchServices,
     // fetchJobImage,
@@ -549,5 +631,6 @@ export default {
     queueJob,
     queueService,
     updateDockerImage,
-    fetchLastJob
+    fetchLastJob,
+    fetchImages
 }

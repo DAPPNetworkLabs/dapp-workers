@@ -4,7 +4,6 @@ import classes from './Dsps.module.scss';
 const Dsps = (props) => {
     let dsps;
     if(props.dsps) {
-        console.log(props.dsps);
         dsps = props.dsps.map((el,i)=>{
             return (
                 <tr>

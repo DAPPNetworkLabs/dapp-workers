@@ -303,16 +303,10 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     uint public lastJobID;
 
-    mapping(uint => address) private dspList;
+    mapping(uint => address) public dspList;
 
     Config private s_config;  
     uint256 private s_fallbackGasPrice; // not in config object for gas savings
-
-    /*
-
-        - 
-
-    */
 
     function initialize(
         initArgs memory args

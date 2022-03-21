@@ -89,6 +89,10 @@ class Header extends React.Component {
             'path': '/consumer/dsp-info'
           },
           {
+            'name': 'Dsp Images',
+            'path': '/consumer/images'
+          },
+          {
             'name': 'Jobs',
             'path': '/consumer/jobs'
           },

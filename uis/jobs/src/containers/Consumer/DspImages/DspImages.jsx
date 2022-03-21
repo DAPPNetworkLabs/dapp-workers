@@ -1,9 +1,8 @@
 
 import React, { Component } from 'react';
-import classes from './DspInfo.module.scss';
+import classes from './DspImages.module.scss';
 import Header from '@components/Header/Header';
-import Dsps from '@components/UI/Dsps/Dsps';
-import AllDsps from '@components/UI/AllDsps/AllDsps';
+import Images from '@components/UI/Images/Images';
 import Title from '@components/UI/Title/Title';
 import SubTitle from '@components/UI/SubTitle/SubTitle';
 import Footer from '@components/Footer/Footer';
@@ -20,12 +19,12 @@ import { loc } from '@loc';
 import * as helpers from '@helpers'
 
 const section = 'consumer'; // update
-const page = 'dsp info'; // update
-const stateSelector = 'dsps'; // update
+const page = 'dsp images'; // update
+const stateSelector = 'images'; // update
 
 const ethereum = window.ethereum;
 
-class DspInfo extends Component {
+class DspImages extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -34,16 +33,15 @@ class DspInfo extends Component {
             // update
             [stateSelector]: {
                 lastJobId: 0,
-                dsps: null,
-                allDspInfo: null
+                jobImages: null,
+                serviceImages: null
             },
             show: false
         }
     }
 
     componentDidMount() {
-        lib.web3.fetchDspsByConsumer(this,stateSelector);
-        lib.web3.fetchAllDsps(this,stateSelector);
+        lib.web3.fetchImages(this,stateSelector);
     }
 
     componentWillUnmount() {
@@ -71,13 +69,13 @@ class DspInfo extends Component {
                     <div className={isMobile ? classes.centerMobile : classes.center}>
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
-                        <Dsps
-                            dsps={this.state[stateSelector].dsps}
+                        <Images
+                            jobImages={this.state[stateSelector].jobImages}
                             isMobile={isMobile}
+                            isJob={true}
                         />
-                        <SubTitle text={loc(`${section}.${page}.altSubtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
-                        <AllDsps
-                            allDspInfo={this.state[stateSelector].allDspInfo}
+                        <Images
+                            serviceImages={this.state[stateSelector].serviceImages}
                             isMobile={isMobile}
                         />
                     </div>
@@ -107,5 +105,5 @@ class DspInfo extends Component {
     };
   };
   
-  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(DspInfo));
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(DspImages));
   

@@ -3,6 +3,12 @@
         "dsp info": {
             "title": "DSP INFO",
             "subtitle": "Information on selected DSPs.",
+            "altSubtitle": "All DSP info",
+            "button": ""
+        },
+        "dsp images": {
+            "title": "DSP IMAGES",
+            "subtitle": "DSP job and service image information.",
             "button": ""
         },
         "buy gas": {
