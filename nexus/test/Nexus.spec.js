@@ -73,10 +73,18 @@ describe("Nexus", function(done) {
     if(process.env.PRIVATE_KEY) {
       dsp1 = new ethers.Wallet("278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d",dsp1.provider);
       consumer1 = new ethers.Wallet("0xc327bdb598a257632f48e4368ebe7be66a40daff34569c2f2ba36ee96e893674",dsp1.provider);
+      consumer2 = new ethers.Wallet("0xa62d3d80840579bf62183c2c3ad2344aebeccec44b1ba719aa06f39ab47d7d5c",dsp1.provider);
+      consumer3 = new ethers.Wallet("0x2aab7d1aeca546199474f49fea602c644b96b87654a8aa834b2bf9b110bd8939",dsp1.provider);
+      // 0xa62d3d80840579bf62183c2c3ad2344aebeccec44b1ba719aa06f39ab47d7d5c
+      // 0x2aab7d1aeca546199474f49fea602c644b96b87654a8aa834b2bf9b110bd8939
       // 10000 ETH
       let dapps = ethers.utils.parseUnits("80000000",4);
       await dappTokenContract.mint("0x21dfA04241ca05320E9dCd529F15f6F55115bbC3", dapps);
       await dappTokenContract.connect(consumer1).approve(nexusContract.address, dapps);
+      await dappTokenContract.mint("0x845a35dCC68A249243Cb08E16cE0889f9CbA4d67", dapps);
+      await dappTokenContract.connect(consumer2).approve(nexusContract.address, dapps);
+      await dappTokenContract.mint("0x6a313c74e27CB90F4D78C232f9690736b84C880c", dapps);
+      await dappTokenContract.connect(consumer3).approve(nexusContract.address, dapps);
 
       // preload frontend
       if(process.env.RUN_LOCAL) {
