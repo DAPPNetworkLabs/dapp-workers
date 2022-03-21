@@ -1,6 +1,8 @@
 import React from 'react';
 import classes from './Jobs.module.scss';
 
+import { loc } from '@loc';
+
 const Jobs = (props) => {
     let jobs;
     if(props.jobs) {
@@ -24,14 +26,14 @@ const Jobs = (props) => {
         <div className={props.isMobile ? classes.overflow : classes.desktopOverflow}>
             <table>
                 <tr>
-                    <th>ID</th> 
-                    <th>OWNER</th> 
-                    <th>CONSUMER</th>
-                    <th>IMAGE</th>
-                    <th>CALLBACK</th>
-                    <th>CONSISTENT</th>
-                    <th>GAS LIMIT</th>
-                    <th>RESULTS</th>
+                    <th class={classes.tooltip}>ID<span class={classes.tooltiptextForm}>{loc(`forms.id`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>OWNER<span class={classes.tooltiptextForm}>{loc(`forms.owner`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>CONSUMER<span class={classes.tooltiptextForm}>{loc(`forms.consumer`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>IMAGE<span class={classes.tooltiptextForm}>{loc(`forms.image`,props.lang)}</span></th>
+                    <th class={classes.tooltip}>CALLBACK<span class={classes.tooltiptextForm}>{loc(`forms.callback`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>CONSISTENT<span class={classes.tooltiptextForm}>{loc(`forms.consistent`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>GAS LIMIT<span class={classes.tooltiptextForm}>{loc(`forms.gasLimit`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>RESULTS<span class={classes.tooltiptextForm}>{loc(`forms.results`,props.lang)}</span></th> 
                 </tr>
                 {jobs}
             </table>

@@ -73,10 +73,12 @@ class DspImages extends Component {
                             jobImages={this.state[stateSelector].jobImages}
                             isMobile={isMobile}
                             isJob={true}
+                            lang={this.props.lang}
                         />
                         <Images
                             serviceImages={this.state[stateSelector].serviceImages}
                             isMobile={isMobile}
+                            lang={this.props.lang}
                         />
                     </div>
                     <Footer

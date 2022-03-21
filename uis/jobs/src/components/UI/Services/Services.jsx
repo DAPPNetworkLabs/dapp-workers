@@ -1,6 +1,8 @@
 import React from 'react';
 import classes from './Services.module.scss';
 
+import { loc } from '@loc';
+
 const Services = (props) => {
     let services;
     console.log(props.services)
@@ -34,14 +36,14 @@ const Services = (props) => {
         <div className={props.isMobile ? classes.overflow : classes.desktopOverflow}>
             <table>
                 <tr>
-                    <th>ID</th> 
-                    <th>OWNER</th> 
-                    <th>CONSUMER</th>
-                    <th>IMAGE</th>
-                    <th>MONTHS</th>
-                    <th>STARTED</th>
-                    <th>END DATE</th>
-                    {!props.isDsp ? <th>DSP | ENDPOINT | IO | STORAGE</th> : ''}
+                    <th class={classes.tooltip}>ID<span class={classes.tooltiptextForm}>{loc(`forms.id`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>OWNER<span class={classes.tooltiptextForm}>{loc(`forms.owner`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>CONSUMER<span class={classes.tooltiptextForm}>{loc(`forms.consumer`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>IMAGE<span class={classes.tooltiptextForm}>{loc(`forms.image`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>MONTHS<span class={classes.tooltiptextForm}>{loc(`forms.months`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>STARTED<span class={classes.tooltiptextForm}>{loc(`forms.started`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>END DATE<span class={classes.tooltiptextForm}>{loc(`forms.endDate`,props.lang)}</span></th> 
+                    {!props.isDsp ? <th class={classes.tooltip}>DSP | ENDPOINT | IO | STORAGE<span class={classes.tooltiptextForm}>{loc(`forms.dspEndpointIoStorage`,props.lang)}</span></th> : ''}
                 </tr>
                 {services}
             </table>

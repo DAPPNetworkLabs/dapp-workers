@@ -194,7 +194,7 @@ const fetchImages = async (thisObject,stateSelector) => {
             ...thisObject.state[stateSelector],
             jobImages,
             serviceImages
-    },});
+    }});
 }
 
 const fetchDspInfo = async (thisObject) => {
@@ -237,7 +237,7 @@ const fetchAllDsps = async(thisObject,stateSelector) => {
         [stateSelector]: {
             ...thisObject.state[stateSelector],
             allDspInfo
-    },});
+    }});
 }
 
 const fetchDspsByConsumer = async (thisObject,stateSelector) => {

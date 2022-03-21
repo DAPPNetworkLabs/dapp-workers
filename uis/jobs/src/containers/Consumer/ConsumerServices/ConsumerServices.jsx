@@ -104,6 +104,7 @@ class ConsumerServices extends Component {
                         <Services
                             services={this.state[stateSelector].services}
                             isMobile={isMobile}
+                            lang={this.props.lang}
                         />
                     </div>
                     <Footer

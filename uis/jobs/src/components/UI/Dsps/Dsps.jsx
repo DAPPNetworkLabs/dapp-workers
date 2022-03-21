@@ -1,6 +1,8 @@
 import React from 'react';
 import classes from './Dsps.module.scss';
 
+import { loc } from '@loc';
+
 const Dsps = (props) => {
     let dsps;
     if(props.dsps) {
@@ -22,13 +24,13 @@ const Dsps = (props) => {
         <div className={props.isMobile ? classes.overflow : ''}>
             <table>
                 <tr>
-                    <th>DSP</th> 
-                    <th>ENDPOINT</th>
-                    <th>JOBS</th>
-                    <th>JOB ERRORS</th>
-                    <th>SERVICES</th>
-                    <th>SERVICE ERRORS</th>
-                    <th>DAPP GAS</th>
+                    <th class={classes.tooltip}>DSP<span class={classes.tooltiptextForm}>{loc(`forms.dsp`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>ENDPOINT<span class={classes.tooltiptextForm}>{loc(`forms.endpoint`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>JOBS<span class={classes.tooltiptextForm}>{loc(`forms.jobs`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>JOB ERRORS<span class={classes.tooltiptextForm}>{loc(`forms.jobErrors`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>SERVICES<span class={classes.tooltiptextForm}>{loc(`forms.services`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>SERVICE ERRORS<span class={classes.tooltiptextForm}>{loc(`forms.serviceErrors`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>DAPP GAS<span class={classes.tooltiptextForm}>{loc(`forms.dappGas`,props.lang)}</span></th> 
                 </tr>
                 {dsps}
             </table>

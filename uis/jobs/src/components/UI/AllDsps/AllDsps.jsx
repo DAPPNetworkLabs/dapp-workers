@@ -1,6 +1,8 @@
 import React from 'react';
 import classes from './AllDsps.module.scss';
 
+import { loc } from '@loc';
+
 const AllDsps = (props) => {
     let dsps;
     console.log(props.allDspInfo)
@@ -18,8 +20,8 @@ const AllDsps = (props) => {
         <div className={props.isMobile ? classes.overflow : ''}>
             <table>
                 <tr>
-                    <th>DSP</th> 
-                    <th>ENDPOINT</th>
+                    <th class={classes.tooltip}>DSP<span class={classes.tooltiptextForm}>{loc(`forms.dsp`,props.lang)}</span></th> 
+                    <th class={classes.tooltip}>ENDPOINT<span class={classes.tooltiptextForm}>{loc(`forms.endpoint`,props.lang)}</span></th> 
                 </tr>
                 {dsps}
             </table>

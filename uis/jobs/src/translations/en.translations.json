@@ -1,4 +1,30 @@
 {
+    "forms": {
+        "dsp":"DSP EVM address.",
+        "image":"Docker image for job or service.",
+        "jobFee":"Fee charged in USD per job. Used to convert current DAPP token price based on current DAPP/BNT Bancor price",
+        "baseFee":"Fee charged per service performed as a base fee in USD.",
+        "storageFee":"Fee charged per mb used for storage in USD.",
+        "ioFee":"Fee charged per mb used for upload/download activity in USD.",
+        "minStorageMb":"Minimum required storage megabytes to perform service.",
+        "endpoint":"DSP endpoint used for services that provide an API.",
+        "jobs":"Jobs successfully completed.",
+        "jobErrors":"Jobs failed by error.",
+        "services":"Services successfully completed.",
+        "serviceErrors":"Services failed by error.",
+        "dappGas":"DAPP Gas that can be used for jobs and services.",
+        "id":"ID of job or service.",
+        "owner":"Owner of job or service. The owner pays DAPP Gas for the job or service.",
+        "consumer":"Consumer of job or service. Consumer can be the same as the owner or the consumer can be a smart contract.  DAPP Gas paid for by owner.",
+        "months":"Months service has been paid for.",
+        "started":"Service has started or not.",
+        "endDate":"End date of DSP providing requested service.",
+        "dspEndpointIoStorage":"DSP address, DSP endpoint, IO used out of total, storage used out of total.",
+        "callback":"Does job require a smart contract callback?",
+        "consistent":"Require all DSP results be the same and throw an error if not?",
+        "gasLimit":"Gas limit on functiong fulfilling job request.",
+        "results":"Number of total results returned by DSPs."
+    },
     "consumer": {
         "dsp info": {
             "title": "DSP INFO",

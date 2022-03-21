@@ -74,11 +74,13 @@ class DspInfo extends Component {
                         <Dsps
                             dsps={this.state[stateSelector].dsps}
                             isMobile={isMobile}
+                            lang={this.props.lang}
                         />
                         <SubTitle text={loc(`${section}.${page}.altSubtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
                         <AllDsps
                             allDspInfo={this.state[stateSelector].allDspInfo}
                             isMobile={isMobile}
+                            lang={this.props.lang}
                         />
                     </div>
                     <Footer

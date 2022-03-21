@@ -84,6 +84,10 @@ th {
   color: $color-white;
 }
 
+th:hover {
+  cursor: pointer;
+}
+
 table {
   margin-top: 20px;
 }
@@ -95,5 +99,101 @@ table {
 
 .desktopOverflow{
   max-width: 90%;
-  overflow-x: auto;
 }
+
+.soloButton{
+    margin-top: 20px;
+    width: 200px;
+}
+
+.formSpan {
+    margin-left: 5px;
+    border: 1px solid $color-blue;
+    border-radius: 100%;
+    padding-left: 5px;
+    padding-right: 5px;
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+    height: 20px;
+}
+
+.formSpan .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: $color-blue;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltiptext{
+    font-size: 14px;
+}
+
+
+.formSpan .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+  }
+  
+  .formSpan:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .tooltip {
+      border: 5px solid $color-blue;
+      cursor: pointer;
+      position: relative;
+  }
+  
+  .tooltip .tooltiptextForm {
+      visibility: hidden;
+      width: 200px;
+      background-color: $color-blue;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px 0;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -100px;
+      opacity: 0;
+      transition: opacity 0.3s;
+  }
+  
+  .tooltiptextForm{
+      font-size: 14px;
+  }
+  
+  
+  .tooltip .tooltiptextForm::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+    }
+    
+    .tooltip:hover .tooltiptextForm {
+      visibility: visible;
+      opacity: 1;
+    }

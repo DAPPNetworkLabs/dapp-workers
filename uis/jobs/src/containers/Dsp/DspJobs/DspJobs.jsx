@@ -104,6 +104,7 @@ class DspJobs extends Component {
                         <Jobs
                             jobs={this.state[stateSelector].jobs}
                             isMobile={isMobile}
+                            lang={this.props.lang}
                         />
                     </div>
                     <Footer
