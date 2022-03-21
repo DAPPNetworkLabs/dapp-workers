@@ -43,6 +43,10 @@ class Home extends Component {
         lib.web3.fetchWorkerStats(this, stateSelector);
     }
 
+    openClose = () => {
+      this.setState({ show: !this.state.show });
+    }
+
     separateObject = obj => {
         const res = [];
         const keys = Object.keys(obj);
