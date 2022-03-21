@@ -32,6 +32,18 @@ const uniq = (arr) =>  {
     return Array.from(uniqueSet).map(JSON.parse);
 }
 
+const fetchWorkerStats = async (thisObject,stateSpecifier) => {
+    const workers = await contract.methods.totalDsps().call();
+    const gasPaid = await contract.methods.totalDappGasPaid().call();
+    thisObject.setState({
+        [stateSpecifier]: {
+            ...thisObject.state[stateSpecifier],
+            workers,
+            gasPaid
+        }
+    });
+}
+
 const fetchLastJob = async () => {
     const id = await contract.methods.lastJobID().call();
     console.log(id);
@@ -632,5 +644,6 @@ export default {
     queueService,
     updateDockerImage,
     fetchLastJob,
-    fetchImages
+    fetchImages,
+    fetchWorkerStats
 }

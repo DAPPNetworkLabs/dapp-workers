@@ -3,7 +3,8 @@ import classes from './Footer.module.scss';
 
 const links = [
   {"text":"Github","link":"https://github.com/DAPPNetworkLabs/dapp-workers"},
-  {"text":"Discord","link":"https://discord.com/channels/924090210030067744/925867071923949650/930778349826088960"}
+  {"text":"Discord","link":"https://discord.com/channels/924090210030067744/925867071923949650/930778349826088960"},
+  {"text":"Docs","link":"https://docs.liquidapps.io/liquidapps-documentation/"}
 ]
 
 const footer = (props) => {

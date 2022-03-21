@@ -25,6 +25,14 @@
         "gasLimit":"Gas limit on functiong fulfilling job request.",
         "results":"Number of total results returned by DSPs."
     },
+    "home": {
+        "home": {
+            "title": "DAPP WORKERS",
+            "subtitle": "DAPP Workers enables advanced smart contract capabilities by using Docker images to perform jobs or run services requested and paid for on-chain.",
+            "buttonOne": "LEARN MORE",
+            "buttonTwo": "BECOME A WORKER"
+        }
+    },
     "consumer": {
         "dsp info": {
             "title": "DSP INFO",

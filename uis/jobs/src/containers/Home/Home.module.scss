@@ -1,1 +1,28 @@
 @import 'src/App.module.scss';
+
+.buttonFlex {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.day {
+    color: white;
+    background-color: $color-blue;
+}
+
+.day:hover {
+    color: white;
+    background-color: $color-dark-blue;
+}
+
+.night {
+    color: white;
+}
+
+.night:hover {
+    background-color: $color-blue;
+}
+.horizontalSpace{
+    margin-left: 20px;
+}

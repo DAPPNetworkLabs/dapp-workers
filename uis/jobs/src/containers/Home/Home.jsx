@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import classes from './Home.module.scss';
 import Header from '@components/Header/Header';
-import Form from '@components/UI/Form/Form';
+import WorkerStats from '@components/UI/WorkerStats/WorkerStats';
 import Title from '@components/UI/Title/Title';
 import SubTitle from '@components/UI/SubTitle/SubTitle';
 import Footer from '@components/Footer/Footer';
@@ -18,8 +18,9 @@ import { loc } from '@loc';
 
 import * as helpers from '@helpers'
 
-const section = 'consumer'; // update
-const page = 'extend service'; // update
+const section = 'home'; // update
+const page = 'home'; // update
+const stateSelector = 'worker stats'
 
 const ethereum = window.ethereum;
 
@@ -30,16 +31,18 @@ class Home extends Component {
             account: null,
             chainId: null,
             // update
-            extendService: {
-                serviceId:null,
-                imageName:null,
-                months:null,
-                ioMb:null,
-                storageMb:null
+            [stateSelector]: {
+                workers:null,
+                gasPaid:null
             },
             show: false
         }
     }
+
+    componentDidMount() {
+        lib.web3.fetchWorkerStats(this, stateSelector);
+    }
+
     separateObject = obj => {
         const res = [];
         const keys = Object.keys(obj);
@@ -65,7 +68,23 @@ class Home extends Component {
                         show={this.state.show}
                         isMobile={isMobile}
                     />
-                    Home page goes here
+                    <div className={isMobile ? classes.centerMobile : classes.center}>
+                        <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
+                        <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
+                        <div className={classes.buttonFlex}>
+                            <a className={this.props.isDayNight ? classes.day : classes.night} target="_blank" rel="noreferrer" href="https://docs.liquidapps.io/liquidapps-documentation/">
+                                {loc(`${section}.${page}.buttonOne`,this.props.lang)}
+                            </a>
+                            <span className={classes.horizontalSpace}></span>
+                            <a className={this.props.isDayNight ? classes.day : classes.night} target="_blank" rel="noreferrer" href="https://docs.liquidapps.io/liquidapps-documentation/">
+                                {loc(`${section}.${page}.buttonTwo`,this.props.lang)}
+                            </a>
+                        </div>
+                        <WorkerStats
+                            workers={this.state[stateSelector].workers}
+                            gasPaid={this.state[stateSelector].gasPaid}
+                        ></WorkerStats>
+                    </div>
                     <Footer
                         isDayNight={this.props.isDayNight}
                         isMobile={isMobile}
