@@ -47,10 +47,10 @@ services:
       - RUN_LOCAL=true
     command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "ganache:8545", "--", "npx", "hardhat", "--network", "ganache", "test"]
     depends_on:
-      - "eth"
+      - "ganache"
       - "orchestrator"
     links:
-      - eth
+      - ganache
       - orchestrator
     volumes:
       - ./services/orchestrator:/services/orchestrator
@@ -75,9 +75,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./nexus:/nexus
     depends_on:
-      - "eth"
+      - "ganache"
     links:
-      - eth
+      - ganache
   # dspportal:
   #   environment:
   #     - ETH_ADDR=ws://ganache:8545
