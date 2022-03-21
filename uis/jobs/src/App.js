@@ -1,8 +1,5 @@
 import React from 'react';
 import './App.module.scss';
-// import './index.css';
-// import './index.module.scss';
-import { GlobalStyles } from './view/css/global';
 
 import Home from './containers/Home/Home';
 
