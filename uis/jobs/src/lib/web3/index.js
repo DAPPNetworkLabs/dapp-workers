@@ -2,7 +2,6 @@ import Web3 from 'web3';
 import NexusJSON from '../../abi/Nexus.json';
 
 // const provider = new Web3.providers.WebsocketProvider(process.env.REACT_APP_ETH_ADDR || 'ws://localhost:8545');
-console.log(process.env.REACT_APP_ETH_ADDR || 'ws://localhost:8545');
 // const web3 = new Web3(provider);
 
 const web3 = new Web3(process.env.REACT_APP_ETH_ADDR || 'http://localhost:8545');
