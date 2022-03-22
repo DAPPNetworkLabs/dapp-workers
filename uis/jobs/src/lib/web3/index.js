@@ -5,8 +5,7 @@ import NexusJSON from '../../abi/Nexus.json';
 console.log(process.env.REACT_APP_ETH_ADDR || 'ws://localhost:8545');
 // const web3 = new Web3(provider);
 
-const web3 = new Web3(process.env.REACT_APP_ETH_ADDR);
-// const web3 = new Web3(process.env.REACT_APP_ETH_ADDR || 'http://localhost:8545');
+const web3 = new Web3(process.env.REACT_APP_ETH_ADDR || 'http://localhost:8545');
 const contractAddress = process.env.REACT_APP_ADDRESS || '0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5';
 const contract = new web3.eth.Contract(NexusJSON.abi,contractAddress);
 const ethereum = window.ethereum;
@@ -102,17 +101,20 @@ const fetchServices = async (thisObject, stateSpecifier) => {
                     const endpoint = await contract.methods.getDSPEndpoint(
                         el
                     ).call();
-                    let response = await fetch(`${endpoint}:${process.env.ALT_API_PORT || 8050}/dapp-workers/io?id=${i}`);
-                    const ioUsed =  await response.json();
-                    response = await fetch(`${endpoint}:${process.env.ALT_API_PORT || 8050}/dapp-workers/storage?id=${i}`);
-                    const storageUsed =  await response.json();
-                    console.log(ioUsed.io_usage);
-                    console.log(storageUsed.storage_usage);
+                    let response, ioUsed, storageUsed;
+                    try {
+                        response = await fetch(`${endpoint}:${process.env.ALT_API_PORT || 8050}/dapp-workers/io?id=${i}`);
+                        ioUsed =  await response.json();
+                        response = await fetch(`${endpoint}:${process.env.ALT_API_PORT || 8050}/dapp-workers/storage?id=${i}`);
+                        storageUsed =  await response.json();
+                    } catch(e) {
+                        console.log("issue fetching io/storage usage from dsp",e);
+                    }
                     endpoints.push({
                         dsp: el,
                         endpoint: `${endpoint}:${port}`,
-                        ioUsed: ioUsed.io_usage,
-                        storageUsed: storageUsed.storage_usage
+                        ioUsed: ioUsed ? ioUsed.io_usage : '?',
+                        storageUsed: storageUsed ? storageUsed.storage_usage : '?'
                     })
                 }
                 services.push({

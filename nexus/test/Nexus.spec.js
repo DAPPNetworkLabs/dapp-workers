@@ -91,7 +91,7 @@ describe("Nexus", function(done) {
         await nexusContract.approveImage("runner","90f68b2ae2d91b55528012e711f58333b2bf1040b190b6416f5e7f3c4f1ceb85");
         await nexusContract.approveImage("rust-compiler","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
         await nexusContract.approveImage("wasi-service","8ada822a2c5d872c904d4def217387dc63400602a44862bb4102507a0e6c5498");
-        await nexusContract.connect(dsp1).regDSP("http://localhost");
+        await nexusContract.connect(dsp1).regDSP(process.env.DSP_ENDPONIT || "http://localhost");
         await nexusContract.setDsps([dsp1.address]);
         dapps = ethers.utils.parseUnits("80000000",4);
         await dappTokenContract.mint(addr1.address, dapps);
