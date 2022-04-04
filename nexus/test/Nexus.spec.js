@@ -78,7 +78,7 @@ describe("Nexus", function(done) {
       // 0xa62d3d80840579bf62183c2c3ad2344aebeccec44b1ba719aa06f39ab47d7d5c
       // 0x2aab7d1aeca546199474f49fea602c644b96b87654a8aa834b2bf9b110bd8939
       // 10000 ETH
-      let dapps = ethers.utils.parseUnits("80000000",4);
+      let dapps = ethers.utils.parseUnits("80000000000",4);
       await dappTokenContract.mint("0x21dfA04241ca05320E9dCd529F15f6F55115bbC3", dapps);
       await dappTokenContract.connect(consumer1).approve(nexusContract.address, dapps);
       await dappTokenContract.mint("0x845a35dCC68A249243Cb08E16cE0889f9CbA4d67", dapps);
