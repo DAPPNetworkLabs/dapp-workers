@@ -40,11 +40,10 @@ class BuyGas extends Component {
     }
 
     componentDidMount() {
-        const accounts = ethereum.request({ method: 'eth_requestAccounts' });
-        
-        
-        //  lib.metamask.runHandlers(this);
-        this.setState({ account: accounts[0] });
+        if(ethereum) {
+            const accounts = ethereum.request({ method: 'eth_requestAccounts' });
+            this.setState({ account: accounts[0] });
+        }
     }
 
     componentWillUnmount() {

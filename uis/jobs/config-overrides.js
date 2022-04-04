@@ -12,7 +12,8 @@ module.exports = function override(config) {
     '@loc': 'src/view/texts/texts',
     '@translations': 'src/translations/index',
     '@texts': 'src/view/texts',
-    '@auth': 'src/store/actions/auth'
+    '@auth': 'src/store/actions/auth',
+    '@public': 'public'
   })(config);
 
   return config;
