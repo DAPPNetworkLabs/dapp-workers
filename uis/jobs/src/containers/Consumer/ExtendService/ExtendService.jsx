@@ -51,10 +51,6 @@ class ExtendService extends Component {
         }
     }
 
-    componentWillUnmount() {
-        //  lib.metamask.rmHandlers();
-    }
-
     handleChange(event, func) {
         let { name, value, type } = event.target;
         if(type=="checkbox") value = event.target.checked;

@@ -51,10 +51,6 @@ class SetConfig extends Component {
         }
     }
 
-    componentWillUnmount() {
-        //  lib.metamask.rmHandlers();
-    }
-
     handleChange(event, func, valType) {
         let { name, value, type } = event.target;
         console.log({ name, value, type }, valType);

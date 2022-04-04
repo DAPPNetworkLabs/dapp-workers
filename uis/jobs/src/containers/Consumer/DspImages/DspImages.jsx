@@ -44,10 +44,6 @@ class DspImages extends Component {
         lib.web3.fetchImages(this,stateSelector);
     }
 
-    componentWillUnmount() {
-        //  lib.metamask.rmHandlers();
-    }
-
     openClose = () => {
       this.setState({ show: !this.state.show });
     }

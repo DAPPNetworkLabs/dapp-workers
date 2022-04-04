@@ -48,10 +48,6 @@ class ConsumerJobs extends Component {
         }
     }
 
-    componentWillUnmount() {
-        //  lib.metamask.rmHandlers();
-    }
-
     openClose = () => {
       this.setState({ show: !this.state.show });
     }

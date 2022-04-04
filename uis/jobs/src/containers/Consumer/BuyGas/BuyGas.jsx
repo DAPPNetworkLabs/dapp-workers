@@ -48,10 +48,6 @@ class BuyGas extends Component {
         }
     }
 
-    componentWillUnmount() {
-        //  lib.metamask.rmHandlers();
-    }
-
     handleChange(event, func) {
         const { name, value } = event.target;
         this.setState({
