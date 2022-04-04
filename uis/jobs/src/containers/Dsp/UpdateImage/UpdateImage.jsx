@@ -46,11 +46,12 @@ class UpdateImage extends Component {
     }
 
     componentDidMount() {
-        const accounts = ethereum.request({ method: 'eth_requestAccounts' });
-        
-        
-        //  lib.metamask.runHandlers(this);
-        this.setState({ account: accounts[0] });
+        try {
+            const accounts = ethereum.request({ method: 'eth_requestAccounts' });
+            this.setState({ account: accounts[0] });
+        } catch (e) {
+            console.log(`unable to load metamask`,e);
+        }
     }
 
     componentWillUnmount() {
