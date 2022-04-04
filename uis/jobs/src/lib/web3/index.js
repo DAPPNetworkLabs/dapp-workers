@@ -33,37 +33,36 @@ const uniq = (arr) =>  {
 }
 
 const fetchJobDapps = async (thisObject,stateSpecifier) => {
-    let sufficientGas = true;
+    let sufficientGas = true, totalDapps = 0;
     const dsps = await fetchDsps();
-    console.log(dsps);
     for(const dsp of dsps) {
-        console.log(dsp);
         const dapps = await contract.methods.getMaxPaymentForGas(
             thisObject.state[stateSpecifier].gasLimit.toString(),
             thisObject.state[stateSpecifier].imageName,
             dsp
         ).call();
-        console.log(dapps);
-        const dappGas = await contract.methods.getDSPAmount(
-            thisObject.state[stateSpecifier].account,
-            dsp
-        ).call();
-        if(dapps > dappGas) sufficientGas = false;
+        if(thisObject.state[stateSpecifier].account) {
+            const dappGas = await contract.methods.getDSPAmount(
+                thisObject.state[stateSpecifier].account,
+                dsp
+            ).call();
+            if(dapps > dappGas) sufficientGas = false;
+            totalDapps += dapps;
+        }
     }
     thisObject.setState({
         [stateSpecifier]: {
             ...thisObject.state[stateSpecifier],
-            sufficientGas
+            sufficientGas,
+            totalDapps
         }
     });
 }
 
 const fetchServiceDapps = async (thisObject,stateSpecifier) => {
-    let sufficientGas = true;
+    let sufficientGas = true, totalDapps = 0;
     const dsps = await fetchDsps();
-    console.log(dsps);
     for(const dsp of dsps) {
-        console.log(dsp);
         const dapps = await contract.methods.calcServiceDapps(
             thisObject.state[stateSpecifier].imageName,
             thisObject.state[stateSpecifier].ioMegaBytes,
@@ -71,17 +70,20 @@ const fetchServiceDapps = async (thisObject,stateSpecifier) => {
             dsp,
             true
         ).call();
-        console.log(dapps);
-        const dappGas = await contract.methods.getDSPAmount(
-            thisObject.state[stateSpecifier].account,
-            dsp
-        ).call();
-        if(dapps > dappGas) sufficientGas = false;
+        if(thisObject.state[stateSpecifier].account) {
+            const dappGas = await contract.methods.getDSPAmount(
+                thisObject.state[stateSpecifier].account,
+                dsp
+            ).call();
+            if(dapps > dappGas) sufficientGas = false;
+            totalDapps += dapps;
+        }
     }
     thisObject.setState({
         [stateSpecifier]: {
             ...thisObject.state[stateSpecifier],
-            sufficientGas
+            sufficientGas,
+            totalDapps
         }
     });
 }

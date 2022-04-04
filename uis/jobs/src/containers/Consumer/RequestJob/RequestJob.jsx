@@ -39,7 +39,8 @@ class RequestJob extends Component {
                 gasLimit: 1000000,
                 requireConsistent: false,
                 args: [],
-                sufficientGas: true
+                sufficientGas: true,
+                totalDapps: null
             },
             show: false
         }
@@ -125,6 +126,12 @@ class RequestJob extends Component {
                 />
             )
         });
+        let dappGasElem;
+        if(this.state.totalDapps) {
+            dappGasElem = (
+                <SubTitle text={`${loc(`${section}.${page}.dappGas`,this.props.lang)}: ${this.state.totalDapps}`} isDayNight={this.props.isDayNight} />
+            )
+        }
         return (
             <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
                 <div className={classes.flex}>
@@ -141,6 +148,7 @@ class RequestJob extends Component {
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
                         {forms}
+                        {dappGasElem}
                         <SubTitle text={this.state[stateSelector].sufficientGas ? '' : loc(`${section}.${page}.sufficientGas`,this.props.lang)} isDayNight={this.props.isDayNight} theme="red" />
                     </div>
                     <Footer
