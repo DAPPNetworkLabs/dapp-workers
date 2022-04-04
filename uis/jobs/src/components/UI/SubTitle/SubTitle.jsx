@@ -2,10 +2,11 @@ import React from 'react';
 import classes from './SubTitle.module.scss';
 
 const SubTitle = (props) => {
-    let className;
-    props.isDayNight ? className = classes.dayTitle : className = classes.nightTitle;
+    const className = [];
+    props.isDayNight ? className.push(classes.dayTitle) : className.push(classes.nightTitle);
+    if(props.theme === "red") className.push(classes.red);
     let el = <div 
-        className={className} 
+        className={className.join(" ")} 
         onClick={props.onClick}
         >{props.text}</div>
     return (

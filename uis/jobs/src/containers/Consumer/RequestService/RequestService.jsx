@@ -20,6 +20,7 @@ import * as helpers from '@helpers'
 
 const section = 'consumer'; // update
 const page = 'request service'; // update
+const stateSelector = 'queueService'
 
 const ethereum = window.ethereum;
 
@@ -30,14 +31,15 @@ class RequestService extends Component {
             account: null,
             chainId: null,
             // update
-            queueService: {
+            [stateSelector]: {
                 owner: '0x21dfA04241ca05320E9dCd529F15f6F55115bbC3',
                 imageName: 'wasi-service',
                 ioMegaBytes: 100,
                 storageMegaBytes: 100,
                 inputFS: 'QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM',
                 args: ["target/wasm32-wasi/release/test"],
-                months: 1
+                months: 1,
+                sufficientGas: true
             },
             show: false
         }
@@ -66,6 +68,7 @@ class RequestService extends Component {
                 [name]: value	
             },	
         });	
+        lib.web3.fetchServiceDapps(this, stateSelector);
     }
 
     openClose = () => {
@@ -138,6 +141,7 @@ class RequestService extends Component {
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
                         {forms}
+                        <SubTitle text={this.state[stateSelector].sufficientGas ? '' : loc(`${section}.${page}.sufficientGas`,this.props.lang)} isDayNight={this.props.isDayNight} theme="red" />
                     </div>
                     <Footer
                         isDayNight={this.props.isDayNight}

@@ -1064,7 +1064,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint storageMegaBytes, 
         address dsp, 
         bool include_base
-    ) private view returns (uint) {
+    ) public view returns (uint) {
         // base fee per hour * 24 hours * 30 days for monthly rate
         uint dappUsd = getDappUsd();
 

@@ -39,7 +39,7 @@ class RequestJob extends Component {
                 gasLimit: 1000000,
                 requireConsistent: false,
                 args: [],
-                dapps: null
+                sufficientGas: true
             },
             show: false
         }
@@ -64,13 +64,13 @@ class RequestJob extends Component {
             if(value.length && value[0] == '') value = [];
         }
         if(type == "checkbox") value = event.target.checked;
-        lib.web3.fetchJobDapps(this, stateSelector);
         this.setState({
             [func]: {
                 ...this.state[func],
                 [name]: value
             },
         });
+        lib.web3.fetchJobDapps(this, stateSelector);
     }
 
     openClose = () => {
@@ -141,6 +141,7 @@ class RequestJob extends Component {
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
                         {forms}
+                        <SubTitle text={this.state[stateSelector].sufficientGas ? '' : loc(`${section}.${page}.sufficientGas`,this.props.lang)} isDayNight={this.props.isDayNight} theme="red" />
                     </div>
                     <Footer
                         isDayNight={this.props.isDayNight}

@@ -679,6 +679,45 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "imageName",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "ioMegaBytes",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "storageMegaBytes",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "dsp",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "include_base",
+          "type": "bool"
+        }
+      ],
+      "name": "calcServiceDapps",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "claim",
       "outputs": [],

@@ -3,7 +3,6 @@ import NexusJSON from '../../abi/Nexus.json';
 
 // const provider = new Web3.providers.WebsocketProvider(process.env.REACT_APP_ETH_ADDR || 'ws://localhost:8545');
 // const web3 = new Web3(provider);
-
 const web3 = new Web3(process.env.REACT_APP_ETH_ADDR || 'http://localhost:8545');
 const contractAddress = process.env.REACT_APP_ADDRESS || '0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5';
 const contract = new web3.eth.Contract(NexusJSON.abi,contractAddress);
@@ -34,16 +33,55 @@ const uniq = (arr) =>  {
 }
 
 const fetchJobDapps = async (thisObject,stateSpecifier) => {
-    const dapps = await contract.methods.getMaxPaymentForGas(
-        thisObject.state.gasLimit,
-        thisObject.state.imageName,
-        thisObject.state.dsp
-    ).call();
-    console.log(dapps)
+    let sufficientGas = true;
+    const dsps = await fetchDsps();
+    console.log(dsps);
+    for(const dsp of dsps) {
+        console.log(dsp);
+        const dapps = await contract.methods.getMaxPaymentForGas(
+            thisObject.state[stateSpecifier].gasLimit.toString(),
+            thisObject.state[stateSpecifier].imageName,
+            dsp
+        ).call();
+        console.log(dapps);
+        const dappGas = await contract.methods.getDSPAmount(
+            thisObject.state[stateSpecifier].account,
+            dsp
+        ).call();
+        if(dapps > dappGas) sufficientGas = false;
+    }
     thisObject.setState({
         [stateSpecifier]: {
             ...thisObject.state[stateSpecifier],
-            dapps
+            sufficientGas
+        }
+    });
+}
+
+const fetchServiceDapps = async (thisObject,stateSpecifier) => {
+    let sufficientGas = true;
+    const dsps = await fetchDsps();
+    console.log(dsps);
+    for(const dsp of dsps) {
+        console.log(dsp);
+        const dapps = await contract.methods.calcServiceDapps(
+            thisObject.state[stateSpecifier].imageName,
+            thisObject.state[stateSpecifier].ioMegaBytes,
+            thisObject.state[stateSpecifier].storageMegaBytes,
+            dsp,
+            true
+        ).call();
+        console.log(dapps);
+        const dappGas = await contract.methods.getDSPAmount(
+            thisObject.state[stateSpecifier].account,
+            dsp
+        ).call();
+        if(dapps > dappGas) sufficientGas = false;
+    }
+    thisObject.setState({
+        [stateSpecifier]: {
+            ...thisObject.state[stateSpecifier],
+            sufficientGas
         }
     });
 }
@@ -665,5 +703,6 @@ export default {
     fetchLastJob,
     fetchImages,
     fetchWorkerStats,
-    fetchJobDapps
+    fetchJobDapps,
+    fetchServiceDapps
 }

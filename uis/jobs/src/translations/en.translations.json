@@ -76,7 +76,8 @@
                 { "name":"GAS LIMIT","type": "uint","short":"Gas limit for running job"},
                 { "name":"UNIFORM RESPONSE","type": "bool","short":"Require all DSP outputs to match."},
                 { "name":"ARGUMENTS","type": "array","short":"Arguments to provide docker image comma separated."}
-            ]
+            ],
+            "sufficientGas":"Insufficient DAPP Gas for one or more DAPP Workers"
         },
         "request service": {
             "title": "REQUEST SERVICE",
@@ -90,7 +91,8 @@
                 { "name":"INPUT","type": "string","short":"Input command for docker image."},
                 { "name":"ARGUMENTS","type": "array","short":"Arguments to provide docker image comma separated."},
                 { "name":"MONTHS","type": "uint","short":"Months to provide service for, covers base cost, DOES NOT multiply upload/download/storage costs."}
-            ]
+            ],
+            "sufficientGas":"Insufficient DAPP Gas for one or more DAPP Workers"
         },
         "extend service": {
             "title": "EXTEND SERVICE",
