@@ -4,7 +4,14 @@ import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { withLocalize } from 'react-localize-redux';
 
-import * as logos from '@view/assets/logos';
+// import * as logos from '../../view/assets/logos';
+// import * as logos from '@view/assets/logos'
+// import LogoWhite from '../../view/assets/logos/logo-white.png';
+// import LogoBlack from '../../view/assets/logos/logo-black.png';
+// import LogoWhite from '@public/assets/logo-white.png';
+// import LogoBlack from '@public/assets/logo-black.png';
+// import LogoWhite from '../../../public/assets/logo-white.png';
+// import LogoBlack from '../../../public/assets/logo-black.png';
 import Button from '@components/UI/Button/Button';
 
 import { MobileMenuToggleButton } from '@components/UI/MobileMenuToggleButton/MobileMenuToggleButton';
