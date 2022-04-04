@@ -20,6 +20,7 @@ import * as helpers from '@helpers'
 
 const section = 'consumer'; // update
 const page = 'request job'; // update
+const stateSelector = 'queueJob'
 
 const ethereum = window.ethereum;
 
@@ -30,14 +31,15 @@ class RequestJob extends Component {
             account: null,
             chainId: null,
             // update
-            queueJob: {
+            [stateSelector]: {
                 owner: '0x21dfA04241ca05320E9dCd529F15f6F55115bbC3',
                 imageName: 'rust-compiler',
                 inputFS: 'QmSvEfc84PKhxgguqwP8NQn2VN2yJhSHxek4AyVd1STKvu',
                 callback: false,
                 gasLimit: 1000000,
                 requireConsistent: false,
-                args: []
+                args: [],
+                dapps: null
             },
             show: false
         }
@@ -53,10 +55,6 @@ class RequestJob extends Component {
         }
     }
 
-    componentWillUnmount() {
-        //  lib.metamask.rmHandlers();
-    }
-
     handleChange(event, func, valType) {
         let { name, value, type } = event.target;
         if(valType.includes('array')) {
@@ -66,6 +64,7 @@ class RequestJob extends Component {
             if(value.length && value[0] == '') value = [];
         }
         if(type == "checkbox") value = event.target.checked;
+        lib.web3.fetchJobDapps(this, stateSelector);
         this.setState({
             [func]: {
                 ...this.state[func],

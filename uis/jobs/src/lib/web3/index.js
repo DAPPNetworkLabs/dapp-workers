@@ -33,6 +33,21 @@ const uniq = (arr) =>  {
     return Array.from(uniqueSet).map(JSON.parse);
 }
 
+const fetchJobDapps = async (thisObject,stateSpecifier) => {
+    const dapps = await contract.methods.getMaxPaymentForGas(
+        thisObject.state.gasLimit,
+        thisObject.state.imageName,
+        thisObject.state.dsp
+    ).call();
+    console.log(dapps)
+    thisObject.setState({
+        [stateSpecifier]: {
+            ...thisObject.state[stateSpecifier],
+            dapps
+        }
+    });
+}
+
 const fetchWorkerStats = async (thisObject,stateSpecifier) => {
     const workers = await contract.methods.totalDsps().call();
     const gasPaid = await contract.methods.totalDappGasPaid().call();
@@ -649,5 +664,6 @@ export default {
     updateDockerImage,
     fetchLastJob,
     fetchImages,
-    fetchWorkerStats
+    fetchWorkerStats,
+    fetchJobDapps
 }
