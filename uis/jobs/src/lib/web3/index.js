@@ -41,13 +41,13 @@ const fetchJobDapps = async (thisObject,stateSpecifier) => {
             thisObject.state[stateSpecifier].imageName,
             dsp
         ).call();
-        if(thisObject.state[stateSpecifier].account) {
+        if(thisObject.state[stateSpecifier].owner) {
             const dappGas = await contract.methods.getDSPAmount(
-                thisObject.state[stateSpecifier].account,
+                thisObject.state[stateSpecifier].owner,
                 dsp
             ).call();
-            if(dapps > dappGas) sufficientGas = false;
-            totalDapps += dapps;
+            if(Number(dapps) > Number(dappGas)) sufficientGas = false;
+            totalDapps += Number(dapps);
         }
     }
     thisObject.setState({
@@ -70,13 +70,13 @@ const fetchServiceDapps = async (thisObject,stateSpecifier) => {
             dsp,
             true
         ).call();
-        if(thisObject.state[stateSpecifier].account) {
+        if(thisObject.state[stateSpecifier].owner) {
             const dappGas = await contract.methods.getDSPAmount(
-                thisObject.state[stateSpecifier].account,
+                thisObject.state[stateSpecifier].owner,
                 dsp
             ).call();
-            if(dapps > dappGas) sufficientGas = false;
-            totalDapps += dapps;
+            if(Number(dapps) > Number(dappGas)) sufficientGas = false;
+            totalDapps += Number(dapps);
         }
     }
     thisObject.setState({

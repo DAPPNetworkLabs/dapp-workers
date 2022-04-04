@@ -127,9 +127,9 @@ class RequestService extends Component {
             )
         });
         let dappGasElem;
-        if(this.state.totalDapps) {
+        if(this.state[stateSelector].totalDapps) {
             dappGasElem = (
-                <SubTitle text={`${loc(`${section}.${page}.dappGas`,this.props.lang)}: ${this.state.totalDapps}`} isDayNight={this.props.isDayNight} />
+                <SubTitle text={`${loc(`${section}.${page}.dappGas`,this.props.lang)}: ${this.state[stateSelector].totalDapps/1e4} DAPP`} isDayNight={this.props.isDayNight} />
             )
         }
         return (
