@@ -40,9 +40,11 @@ class BuyGas extends Component {
     }
 
     componentDidMount() {
-        if(ethereum) {
+        try {
             const accounts = ethereum.request({ method: 'eth_requestAccounts' });
             this.setState({ account: accounts[0] });
+        } catch (e) {
+            console.log(`unable to load metamask`,e);
         }
     }
 
