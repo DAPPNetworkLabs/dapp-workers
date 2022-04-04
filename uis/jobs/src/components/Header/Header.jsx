@@ -4,19 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { withLocalize } from 'react-localize-redux';
 
-// import * as logos from '../../view/assets/logos';
-// import * as logos from '@view/assets/logos'
-import LogoWhite from '../../view/assets/logos/logo-white.png';
-import LogoBlack from '../../view/assets/logos/logo-black.png';
-// import LogoWhite from '@public/assets/logo-white.png';
-// import LogoBlack from '@public/assets/logo-black.png';
-// import LogoWhite from '../../../public/assets/logo-white.png';
-// import LogoBlack from '../../../public/assets/logo-black.png';
-
-// const logos = {
-//   LogoWhite,
-//   LogoBlack
-// }
+import * as logos from '@view/assets/logos'
 
 import Button from '@components/UI/Button/Button';
 
@@ -24,9 +12,6 @@ import { MobileMenuToggleButton } from '@components/UI/MobileMenuToggleButton/Mo
 
 import * as actions from '@auth';
 import detectBrowserLanguage from 'detect-browser-language';
-
-// const LogoWhite = require('../../view/assets/logos/logo-white.png');
-// const LogoBlack = require('../../view/assets/logos/logo-black.png');
 
 class Header extends React.Component {
   constructor(props) {
@@ -201,7 +186,7 @@ class Header extends React.Component {
       body = (
       <div className={[this.props.isDayNight ? classes.containerMobileDay : classes.containerMobileNight,classes.open].join(' ')}>
         <div className={classes.flexOpen}>
-          <NavLink to="/"><img className={classes.logoMobile} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></NavLink>
+          <NavLink to="/"><img className={classes.logoMobile} src={this.props.isDayNight ? logos.LogoBlack : logos.LogoWhite} alt="LiquidApps Logo"/></NavLink>
           <MobileMenuToggleButton isDayNight={this.props.isDayNight} onToggleButtonClick={this.props.openClose} />
         </div>
         <div className={classes.mobileButtons}>
@@ -240,7 +225,7 @@ class Header extends React.Component {
       body = (
         <>
           <div className={classes.flexForm}>
-            <NavLink to="/"><img className={classes.logoMobile} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/></NavLink>
+            <NavLink to="/"><img className={classes.logoMobile} src={this.props.isDayNight ? logos.LogoBlack : logos.LogoWhite} alt="LiquidApps Logo"/></NavLink>
             <MobileMenuToggleButton isDayNight={this.props.isDayNight} onToggleButtonClick={this.props.openClose} />
           </div>
         </>
@@ -250,7 +235,7 @@ class Header extends React.Component {
       <div className={classes.container}>
           <div>
             <NavLink to="/" className={this.props.isDayNight ?  '' : classes.logoNight}>
-              <img className={classes.logo} src={this.props.isDayNight ? LogoBlack : LogoWhite} alt="LiquidApps Logo"/>
+              <img className={classes.logo} src={this.props.isDayNight ? logos.LogoBlack : logos.LogoWhite} alt="LiquidApps Logo"/>
             </NavLink>
           </div>
           <div className={classes.dropdown}>
