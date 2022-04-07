@@ -18,7 +18,6 @@ const gasCeilingMultiplier = 2;
 const delay = s => new Promise(res => setTimeout(res, s * 1000));
 
 let outputFSRes;
-let jobId = 1;
 
 function loadfsRoot(fsrootName){
   if(process.env.PRIVATE_KEY) {
@@ -30,7 +29,7 @@ function loadfsRoot(fsrootName){
 
 describe("Nexus", function(done) {
   this.timeout(1000000);
-  let owner, addr1, addr2, addr3, worker1, worker2, addrs;
+  let owner, addr1, addr2, addr3, worker1, worker2, addrs, consumer1, consumer2, consumer3;
   let dappTokenContract, nexusContract, consumerContract;
 
   before(async function() {
@@ -244,6 +243,8 @@ describe("Nexus", function(done) {
       requiresConsistent: false,
       args: []
     });
+    
+    const id1 = await nexusContract.lastJobID();
 
     const eventPromise = new Promise((resolve, reject) => {
         nexusContract.once("JobResult", (
@@ -273,15 +274,17 @@ describe("Nexus", function(done) {
       requiresConsistent: false,
       args: ["target/wasm32-wasi/release/test"]
     });
+    
+    const id2 = await nexusContract.lastJobID();
 
-    const job = await nexusContract.jobs(jobId++);
+    const job = await nexusContract.jobs(id1);
 
     expect(job.consumer).to.equal(addr1.address);
     expect(job.callback).to.equal(false);
     expect(job.resultsCount.toString()).to.equal('1');
     expect(job.imageName).to.equal("rust-compiler");
 
-    const job2 = await nexusContract.jobs(jobId++);
+    const job2 = await nexusContract.jobs(id2);
 
     expect(job2.consumer).to.equal(addr1.address);
     expect(job2.callback).to.equal(false);
@@ -305,6 +308,8 @@ describe("Nexus", function(done) {
       requiresConsistent: false,
       args: []
     });
+    
+    const id1 = await nexusContract.lastJobID();
 
     let error;
     
@@ -315,7 +320,7 @@ describe("Nexus", function(done) {
             outputFS, 
             id
           ) => {
-            if(Number(id) == Number(jobId)) {
+            if(Number(id) == Number(id1)) {
               error = stdErr
               resolve();
             }
@@ -329,8 +334,6 @@ describe("Nexus", function(done) {
     await nexusContract.approveImage("rust-compiler","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
 
     expect(error).to.equal("chain hash mismatch");
-    
-    jobId++;
   });
 
   it("Queue job with callback", async function() {
@@ -342,7 +345,8 @@ describe("Nexus", function(done) {
 
     await consumerContract.queueJob(addr2.address, loadfsRoot("pngWriterTest"));
 
-    const job = await nexusContract.jobs(jobId++);
+    const id1 = await nexusContract.lastJobID();
+    const job = await nexusContract.jobs(id1);
 
     expect(job.consumer).to.equal(consumerContract.address);
     expect(job.callback).to.equal(true);
@@ -397,8 +401,6 @@ describe("Nexus", function(done) {
       requiresConsistent: false,
       args: []
     });
-
-    jobId++;
     
     const JobPromise = new Promise((resolve, reject) => {
         nexusContract.once("JobResult", (
@@ -428,8 +430,10 @@ describe("Nexus", function(done) {
       args: ["target/wasm32-wasi/release/test"],
       months: 1
     });
+    
+    const id1 = await nexusContract.lastJobID();
 
-    const service = await nexusContract.services(jobId);
+    const service = await nexusContract.services(id1);
 
     expect(service.consumer).to.equal(addr1.address);
     expect(service.imageName).to.equal("wasi-service");
@@ -448,9 +452,7 @@ describe("Nexus", function(done) {
 
     await servicePromise.then();
     
-    let id = jobId++
-
-    const port = await nexusContract.getPortForWORKER(id,worker1.address);
+    const port = await nexusContract.getPortForWORKER(id1,worker1.address);
 
     expect(port).to.equal(9000);
 
@@ -458,11 +460,9 @@ describe("Nexus", function(done) {
 
     expect(endpoint).to.equal(`${endpoint}`);
     
-    // console.log(`endpoint1: ${endpoint}-${id}:${port}`,id);
-    
     await delay(20);
 
-    const response = await fetch(`${endpoint}-${id}:${port}`, {method: 'GET'});
+    const response = await fetch(`${endpoint}-${id1}:${port}`, {method: 'GET'});
     const body = await response.text();
 
     expect(body).to.equal("foo");
@@ -490,8 +490,10 @@ describe("Nexus", function(done) {
     });
 
     await servicePromise.then();
+    
+    const id1 = await nexusContract.lastJobID();
 
-    const port = await nexusContract.getPortForWORKER(jobId,worker1.address);
+    const port = await nexusContract.getPortForWORKER(id1,worker1.address);
 
     expect(port).to.equal(9001);
 
@@ -499,16 +501,14 @@ describe("Nexus", function(done) {
 
     expect(endpoint).to.equal(`${endpoint}`);
     
-    console.log(`endpoint1: ${endpoint}-${jobId}:${port}`,jobId);
+    console.log(`endpoint1: ${endpoint}-${id1}:${port}`,id1);
     
     await delay(20);
 
-    const response = await fetch(`${endpoint}-${jobId}:${port}`, {method: 'GET'});
+    const response = await fetch(`${endpoint}-${id1}:${port}`, {method: 'GET'});
     const body = await response.text();
 
     expect(body).to.equal("foo");
-    
-    jobId++;
   });
 
   it("Min job balance", async function() {
@@ -803,6 +803,49 @@ describe("Nexus", function(done) {
     expect(isCocmplete).to.equal(true);
   });
 
+  it("Queue job git-cloner", async function() {
+    await nexusContract.approveImage("git-cloner","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
+    await nexusContract.connect(worker1).setDockerImage("git-cloner",100000,100000,100000,100000,100,100);
+    
+    await nexusContract.queueJob({
+      owner: addr1.address,
+      imageName: "git-cloner",
+      inputFS: loadfsRoot("liquidityMining"),
+      callback: false,
+      gasLimit: 1000000,
+      requiresConsistent: false,
+      args: []
+    });
+
+    const eventPromise = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            worker, 
+            outputFS, 
+            outputHash,
+            dapps,
+            jobID
+          ) => {
+            console.log('jobID',jobID)
+            resolve(outputFS);
+          }
+        );
+    });
+
+    await eventPromise.then(val => {
+      outputFSRes = val;
+    });
+
+    const id = await nexusContract.lastJobID();
+    const job = await nexusContract.jobs(id);
+
+    expect(job.consumer).to.equal(addr1.address);
+    expect(job.callback).to.equal(false);
+    expect(job.resultsCount.toString()).to.equal('1');
+    expect(job.imageName).to.equal("git-cloner");
+    expect(outputFSRes).to.equal("QmPTULeqLCtTnwStXg1dyPpQTc27TZtr13oc9VjGiTxSXY");
+  });
+
   it("Run service - complete", async function() {
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -813,8 +856,6 @@ describe("Nexus", function(done) {
       requiresConsistent: false,
       args: []
     });
-
-    jobId++;
     
     const JobPromise = new Promise((resolve, reject) => {
         nexusContract.once("JobResult", (
@@ -985,46 +1026,5 @@ describe("Nexus", function(done) {
     }
 
     expect(workerData[0].endpoint).to.equal('http://wasi-service');
-  });
-
-  it("Queue job git-cloner", async function() {
-    await nexusContract.approveImage("git-cloner","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
-    await nexusContract.connect(worker1).setDockerImage("git-cloner",100000,100000,100000,100000,100,100);
-    
-    await nexusContract.queueJob({
-      owner: addr1.address,
-      imageName: "git-cloner",
-      inputFS: loadfsRoot("liquidityMining"),
-      callback: false,
-      gasLimit: 1000000,
-      requiresConsistent: false,
-      args: []
-    });
-
-    const eventPromise = new Promise((resolve, reject) => {
-        nexusContract.once("JobResult", (
-            consumer, 
-            worker, 
-            outputFS, 
-            outputHash,
-            dapps,
-            jobID
-          ) => {
-            resolve(outputFS);
-          }
-        );
-    });
-
-    await eventPromise.then(val => {
-      outputFSRes = val;
-    });
-
-    const job = await nexusContract.jobs(jobId++);
-
-    expect(job.consumer).to.equal(addr1.address);
-    expect(job.callback).to.equal(false);
-    expect(job.resultsCount.toString()).to.equal('1');
-    expect(job.imageName).to.equal("git-cloner");
-    expect(outputFSRes).to.equal("QmPTULeqLCtTnwStXg1dyPpQTc27TZtr13oc9VjGiTxSXY");
   });
 });
