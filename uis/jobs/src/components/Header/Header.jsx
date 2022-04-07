@@ -27,7 +27,7 @@ class Header extends React.Component {
 
   componentDidMount() {
     if (!this.state.isLangUserSelected) {
-      let userlang = detectBrowserLanguage().substring(0,2);
+      let userlang = this.props.lang;
       if (userlang == 'en' || 'zh' || 'ko' || 'sp') {
         if (userlang == 'ko') {
           this.setKorean();
