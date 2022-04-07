@@ -1,9 +1,9 @@
 
 import React, { Component } from 'react';
-import classes from './DspInfo.module.scss';
+import classes from './WorkerInfo.module.scss';
 import Header from '@components/Header/Header';
-import Dsps from '@components/UI/Dsps/Dsps';
-import AllDsps from '@components/UI/AllDsps/AllDsps';
+import Workers from '@components/UI/Workers/Workers';
+import AllWorkers from '@components/UI/AllWorkers/AllWorkers';
 import Title from '@components/UI/Title/Title';
 import SubTitle from '@components/UI/SubTitle/SubTitle';
 import Footer from '@components/Footer/Footer';
@@ -20,12 +20,12 @@ import { loc } from '@loc';
 import * as helpers from '@helpers'
 
 const section = 'consumer'; // update
-const page = 'dsp info'; // update
-const stateSelector = 'dsps'; // update
+const page = 'worker info'; // update
+const stateSelector = 'workers'; // update
 
 const ethereum = window.ethereum;
 
-class DspInfo extends Component {
+class WorkerInfo extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -34,16 +34,16 @@ class DspInfo extends Component {
             // update
             [stateSelector]: {
                 lastJobId: 0,
-                dsps: null,
-                allDspInfo: null
+                workers: null,
+                allWorkerInfo: null
             },
             show: false
         }
     }
 
     componentDidMount() {
-        lib.web3.fetchDspsByConsumer(this,stateSelector);
-        lib.web3.fetchAllDsps(this,stateSelector);
+        lib.web3.fetchWorkersByConsumer(this,stateSelector);
+        lib.web3.fetchAllWorkers(this,stateSelector);
     }
 
     openClose = () => {
@@ -67,14 +67,14 @@ class DspInfo extends Component {
                     <div className={isMobile ? classes.centerMobile : classes.center}>
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
-                        <Dsps
-                            dsps={this.state[stateSelector].dsps}
+                        <Workers
+                            workers={this.state[stateSelector].workers}
                             isMobile={isMobile}
                             lang={this.props.lang}
                         />
                         <SubTitle text={loc(`${section}.${page}.altSubtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
-                        <AllDsps
-                            allDspInfo={this.state[stateSelector].allDspInfo}
+                        <AllWorkers
+                            allWorkerInfo={this.state[stateSelector].allWorkerInfo}
                             isMobile={isMobile}
                             lang={this.props.lang}
                         />
@@ -105,5 +105,5 @@ class DspInfo extends Component {
     };
   };
   
-  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(DspInfo));
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(WorkerInfo));
   

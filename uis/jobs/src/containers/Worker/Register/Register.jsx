@@ -1,8 +1,8 @@
 
 import React, { Component } from 'react';
-import classes from './DspImages.module.scss';
+import classes from './Register.module.scss';
 import Header from '@components/Header/Header';
-import Images from '@components/UI/Images/Images';
+import Form from '@components/UI/Form/Form';
 import Title from '@components/UI/Title/Title';
 import SubTitle from '@components/UI/SubTitle/SubTitle';
 import Footer from '@components/Footer/Footer';
@@ -18,38 +18,101 @@ import { loc } from '@loc';
 
 import * as helpers from '@helpers'
 
-const section = 'consumer'; // update
-const page = 'dsp images'; // update
-const stateSelector = 'images'; // update
+const section = 'worker'; // update
+const page = 'register'; // update
+const stateSelector = 'regWORKER'; // update
 
 const ethereum = window.ethereum;
 
-class DspImages extends Component {
+class Register extends Component {
     constructor(props) {
         super(props);
         this.state = {
             account: null,
             chainId: null,
             // update
-            [stateSelector]: {
-                lastJobId: 0,
-                jobImages: null,
-                serviceImages: null
+            regWORKER: {
+                endpoint:'http://testing.com'
             },
             show: false
         }
+        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount() {
-        lib.web3.fetchImages(this,stateSelector);
+        try {
+            const accounts = ethereum.request({ method: 'eth_requestAccounts' });
+            this.setState({ account: accounts[0] });
+        } catch (e) {
+            console.log(`unable to load metamask`,e);
+        }
+    }
+
+    handleChange(event, func, valType) {
+        let { name, value, type } = event.target;
+        console.log({ name, value, type }, valType);
+        if(valType.includes('array')) {
+            value.includes(',') ? value = value.split(',') : value = [value];
+            if(value.length && value[0] == '') value = [];
+        }
+        if(type == "checkbox") value = event.target.checked;
+        
+        this.setState({
+            [func]: {
+                ...this.state[func],
+                [name]: value
+            },
+        });
     }
 
     openClose = () => {
       this.setState({ show: !this.state.show });
     }
+    
+    separateObject = obj => {
+        const res = [];
+        const keys = Object.keys(obj);
+        keys.forEach(key => {
+           res.push({
+              key: obj[key]
+           });
+        });
+        return res;
+     };
+     
+
+    forms = [
+        // update setWorkers
+        {
+            onClick:()=>lib.web3.regWORKER(this),
+            buttonText:"Register WORKER Endpoint",
+            stateSelector:stateSelector,
+            inputs:[
+                { name:"endpoint",placeholder: "string endpoint"},
+            ]
+        },
+    ]
   
     render() {
         const isMobile = helpers.isMobile();
+        const forms = this.forms.map(el => {
+            return (
+                <Form
+                    wide={true}
+                    onClick={el.onClick}
+                    onChange={this.handleChange}
+                    buttonText={loc(`${section}.${page}.button`,this.props.lang)}
+                    stateSelector={el.stateSelector}
+                    inputs={el.inputs}
+                    previews={loc(`${section}.${page}.previews`,this.props.lang)}
+                    isDayNight={this.props.isDayNight}
+                    previewValues={this.separateObject(this.state.regWORKER)} // update
+                    isMobile={isMobile}
+                    openClose={this.openClose}
+                    show={this.state.show}
+                />
+            )
+        });
         return (
             <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
                 <div className={classes.flex}>
@@ -65,17 +128,7 @@ class DspImages extends Component {
                     <div className={isMobile ? classes.centerMobile : classes.center}>
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
-                        <Images
-                            jobImages={this.state[stateSelector].jobImages}
-                            isMobile={isMobile}
-                            isJob={true}
-                            lang={this.props.lang}
-                        />
-                        <Images
-                            serviceImages={this.state[stateSelector].serviceImages}
-                            isMobile={isMobile}
-                            lang={this.props.lang}
-                        />
+                        {forms}
                     </div>
                     <Footer
                         isDayNight={this.props.isDayNight}
@@ -103,5 +156,5 @@ class DspImages extends Component {
     };
   };
   
-  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(DspImages));
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(Register));
   

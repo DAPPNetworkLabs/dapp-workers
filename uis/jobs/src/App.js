@@ -3,13 +3,13 @@ import './App.module.scss';
 
 import Home from './containers/Home/Home';
 
-// Dsps
-import Deprecate from './containers/Dsp/Deprecate/Deprecate';
-import DspJobs from './containers/Dsp/DspJobs/DspJobs';
-import Register from './containers/Dsp/Register/Register';
-import RegisterImage from './containers/Dsp/RegisterImage/RegisterImage';
-import DspServices from './containers/Dsp/DspServices/DspServices';
-import UpdateImage from './containers/Dsp/UpdateImage/UpdateImage';
+// Workers
+import Deprecate from './containers/Worker/Deprecate/Deprecate';
+import WorkerJobs from './containers/Worker/WorkerJobs/WorkerJobs';
+import Register from './containers/Worker/Register/Register';
+import RegisterImage from './containers/Worker/RegisterImage/RegisterImage';
+import WorkerServices from './containers/Worker/WorkerServices/WorkerServices';
+import UpdateImage from './containers/Worker/UpdateImage/UpdateImage';
 
 // Admin
 import ApproveImage from './containers/Admin/ApproveImage/ApproveImage';
@@ -17,8 +17,8 @@ import SetConfig from './containers/Admin/SetConfig/SetConfig';
 import UnapproveImage from './containers/Admin/UnapproveImage/UnapproveImage';
 
 // Consumer
-import DspInfo from './containers/Consumer/DspInfo/DspInfo';
-import DspImages from './containers/Consumer/DspImages/DspImages';
+import WorkerInfo from './containers/Consumer/WorkerInfo/WorkerInfo';
+import WorkerImages from './containers/Consumer/WorkerImages/WorkerImages';
 import BuyGas from './containers/Consumer/BuyGas/BuyGas';
 import ExtendService from './containers/Consumer/ExtendService/ExtendService';
 import ConsumerJobs from './containers/Consumer/ConsumerJobs/ConsumerJobs';
@@ -27,7 +27,7 @@ import RequestService from './containers/Consumer/RequestService/RequestService'
 import SellGas from './containers/Consumer/SellGas/SellGas';
 import ConsumerServices from './containers/Consumer/ConsumerServices/ConsumerServices';
 import SetConsumer from './containers/Consumer/SetConsumer/SetConsumer';
-import SetDsps from './containers/Consumer/SetDsps/SetDsps';
+import SetWorkers from './containers/Consumer/SetWorkers/SetWorkers';
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 function App() {
@@ -35,19 +35,19 @@ function App() {
   return (
       <BrowserRouter>
         <Routes>
-          <Route path="/dsp/register" exact element={<Register/>} />
-          <Route path="/dsp/deprecate" exact element={<Deprecate/>} />
-          <Route path="/dsp/register-image" exact element={<RegisterImage/>} />
-          <Route path="/dsp/update-image" exact element={<UpdateImage/>} />
-          <Route path="/dsp/jobs" exact element={<DspJobs/>} />
-          <Route path="/dsp/services" exact element={<DspServices/>} />
+          <Route path="/worker/register" exact element={<Register/>} />
+          <Route path="/worker/deprecate" exact element={<Deprecate/>} />
+          <Route path="/worker/register-image" exact element={<RegisterImage/>} />
+          <Route path="/worker/update-image" exact element={<UpdateImage/>} />
+          <Route path="/worker/jobs" exact element={<WorkerJobs/>} />
+          <Route path="/worker/services" exact element={<WorkerServices/>} />
 
           <Route path="/admin/set-config" exact element={<SetConfig/>} />
           <Route path="/admin/approve-image" exact element={<ApproveImage/>} />
           <Route path="/admin/unapprove-image" exact element={<UnapproveImage/>} />
 
-          <Route path="/consumer/dsp-info" exact element={<DspInfo/>} />
-          <Route path="/consumer/images" exact element={<DspImages/>} />
+          <Route path="/consumer/worker-info" exact element={<WorkerInfo/>} />
+          <Route path="/consumer/images" exact element={<WorkerImages/>} />
           <Route path="/consumer/buy-gas" exact element={<BuyGas/>} />
           <Route path="/consumer/sell-gas" exact element={<SellGas/>} />
           <Route path="/consumer/request-job" exact element={<RequestJob/>} />
@@ -56,7 +56,7 @@ function App() {
           <Route path="/consumer/jobs" exact element={<ConsumerJobs/>} />
           <Route path="/consumer/services" exact element={<ConsumerServices/>} />
           <Route path="/consumer/set-consumer" exact element={<SetConsumer/>} />
-          <Route path="/consumer/set-dsps" exact element={<SetDsps/>} />
+          <Route path="/consumer/set-workers" exact element={<SetWorkers/>} />
           
           <Route path="/" exact element={<Home/>} />
           <Route path="/" element={<Home/>} />

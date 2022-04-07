@@ -59,11 +59,11 @@ const toMegaBytes = (item) => {
 }
 
 async function validateDataLimits(id) {
-    return await theContract.methods.getDSPDataLimits(id, dspAccount.address).call({ from: dspAccount.address });
+    return await theContract.methods.getWORKERDataLimits(id, workerAccount.address).call({ from: workerAccount.address });
 }
 
 const completeService = async (jobID, outputFS, ioMegaBytesUsed, storageMegaBytesUsed) => {
-    await postTrx("serviceComplete", dspAccount, {
+    await postTrx("serviceComplete", workerAccount, {
         jobID,
         outputFS,
         ioMegaBytesUsed,
@@ -90,7 +90,7 @@ const endServiceError = async (job, msg, log) => {
     await execPromise(`docker stop ${job.dockerId}`,{});
     // await execPromise(`docker rm ${job.dockerId}`,{});
     // await execPromise(`docker rm ${job.dockerId} -v`,{});
-    await postTrx("serviceError", dspAccount, {
+    await postTrx("serviceError", workerAccount, {
         jobID: job.key,
         stdErr: msg,
         outputFS: "",
@@ -108,7 +108,7 @@ const intervalCallback = async () => {
         console.log(`docker id: ${job.dockerId}`);
         
         if (await isProcessed(job.key, false)) {
-            throw new Error(`already processed job or dsp not selected: ${job.key}`)
+            throw new Error(`already processed job or worker not selected: ${job.key}`)
             // await removeUsageInfo(job.key);
         }
         
@@ -122,7 +122,7 @@ const intervalCallback = async () => {
             ioInfo = await execPromise(cmd,{});
         } catch(e) {
             console.log('error right about here');
-            await postTrx("serviceError", dspAccount, {
+            await postTrx("serviceError", workerAccount, {
                 jobID: job.key,
                 stdErr: "error dispatching",
                 outputFS: "",
@@ -171,10 +171,10 @@ const intervalCallback = async () => {
         await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
     }
 }
-let dspAccount;
+let workerAccount;
 let ownerAccount;
 const run = () => {
-    dspAccount = getAccount();
+    workerAccount = getAccount();
     subscribe(theContract);
     setInterval(() => {
         intervalCallback();
@@ -184,54 +184,54 @@ const run = () => {
 run();
 
 async function isProcessed(jobID, isJob) {
-    return await theContract.methods.jobServiceCompleted(jobID, dspAccount.address, isJob).call({ from: dspAccount.address });
+    return await theContract.methods.jobServiceCompleted(jobID, workerAccount.address, isJob).call({ from: workerAccount.address });
 }
 
 async function isServiceDone(jobID) {
-    return await theContract.methods.isServiceDone(jobID).call({ from: dspAccount.address });
+    return await theContract.methods.isServiceDone(jobID).call({ from: workerAccount.address });
 }
 
 async function validateJobBalance(consumer, gasLimit, imageName) {
-    const dspData = await theContract.methods.dspData(consumer, dspAccount.address).call({ from: dspAccount.address });
-    const requiredAmount = await theContract.methods.getMaxPaymentForGas(gasLimit, imageName, dspAccount.address).call({ from: dspAccount.address });
+    const workerData = await theContract.methods.workerData(consumer, workerAccount.address).call({ from: workerAccount.address });
+    const requiredAmount = await theContract.methods.getMaxPaymentForGas(gasLimit, imageName, workerAccount.address).call({ from: workerAccount.address });
 
-    if (Number(dspData.amount) >= Number(requiredAmount)) {
+    if (Number(workerData.amount) >= Number(requiredAmount)) {
         return true;
     } else {
-        console.log(`validateJobBalance: false ${imageName} ${gasLimit} ${dspData.amount} ${requiredAmount} ${typeof(dspData.amount)} ${typeof(requiredAmount)} ${dspData.amount >= requiredAmount}`);
+        console.log(`validateJobBalance: false ${imageName} ${gasLimit} ${workerData.amount} ${requiredAmount} ${typeof(workerData.amount)} ${typeof(requiredAmount)} ${workerData.amount >= requiredAmount}`);
         return false;
     }
 }
 
 async function validateServiceBalance(consumer, serviceId) {
-    const dspData = await theContract.methods.dspData(consumer, dspAccount.address).call({ from: dspAccount.address });
-    const requiredAmount = await theContract.methods.getMinBalance(serviceId, "service", dspAccount.address).call({ from: dspAccount.address });
+    const workerData = await theContract.methods.workerData(consumer, workerAccount.address).call({ from: workerAccount.address });
+    const requiredAmount = await theContract.methods.getMinBalance(serviceId, "service", workerAccount.address).call({ from: workerAccount.address });
 
-    if (Number(dspData.amount) >= Number(requiredAmount)) {
+    if (Number(workerData.amount) >= Number(requiredAmount)) {
         return true;
     } else {
-        console.log(`validateServiceBalance: false ${dspData.amount} ${requiredAmount} ${typeof(dspData.amount)} ${typeof(requiredAmount)} ${dspData.amount >= requiredAmount}`);
+        console.log(`validateServiceBalance: false ${workerData.amount} ${requiredAmount} ${typeof(workerData.amount)} ${typeof(requiredAmount)} ${workerData.amount >= requiredAmount}`);
         return false;
     }
 }
 
 const getInfo = async (jobId, type) => {
     if (type == "job") {
-        return await theContract.methods.jobs(jobId).call({ from: dspAccount.address });
+        return await theContract.methods.jobs(jobId).call({ from: workerAccount.address });
     } else if (type == "service") {
-        return await theContract.methods.services(jobId).call({ from: dspAccount.address });
+        return await theContract.methods.services(jobId).call({ from: workerAccount.address });
     }
 }
 
 const verifyImageHash = async (image, id, isJob) => {
     let hash:any = await execPromise(`docker images --no-trunc --quiet ${image}`,{});
     hash = hash.slice(7);
-    const chainHash = await theContract.methods.approvedImages(image).call({ from: dspAccount.address });
+    const chainHash = await theContract.methods.approvedImages(image).call({ from: workerAccount.address });
     if(hash != chainHash) {
         if(isJob) {
-            await postTrx("jobError", dspAccount, id, "chain hash mismatch", "");
+            await postTrx("jobError", workerAccount, id, "chain hash mismatch", "");
         } else {
-            await postTrx("serviceError", dspAccount, {
+            await postTrx("serviceError", workerAccount, {
                 jobID: id,
                 stdErr: "chain hash mismatch",
                 outputFS: "",
@@ -264,7 +264,7 @@ const runService = async (returnValues) => {
         const service = await getInfo(id, jobType);
 
         if (await isProcessed(id, false)) {
-            console.log(`already processed job or dsp not selected: ${id}`)
+            console.log(`already processed job or worker not selected: ${id}`)
             return;
         }
 
@@ -272,7 +272,7 @@ const runService = async (returnValues) => {
             console.log(`min balance not met service: ${id}`)
             // TODO use actual values used
             // TODO ensure DAPP gas sufficient to cover gas of trx
-            const rcpterr = await postTrx("serviceError", dspAccount, {
+            const rcpterr = await postTrx("serviceError", workerAccount, {
                 jobID: id,
                 stdErr: "min balance not met",
                 outputFS: "",
@@ -286,7 +286,7 @@ const runService = async (returnValues) => {
         
         if(serviceResults.error) {
             console.log("jobError", serviceResults.error);
-            await postTrx("serviceError", dspAccount, {
+            await postTrx("serviceError", workerAccount, {
                 jobID: id,
                 stdErr: "service error",
                 outputFS: "service error",
@@ -296,7 +296,7 @@ const runService = async (returnValues) => {
             await removeUsageInfo(id);
         } else {
             // post results
-            await postTrx("serviceCallback", dspAccount, id, serviceResults.port);
+            await postTrx("serviceCallback", workerAccount, id, serviceResults.port);
             console.log(`posted service results`,consumer,imageName, serviceResults.port);
         }
 }
@@ -326,7 +326,7 @@ function subscribe(theContract: any) {
 
 
         if (await isProcessed(jobInfo.jobID, true)) {
-            console.log(`already processed job or dsp not selected: ${jobInfo.jobID}`)
+            console.log(`already processed job or worker not selected: ${jobInfo.jobID}`)
             return;
         }
 
@@ -339,12 +339,12 @@ function subscribe(theContract: any) {
         
         if(dispatchResult.dockerError) {
             console.log("jobError", dispatchResult.dockerError, dispatchResult);
-            await postTrx("jobError", dspAccount, jobInfo.jobID, "error dispatching", "");
+            await postTrx("jobError", workerAccount, jobInfo.jobID, "error dispatching", "");
         } else {
             console.log("dispatchResult", dispatchResult);
             const { outputFS } = dispatchResult;
     
-            const rcpt = await postTrx("jobCallback", dspAccount, {
+            const rcpt = await postTrx("jobCallback", workerAccount, {
                 jobID: jobInfo.jobID,
                 outputFS: outputFS,
                 outputHash: "hash"

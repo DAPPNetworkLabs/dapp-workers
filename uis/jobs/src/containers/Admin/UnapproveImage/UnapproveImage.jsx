@@ -82,7 +82,7 @@ class UnapproveImage extends Component {
      
 
     forms = [
-        // update setDsps
+        // update setWorkers
         {
             onClick:()=>lib.web3.unapproveDockerImage(this),
             buttonText:"Unapprove Docker",

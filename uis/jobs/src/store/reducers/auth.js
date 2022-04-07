@@ -17,6 +17,9 @@ const setLang = (state, action) => {
 
   else if (action.lang === 'ko')
     return updateObject(state, { lang: action.lang });
+
+  else if (action.lang === 'sp')
+    return updateObject(state, { lang: action.lang });
 };
 
 const setIsLangUserSelected = (state, action) => {

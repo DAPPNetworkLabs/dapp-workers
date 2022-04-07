@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import classes from './RegisterImage.module.scss';
+import classes from './Deprecate.module.scss';
 import Header from '@components/Header/Header';
 import Form from '@components/UI/Form/Form';
 import Title from '@components/UI/Title/Title';
@@ -18,28 +18,19 @@ import { loc } from '@loc';
 
 import * as helpers from '@helpers'
 
-const section = 'dsp'; // update
-const page = 'register image'; // update
-const stateSelector = 'setDockerImage'; // update
+const section = 'worker'; // update
+const page = 'deprecate'; // update
+const stateSelector = 'regWORKER'; // update
 
 const ethereum = window.ethereum;
 
-class RegisterImage extends Component {
+class Deprecate extends Component {
     constructor(props) {
         super(props);
         this.state = {
             account: null,
             chainId: null,
             // update
-            setDockerImage: {
-                imageName: null,
-                jobFee:null,
-                baseFee:null,
-                storageFee:null,
-                ioFee:null,
-                minStorageMegaBytes:null,
-                minIoMegaBytes:null
-            },
             show: false
         }
         this.handleChange = this.handleChange.bind(this);
@@ -88,20 +79,12 @@ class RegisterImage extends Component {
      
 
     forms = [
-        // update setDsps
+        // update setWorkers
         {
-            onClick:()=>lib.web3.setDockerImage(this),
-            buttonText:"Set Docker Image",
-            stateSelector:"setDockerImage",
-            inputs:[
-                { name:"imageName",placeholder: "string imageName"},
-                { name:"jobFee",placeholder: "uint jobFee"},
-                { name:"baseFee",placeholder: "uint baseFee"},
-                { name:"storageFee",placeholder: "uint storageFee"},
-                { name:"ioFee",placeholder: "uint ioFee"},
-                { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
-                { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
-            ]
+            onClick:()=>lib.web3.deprecateWORKER(this),
+            buttonText:"Deprecate WORKER",
+            stateSelector:"deprecateWORKER",
+            inputs:[]
         },
     ]
   
@@ -118,7 +101,7 @@ class RegisterImage extends Component {
                     inputs={el.inputs}
                     previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}
-                    previewValues={this.separateObject(this.state[stateSelector])} // update
+                    // previewValues={} // update
                     isMobile={isMobile}
                     openClose={this.openClose}
                     show={this.state.show}
@@ -168,5 +151,5 @@ class RegisterImage extends Component {
     };
   };
   
-  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(RegisterImage));
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(Deprecate));
   

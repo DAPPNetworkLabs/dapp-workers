@@ -1,8 +1,8 @@
 
 import React, { Component } from 'react';
-import classes from './DspJobs.module.scss';
+import classes from './WorkerImages.module.scss';
 import Header from '@components/Header/Header';
-import Jobs from '@components/UI/Jobs/Jobs';
+import Images from '@components/UI/Images/Images';
 import Title from '@components/UI/Title/Title';
 import SubTitle from '@components/UI/SubTitle/SubTitle';
 import Footer from '@components/Footer/Footer';
@@ -18,13 +18,13 @@ import { loc } from '@loc';
 
 import * as helpers from '@helpers'
 
-const section = 'dsp'; // update
-const page = 'jobs'; // update
-const stateSelector = 'jobs'; // update
+const section = 'consumer'; // update
+const page = 'worker images'; // update
+const stateSelector = 'images'; // update
 
 const ethereum = window.ethereum;
 
-class DspJobs extends Component {
+class WorkerImages extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -32,56 +32,21 @@ class DspJobs extends Component {
             chainId: null,
             // update
             [stateSelector]: {
-                lastJobId: 0
+                lastJobId: 0,
+                jobImages: null,
+                serviceImages: null
             },
             show: false
         }
-        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount() {
-        lib.web3.fetchJobs(this, stateSelector);
-        try {
-            const accounts = ethereum.request({ method: 'eth_requestAccounts' });
-            this.setState({ account: accounts[0] });
-        } catch (e) {
-            console.log(`unable to load metamask`,e);
-        }
-    }
-
-    handleChange(event, func, valType) {
-        let { name, value, type } = event.target;
-        console.log({ name, value, type }, valType);
-        if(valType.includes('array')) {
-            value.includes(',') ? value = value.split(',') : value = [value];
-            if(value.length && value[0] == '') value = [];
-        }
-        if(type == "checkbox") value = event.target.checked;
-        this.setState({
-            [func]: {
-                ...this.state[func],
-                [name]: value
-            },
-        });
+        lib.web3.fetchImages(this,stateSelector);
     }
 
     openClose = () => {
       this.setState({ show: !this.state.show });
     }
-    
-    separateObject = obj => {
-        const res = [];
-        const keys = Object.keys(obj);
-        keys.forEach(key => {
-           res.push({
-              key: obj[key]
-           });
-        });
-        return res;
-     };
-     
-
-    forms = []
   
     render() {
         const isMobile = helpers.isMobile();
@@ -100,8 +65,14 @@ class DspJobs extends Component {
                     <div className={isMobile ? classes.centerMobile : classes.center}>
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
-                        <Jobs
-                            jobs={this.state[stateSelector].jobs}
+                        <Images
+                            jobImages={this.state[stateSelector].jobImages}
+                            isMobile={isMobile}
+                            isJob={true}
+                            lang={this.props.lang}
+                        />
+                        <Images
+                            serviceImages={this.state[stateSelector].serviceImages}
                             isMobile={isMobile}
                             lang={this.props.lang}
                         />
@@ -132,5 +103,5 @@ class DspJobs extends Component {
     };
   };
   
-  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(DspJobs));
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(WorkerImages));
   

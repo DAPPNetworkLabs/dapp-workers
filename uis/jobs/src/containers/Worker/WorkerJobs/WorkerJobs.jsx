@@ -1,8 +1,8 @@
 
 import React, { Component } from 'react';
-import classes from './UpdateImage.module.scss';
+import classes from './WorkerJobs.module.scss';
 import Header from '@components/Header/Header';
-import Form from '@components/UI/Form/Form';
+import Jobs from '@components/UI/Jobs/Jobs';
 import Title from '@components/UI/Title/Title';
 import SubTitle from '@components/UI/SubTitle/SubTitle';
 import Footer from '@components/Footer/Footer';
@@ -18,27 +18,21 @@ import { loc } from '@loc';
 
 import * as helpers from '@helpers'
 
-const section = 'dsp'; // update
-const page = 'update image'; // update
-const stateSelector = 'updateDockerImage'; // update
+const section = 'worker'; // update
+const page = 'jobs'; // update
+const stateSelector = 'jobs'; // update
 
 const ethereum = window.ethereum;
 
-class UpdateImage extends Component {
+class WorkerJobs extends Component {
     constructor(props) {
         super(props);
         this.state = {
             account: null,
             chainId: null,
             // update
-            updateDockerImage: {
-                imageName: null,
-                jobFee:null,
-                baseFee:null,
-                storageFee:null,
-                ioFee:null,
-                minStorageMegaBytes:null,
-                minIoMegaBytes:null
+            [stateSelector]: {
+                lastJobId: 0
             },
             show: false
         }
@@ -46,6 +40,7 @@ class UpdateImage extends Component {
     }
 
     componentDidMount() {
+        lib.web3.fetchJobs(this, stateSelector);
         try {
             const accounts = ethereum.request({ method: 'eth_requestAccounts' });
             this.setState({ account: accounts[0] });
@@ -62,7 +57,6 @@ class UpdateImage extends Component {
             if(value.length && value[0] == '') value = [];
         }
         if(type == "checkbox") value = event.target.checked;
-        
         this.setState({
             [func]: {
                 ...this.state[func],
@@ -87,44 +81,10 @@ class UpdateImage extends Component {
      };
      
 
-    forms = [
-        // update setDsps
-        {
-            onClick:()=>lib.web3.updateDockerImage(this),
-            buttonText:"Update Docker Image",
-            stateSelector:"updateDockerImage",
-            inputs:[
-                { name:"imageName",placeholder: "string imageName"},
-                { name:"jobFee",placeholder: "uint jobFee"},
-                { name:"baseFee",placeholder: "uint baseFee"},
-                { name:"storageFee",placeholder: "uint storageFee"},
-                { name:"ioFee",placeholder: "uint ioFee"},
-                { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
-                { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
-            ]
-        },
-    ]
+    forms = []
   
     render() {
         const isMobile = helpers.isMobile();
-        const forms = this.forms.map(el => {
-            return (
-                <Form
-                    wide={true}
-                    onClick={el.onClick}
-                    onChange={this.handleChange}
-                    buttonText={loc(`${section}.${page}.button`,this.props.lang)}
-                    stateSelector={el.stateSelector}
-                    inputs={el.inputs}
-                    previews={loc(`${section}.${page}.previews`,this.props.lang)}
-                    isDayNight={this.props.isDayNight}
-                    previewValues={this.separateObject(this.state[stateSelector])} // update
-                    isMobile={isMobile}
-                    openClose={this.openClose}
-                    show={this.state.show}
-                />
-            )
-        });
         return (
             <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
                 <div className={classes.flex}>
@@ -140,7 +100,11 @@ class UpdateImage extends Component {
                     <div className={isMobile ? classes.centerMobile : classes.center}>
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
-                        {forms}
+                        <Jobs
+                            jobs={this.state[stateSelector].jobs}
+                            isMobile={isMobile}
+                            lang={this.props.lang}
+                        />
                     </div>
                     <Footer
                         isDayNight={this.props.isDayNight}
@@ -168,5 +132,5 @@ class UpdateImage extends Component {
     };
   };
   
-  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(UpdateImage));
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(WorkerJobs));
   

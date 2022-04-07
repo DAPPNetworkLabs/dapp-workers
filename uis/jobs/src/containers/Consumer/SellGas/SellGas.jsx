@@ -32,7 +32,7 @@ class SellGas extends Component {
             // update
             sellGas: {
                 _amountToSell:null,
-                _dsp:''
+                _worker:''
             },
             show: false
         }
@@ -82,7 +82,7 @@ class SellGas extends Component {
             stateSelector:"sellGas",
             inputs:[
                 { name:"_amountToSell",placeholder: "uint256 _amountToSell"},
-                { name:"_dsp",placeholder: "address _dsp"},
+                { name:"_worker",placeholder: "address _worker"},
             ]
         }
     ]

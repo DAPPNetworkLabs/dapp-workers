@@ -34,17 +34,17 @@ const uniq = (arr) =>  {
 
 const fetchJobDapps = async (thisObject,stateSpecifier) => {
     let sufficientGas = true, totalDapps = 0;
-    const dsps = await fetchDsps();
-    for(const dsp of dsps) {
+    const workers = await fetchWorkers();
+    for(const worker of workers) {
         const dapps = await contract.methods.getMaxPaymentForGas(
             thisObject.state[stateSpecifier].gasLimit.toString(),
             thisObject.state[stateSpecifier].imageName,
-            dsp
+            worker
         ).call();
         if(thisObject.state[stateSpecifier].owner) {
-            const dappGas = await contract.methods.getDSPAmount(
+            const dappGas = await contract.methods.getWORKERAmount(
                 thisObject.state[stateSpecifier].owner,
-                dsp
+                worker
             ).call();
             if(Number(dapps) > Number(dappGas)) sufficientGas = false;
             totalDapps += Number(dapps);
@@ -61,19 +61,19 @@ const fetchJobDapps = async (thisObject,stateSpecifier) => {
 
 const fetchServiceDapps = async (thisObject,stateSpecifier) => {
     let sufficientGas = true, totalDapps = 0;
-    const dsps = await fetchDsps();
-    for(const dsp of dsps) {
+    const workers = await fetchWorkers();
+    for(const worker of workers) {
         const dapps = await contract.methods.calcServiceDapps(
             thisObject.state[stateSpecifier].imageName,
             thisObject.state[stateSpecifier].ioMegaBytes,
             thisObject.state[stateSpecifier].storageMegaBytes,
-            dsp,
+            worker,
             true
         ).call();
         if(thisObject.state[stateSpecifier].owner) {
-            const dappGas = await contract.methods.getDSPAmount(
+            const dappGas = await contract.methods.getWORKERAmount(
                 thisObject.state[stateSpecifier].owner,
-                dsp
+                worker
             ).call();
             if(Number(dapps) > Number(dappGas)) sufficientGas = false;
             totalDapps += Number(dapps);
@@ -89,7 +89,7 @@ const fetchServiceDapps = async (thisObject,stateSpecifier) => {
 }
 
 const fetchWorkerStats = async (thisObject,stateSpecifier) => {
-    const workers = await contract.methods.totalDsps().call();
+    const workers = await contract.methods.totalWorkers().call();
     const gasPaid = await contract.methods.totalDappGasPaid().call();
     thisObject.setState({
         [stateSpecifier]: {
@@ -137,22 +137,22 @@ const fetchServices = async (thisObject, stateSpecifier) => {
             const service = await contract.methods.services(i).call();
             if(service.owner != "0x0000000000000000000000000000000000000000") {
                 let 
-                selectedDsps = [], 
+                selectedWorkers = [], 
                 noError=true, 
                 index = 0;
                 while(noError && accounts[0]) {
                     try {
-                        const dsp = await contract.methods.providers(accounts[0],index).call();
-                        selectedDsps.push(dsp)
+                        const worker = await contract.methods.providers(accounts[0],index).call();
+                        selectedWorkers.push(worker)
                         index++;
                     } catch(e) {
                         noError = false;
                     }
                 }
                 let endpoints = [];
-                for(const el of selectedDsps) {
-                    const port = await contract.methods.getPortForDSP(i,el).call();
-                    const endpoint = await contract.methods.getDSPEndpoint(
+                for(const el of selectedWorkers) {
+                    const port = await contract.methods.getPortForWORKER(i,el).call();
+                    const endpoint = await contract.methods.getWORKEREndpoint(
                         el
                     ).call();
                     let response, ioUsed, storageUsed;
@@ -162,10 +162,10 @@ const fetchServices = async (thisObject, stateSpecifier) => {
                         response = await fetch(`${endpoint}:${process.env.ALT_API_PORT || 8050}/dapp-workers/storage?id=${i}`);
                         storageUsed =  await response.json();
                     } catch(e) {
-                        console.log("issue fetching io/storage usage from dsp",e);
+                        console.log("issue fetching io/storage usage from worker",e);
                     }
                     endpoints.push({
-                        dsp: el,
+                        worker: el,
                         endpoint: `${endpoint}:${port}`,
                         ioUsed: ioUsed ? ioUsed.io_usage : '?',
                         storageUsed: storageUsed ? storageUsed.storage_usage : '?'
@@ -198,63 +198,63 @@ const fetchServices = async (thisObject, stateSpecifier) => {
 //     thisObject.setState({image: imageName});
 // }
 
-const fetchIsImageApprovedForDSP = async (thisObject) => {
-    const approvedImage = await contract.methods.isImageApprovedForDSP(
-        thisObject.state.isImageApprovedForDSP.dsp,
-        thisObject.state.isImageApprovedForDSP.imageName
+const fetchIsImageApprovedForWORKER = async (thisObject) => {
+    const approvedImage = await contract.methods.isImageApprovedForWORKER(
+        thisObject.state.isImageApprovedForWORKER.worker,
+        thisObject.state.isImageApprovedForWORKER.imageName
     ).call();
     console.log(approvedImage);
     thisObject.setState({approvedImage});
 }
 
-const fetchPortForDSP = async (thisObject) => {
-    const port = await contract.methods.getPortForDSP(
-        thisObject.state.getPortForDSP.jobID,
-        thisObject.state.getPortForDSP.dsp
+const fetchPortForWORKER = async (thisObject) => {
+    const port = await contract.methods.getPortForWORKER(
+        thisObject.state.getPortForWORKER.jobID,
+        thisObject.state.getPortForWORKER.worker
     ).call();
     console.log(port);
     thisObject.setState({port});
 }
 
-const fetchEndpointForDSP = async (thisObject) => {
-    const endpoint = await contract.methods.getDSPEndpoint(
-        thisObject.state.getDSPEndpoint.dsp
+const fetchEndpointForWORKER = async (thisObject) => {
+    const endpoint = await contract.methods.getWORKEREndpoint(
+        thisObject.state.getWORKEREndpoint.worker
     ).call();
     console.log(endpoint);
     thisObject.setState({endpoint});
 }
 
-const fetchDsps = async () => {
-    const dsps = [];
-    const totalDsps = await contract.methods.totalDsps().call();
-    for(let i = 0; i < totalDsps; i++) {
-        const dsp = await contract.methods.dspList(i).call();
-        dsps.push(dsp);
+const fetchWorkers = async () => {
+    const workers = [];
+    const totalWorkers = await contract.methods.totalWorkers().call();
+    for(let i = 0; i < totalWorkers; i++) {
+        const worker = await contract.methods.workerList(i).call();
+        workers.push(worker);
     }
-    return dsps;
+    return workers;
 }
 
 const fetchImages = async (thisObject,stateSelector) => {
-    const dsps = await fetchDsps();
+    const workers = await fetchWorkers();
     let jobImages = [], serviceImages = [];
-    for(const dsp of dsps){
+    for(const worker of workers){
         for(const image of approvedImages){
             if(image.type == "job") {
-                const info = await contract.methods.dspApprovedImages(dsp,image.name).call();
+                const info = await contract.methods.workerApprovedImages(worker,image.name).call();
                 if(Number(info.jobFee) > 0) {
                     jobImages.push({
                         ...info,
                         image: image.name,
-                        dsp
+                        worker
                     });
                 }
             } else if(image.type == "service") {
-                const info = await contract.methods.dspApprovedImages(dsp,image.name).call();
+                const info = await contract.methods.workerApprovedImages(worker,image.name).call();
                 if(Number(info.baseFee) > 0) {
                     serviceImages.push({
                         ...info,
                         image: image.name,
-                        dsp
+                        worker
                     });
                 }
             }
@@ -268,34 +268,34 @@ const fetchImages = async (thisObject,stateSelector) => {
     }});
 }
 
-const fetchDspInfo = async (thisObject) => {
-    const dspInfo = await contract.methods.registeredDSPs(
-        thisObject.state.registeredDSPs.dsp
+const fetchWorkerInfo = async (thisObject) => {
+    const workerInfo = await contract.methods.registeredWORKERs(
+        thisObject.state.registeredWORKERs.worker
     ).call()
-    console.log(dspInfo);
-    thisObject.setState({dspInfo});
+    console.log(workerInfo);
+    thisObject.setState({workerInfo});
 }
 
-const fetchAllDsps = async(thisObject,stateSelector) => {
-    const totalDsps = await contract.methods.totalDsps().call();
-    let allDspInfo = [];
+const fetchAllWorkers = async(thisObject,stateSelector) => {
+    const totalWorkers = await contract.methods.totalWorkers().call();
+    let allWorkerInfo = [];
     let 
-    selectedDsps = [], finalDsps = [], 
+    selectedWorkers = [], finalWorkers = [], 
     noError=true, 
     serviceErrors=0, jobErrors=0, 
     i = 0;
     let jobsCompleted = 0, servicesCompleted = 0, dappGas;
-    for(let i = 0; i < totalDsps; i++) {
+    for(let i = 0; i < totalWorkers; i++) {
         let obj = {
-            dsp:'',
+            worker:'',
             images: []
         };
-        const dsp = await contract.methods.dspList(i).call();
-        obj.dsp = dsp;
-        const endpoint = await contract.methods.getDSPEndpoint(
-            dsp
+        const worker = await contract.methods.workerList(i).call();
+        obj.worker = worker;
+        const endpoint = await contract.methods.getWORKEREndpoint(
+            worker
         ).call();
-        allDspInfo.push({
+        allWorkerInfo.push({
             ...obj,
             endpoint,
             jobsCompleted,
@@ -307,32 +307,32 @@ const fetchAllDsps = async(thisObject,stateSelector) => {
     thisObject.setState({
         [stateSelector]: {
             ...thisObject.state[stateSelector],
-            allDspInfo
+            allWorkerInfo
     }});
 }
 
-const fetchDspsByConsumer = async (thisObject,stateSelector) => {
+const fetchWorkersByConsumer = async (thisObject,stateSelector) => {
     const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
     let 
-    selectedDsps = [], finalDsps = [], 
+    selectedWorkers = [], finalWorkers = [], 
     noError=true, 
     serviceErrors=0, jobErrors=0, 
     i = 0, port = '';
     while(noError && accounts[0]) {
         try {
-            const dsp = await contract.methods.providers(accounts[0],i).call();
-            selectedDsps.push(dsp)
+            const worker = await contract.methods.providers(accounts[0],i).call();
+            selectedWorkers.push(worker)
             i++;
         } catch(e) {
             noError = false;
         }
     }
-    for(const el of selectedDsps) {
-        const endpoint = await contract.methods.getDSPEndpoint(
+    for(const el of selectedWorkers) {
+        const endpoint = await contract.methods.getWORKEREndpoint(
             el
         ).call();
         let jobsCompleted = 0, servicesCompleted = 0, dappGas;
-        dappGas = await contract.methods.getDSPAmount(
+        dappGas = await contract.methods.getWORKERAmount(
             accounts[0],
             el
         ).call();
@@ -354,11 +354,11 @@ const fetchDspsByConsumer = async (thisObject,stateSelector) => {
             ) {
                 const completed = await contract.methods.jobServiceCompleted(i,el,true).call();
                 if(completed) jobsCompleted++;
-                jobErrors = selectedDsps.length - job.resultsCount
+                jobErrors = selectedWorkers.length - job.resultsCount
             }
         }
-        finalDsps.push({
-            dsp: el,
+        finalWorkers.push({
+            worker: el,
             endpoint,
             jobsCompleted,
             servicesCompleted,
@@ -371,17 +371,17 @@ const fetchDspsByConsumer = async (thisObject,stateSelector) => {
     thisObject.setState({
         [stateSelector]: {
             ...thisObject.state[stateSelector],
-            dsps: finalDsps
+            workers: finalWorkers
     },});
 }
 
-const fetchDspData = async (thisObject) => {
-    const dspData = await contract.methods.dspData(
-        thisObject.state.dspDataForm.account,
-        thisObject.state.dspDataForm.dsp
+const fetchWorkerData = async (thisObject) => {
+    const workerData = await contract.methods.workerData(
+        thisObject.state.workerDataForm.account,
+        thisObject.state.workerDataForm.worker
     ).call();
-    console.log(dspData);
-    thisObject.setState({dspData});
+    console.log(workerData);
+    thisObject.setState({workerData});
 }
 
 // const fetchConsumerData = async (thisObject) => {
@@ -395,7 +395,7 @@ const fetchDspData = async (thisObject) => {
 const fetchJobServiceCompleted = async (thisObject) => {
     const jobServiceCompleted = await contract.methods.jobServiceCompleted(
         thisObject.state.jobServiceCompleted.id,
-        thisObject.state.jobServiceCompleted.dsp,
+        thisObject.state.jobServiceCompleted.worker,
         thisObject.state.jobServiceCompleted.isJob
     ).call();
     console.log(jobServiceCompleted);
@@ -406,7 +406,7 @@ const fetchGetMinBalance = async (thisObject) => {
     const getMinBalance = await contract.methods.getMinBalance(
         thisObject.state.getMinBalance.id,
         thisObject.state.getMinBalance.jobType,
-        thisObject.state.getMinBalance.dsp
+        thisObject.state.getMinBalance.worker
     ).call();
     console.log(getMinBalance);
     thisObject.setState({getMinBalance});
@@ -424,7 +424,7 @@ const fetchGetMaxPaymentForGas = async (thisObject) => {
     const getMaxPaymentForGas = await contract.methods.getMaxPaymentForGas(
         thisObject.state.getMaxPaymentForGas.gasLimit,
         thisObject.state.getMaxPaymentForGas.imageName,
-        thisObject.state.getMaxPaymentForGas.dsp,
+        thisObject.state.getMaxPaymentForGas.worker,
     ).call();
     console.log(getMaxPaymentForGas);
     thisObject.setState({getMaxPaymentForGas});
@@ -436,19 +436,19 @@ const fetchGetConfig = async (thisObject) => {
     thisObject.setState({getConfig});
 }
 
-const fetchGetDspAddresses = async (thisObject) => {
-    const getDspAddresses = await contract.methods.getDspAddresses().call();
-    console.log(getDspAddresses);
-    thisObject.setState({getDspAddresses});
+const fetchGetWorkerAddresses = async (thisObject) => {
+    const getWorkerAddresses = await contract.methods.getWorkerAddresses().call();
+    console.log(getWorkerAddresses);
+    thisObject.setState({getWorkerAddresses});
 }
 
-const fetchGetDSPDataLimits = async (thisObject) => {
-    const getDSPDataLimits = await contract.methods.getDSPDataLimits(
-        thisObject.state.getDSPDataLimits.id,
-        thisObject.state.getDSPDataLimits.dsp,
+const fetchGetWORKERDataLimits = async (thisObject) => {
+    const getWORKERDataLimits = await contract.methods.getWORKERDataLimits(
+        thisObject.state.getWORKERDataLimits.id,
+        thisObject.state.getWORKERDataLimits.worker,
     ).call();
-    console.log(getDSPDataLimits);
-    thisObject.setState({getDSPDataLimits});
+    console.log(getWORKERDataLimits);
+    thisObject.setState({getWORKERDataLimits});
 }
 
 // END GETTER
@@ -499,13 +499,13 @@ const setConfig = async (thisObject) => {
     await runTrx(data,["ConfigSet"],thisObject);
 }
 
-const setDsps = async (thisObject) => {
-    const abi = returnAbi("setDsps");
+const setWorkers = async (thisObject) => {
+    const abi = returnAbi("setWorkers");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.setDsps.dsps
+        thisObject.state.setWorkers.workers
 
     ]);
-    await runTrx(data,["UpdateDsps"],thisObject);
+    await runTrx(data,["UpdateWorkers"],thisObject);
 }
 
 const setConsumerContract = async (thisObject) => {
@@ -578,25 +578,25 @@ const updateDockerImage = async (thisObject) => {
 }
 
 const unapproveDockerImage = async (thisObject) => {
-    const abi = returnAbi("unapproveDockerForDSP");
+    const abi = returnAbi("unapproveDockerForWORKER");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
         thisObject.state.unapproveImage.imageName
     ]);
     await runTrx(data,["DockerApprovalChanged"],thisObject);
 }
 
-const deprecateDSP = async (thisObject) => {
-    const abi = returnAbi("deprecateDSP");
+const deprecateWORKER = async (thisObject) => {
+    const abi = returnAbi("deprecateWORKER");
     const data = web3.eth.abi.encodeFunctionCall(abi, []);
-    await runTrx(data,["DSPStatusChanged"],thisObject);
+    await runTrx(data,["WORKERStatusChanged"],thisObject);
 }
 
-const regDSP = async (thisObject) => {
-    const abi = returnAbi("regDSP");
+const regWORKER = async (thisObject) => {
+    const abi = returnAbi("regWORKER");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
-        thisObject.state.regDSP.endpoint
+        thisObject.state.regWORKER.endpoint
     ]);
-    await runTrx(data,["DSPStatusChanged"],thisObject);
+    await runTrx(data,["WORKERStatusChanged"],thisObject);
 }
 
 const claim = async (thisObject) => {
@@ -609,7 +609,7 @@ const sellGas = async (thisObject) => {
     const abi = returnAbi("sellGas");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
         thisObject.state.sellGas._amountToSell,
-        thisObject.state.sellGas._dsp
+        thisObject.state.sellGas._worker
     ]);
     await runTrx(data,["SoldGas"],thisObject);
 }
@@ -619,7 +619,7 @@ const buyGasFor = async (thisObject) => {
     const data = web3.eth.abi.encodeFunctionCall(abi, [
         thisObject.state.buyGasFor._amount,
         thisObject.state.buyGasFor._consumer,
-        thisObject.state.buyGasFor._dsp
+        thisObject.state.buyGasFor._worker
     ]);
     await runTrx(data,["BoughtGas"],thisObject);
 }
@@ -628,7 +628,7 @@ const setQuorum = async (thisObject) => {
     const abi = returnAbi("setQuorum");
     const data = web3.eth.abi.encodeFunctionCall(abi, [
         thisObject.state.setQuorum.consumer,
-        thisObject.state.setQuorum.dsps
+        thisObject.state.setQuorum.workers
     ]);
     await runTrx(data,[],thisObject);
 }
@@ -667,37 +667,37 @@ const runTrx = async (data,events,thisObject) => {
 }
 
 export default { 
-    fetchAllDsps,
+    fetchAllWorkers,
     fetchJobs,
     fetchServices,
     // fetchJobImage,
-    fetchIsImageApprovedForDSP,
-    fetchPortForDSP,
-    fetchEndpointForDSP,
-    fetchDspInfo,
-    fetchDspData,
+    fetchIsImageApprovedForWORKER,
+    fetchPortForWORKER,
+    fetchEndpointForWORKER,
+    fetchWorkerInfo,
+    fetchWorkerData,
     // fetchConsumerData,
     setDockerImage,
     unapproveDockerImage,
-    deprecateDSP,
-    regDSP,
+    deprecateWORKER,
+    regWORKER,
     claim,
     sellGas,
     buyGasFor,
     setQuorum,
-    fetchDspsByConsumer,
+    fetchWorkersByConsumer,
     fetchJobServiceCompleted,
     fetchGetMinBalance,
     fetchIsServiceDone,
     fetchGetMaxPaymentForGas,
     fetchGetConfig,
-    fetchGetDspAddresses,
-    fetchGetDSPDataLimits,
+    fetchGetWorkerAddresses,
+    fetchGetWORKERDataLimits,
     approveImage,
     unapproveImage,
     extendService,
     setConfig,
-    setDsps,
+    setWorkers,
     setConsumerContract,
     queueJob,
     queueService,

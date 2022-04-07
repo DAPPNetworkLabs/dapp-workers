@@ -1,8 +1,8 @@
 
 import React, { Component } from 'react';
-import classes from './Register.module.scss';
+import classes from './WorkerServices.module.scss';
 import Header from '@components/Header/Header';
-import Form from '@components/UI/Form/Form';
+import Services from '@components/UI/Services/Services';
 import Title from '@components/UI/Title/Title';
 import SubTitle from '@components/UI/SubTitle/SubTitle';
 import Footer from '@components/Footer/Footer';
@@ -18,21 +18,21 @@ import { loc } from '@loc';
 
 import * as helpers from '@helpers'
 
-const section = 'dsp'; // update
-const page = 'register'; // update
-const stateSelector = 'regDSP'; // update
+const section = 'worker'; // update
+const page = 'services'; // update
+const stateSelector = 'services'; // update
 
 const ethereum = window.ethereum;
 
-class Register extends Component {
+class WorkerServices extends Component {
     constructor(props) {
         super(props);
         this.state = {
             account: null,
             chainId: null,
             // update
-            regDSP: {
-                endpoint:'http://testing.com'
+            [stateSelector]: {
+                lastJobId: 0
             },
             show: false
         }
@@ -40,6 +40,7 @@ class Register extends Component {
     }
 
     componentDidMount() {
+        lib.web3.fetchServices(this, stateSelector);
         try {
             const accounts = ethereum.request({ method: 'eth_requestAccounts' });
             this.setState({ account: accounts[0] });
@@ -56,7 +57,6 @@ class Register extends Component {
             if(value.length && value[0] == '') value = [];
         }
         if(type == "checkbox") value = event.target.checked;
-        
         this.setState({
             [func]: {
                 ...this.state[func],
@@ -81,38 +81,10 @@ class Register extends Component {
      };
      
 
-    forms = [
-        // update setDsps
-        {
-            onClick:()=>lib.web3.regDSP(this),
-            buttonText:"Register DSP Endpoint",
-            stateSelector:stateSelector,
-            inputs:[
-                { name:"endpoint",placeholder: "string endpoint"},
-            ]
-        },
-    ]
+    forms = []
   
     render() {
         const isMobile = helpers.isMobile();
-        const forms = this.forms.map(el => {
-            return (
-                <Form
-                    wide={true}
-                    onClick={el.onClick}
-                    onChange={this.handleChange}
-                    buttonText={loc(`${section}.${page}.button`,this.props.lang)}
-                    stateSelector={el.stateSelector}
-                    inputs={el.inputs}
-                    previews={loc(`${section}.${page}.previews`,this.props.lang)}
-                    isDayNight={this.props.isDayNight}
-                    previewValues={this.separateObject(this.state.regDSP)} // update
-                    isMobile={isMobile}
-                    openClose={this.openClose}
-                    show={this.state.show}
-                />
-            )
-        });
         return (
             <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
                 <div className={classes.flex}>
@@ -128,7 +100,12 @@ class Register extends Component {
                     <div className={isMobile ? classes.centerMobile : classes.center}>
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
-                        {forms}
+                        <Services
+                            services={this.state[stateSelector].services}
+                            isMobile={isMobile}
+                            isWorker={true}
+                            lang={this.props.lang}
+                        />
                     </div>
                     <Footer
                         isDayNight={this.props.isDayNight}
@@ -156,5 +133,5 @@ class Register extends Component {
     };
   };
   
-  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(Register));
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(WorkerServices));
   

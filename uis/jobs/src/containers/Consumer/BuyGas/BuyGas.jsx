@@ -32,7 +32,7 @@ class BuyGas extends Component {
             buyGasFor: {
                 _amount:0,
                 _consumer:'',
-                _dsp:''
+                _worker:''
             },
             show: false
         }
@@ -82,7 +82,7 @@ class BuyGas extends Component {
             inputs:[
                 { name:"_amount",placeholder: "uint256 _amount"},
                 { name:"_consumer",placeholder: "address _consumer"},
-                { name:"_dsp",placeholder: "address _dsp"},
+                { name:"_worker",placeholder: "address _worker"},
             ]
         }
     ]

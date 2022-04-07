@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import classes from './SetDsps.module.scss';
+import classes from './UpdateImage.module.scss';
 import Header from '@components/Header/Header';
 import Form from '@components/UI/Form/Form';
 import Title from '@components/UI/Title/Title';
@@ -18,20 +18,27 @@ import { loc } from '@loc';
 
 import * as helpers from '@helpers'
 
-const section = 'consumer'; // update
-const page = 'set dsps'; // update
+const section = 'worker'; // update
+const page = 'update image'; // update
+const stateSelector = 'updateDockerImage'; // update
 
 const ethereum = window.ethereum;
 
-class SetDsps extends Component {
+class UpdateImage extends Component {
     constructor(props) {
         super(props);
         this.state = {
             account: null,
             chainId: null,
             // update
-            setDsps: {
-                dsps:[]                
+            updateDockerImage: {
+                imageName: null,
+                jobFee:null,
+                baseFee:null,
+                storageFee:null,
+                ioFee:null,
+                minStorageMegaBytes:null,
+                minIoMegaBytes:null
             },
             show: false
         }
@@ -81,13 +88,19 @@ class SetDsps extends Component {
      
 
     forms = [
-        // update setDsps
+        // update setWorkers
         {
-            onClick:()=>lib.web3.setDsps(this),
-            buttonText:"Set DSPs",
-            stateSelector:"setDsps",
+            onClick:()=>lib.web3.updateDockerImage(this),
+            buttonText:"Update Docker Image",
+            stateSelector:"updateDockerImage",
             inputs:[
-                { name:"dsps",placeholder: "address[] calldata dsps"}
+                { name:"imageName",placeholder: "string imageName"},
+                { name:"jobFee",placeholder: "uint jobFee"},
+                { name:"baseFee",placeholder: "uint baseFee"},
+                { name:"storageFee",placeholder: "uint storageFee"},
+                { name:"ioFee",placeholder: "uint ioFee"},
+                { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
+                { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
             ]
         },
     ]
@@ -105,7 +118,7 @@ class SetDsps extends Component {
                     inputs={el.inputs}
                     previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}
-                    previewValues={this.separateObject(this.state.setDsps)} // update
+                    previewValues={this.separateObject(this.state[stateSelector])} // update
                     isMobile={isMobile}
                     openClose={this.openClose}
                     show={this.state.show}
@@ -155,5 +168,5 @@ class SetDsps extends Component {
     };
   };
   
-  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(SetDsps));
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(UpdateImage));
   

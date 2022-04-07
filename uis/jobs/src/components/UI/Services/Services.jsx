@@ -9,11 +9,11 @@ const Services = (props) => {
     if(props.services) {
         services = props.services.map((el,i) => {
             if(el.endpoints) el.endpoints[1] = el.endpoints[0]
-            const dsps = el.endpoints.map((dsp,index) => {
-                if(dsp && !props.isDsp) {
+            const workers = el.endpoints.map((worker,index) => {
+                if(worker && !props.isWorker) {
                     return (
                         <div>
-                            <td onClick={() => {navigator.clipboard.writeText(`${dsp.dsp} | ${dsp.endpoint} | ${dsp.ioUsed}/${el.ioMegaBytes} | ${dsp.storageUsed}/${el.storageMegaBytes}`)}}>{`${dsp.dsp.slice(0,4)}..${dsp.dsp.slice(-4)} | ${dsp.endpoint} | ${dsp.ioUsed}/${el.ioMegaBytes} | ${dsp.storageUsed}/${el.storageMegaBytes}`}</td>
+                            <td onClick={() => {navigator.clipboard.writeText(`${worker.worker} | ${worker.endpoint} | ${worker.ioUsed}/${el.ioMegaBytes} | ${worker.storageUsed}/${el.storageMegaBytes}`)}}>{`${worker.worker.slice(0,4)}..${worker.worker.slice(-4)} | ${worker.endpoint} | ${worker.ioUsed}/${el.ioMegaBytes} | ${worker.storageUsed}/${el.storageMegaBytes}`}</td>
                         </div>
                     );
                 }
@@ -27,7 +27,7 @@ const Services = (props) => {
                     <td onClick={() => {navigator.clipboard.writeText(`${el.months}`)}}>{el.months}</td>
                     <td onClick={() => {navigator.clipboard.writeText(`${el.started.toString()}`)}}>{el.started.toString()}</td>
                     <td onClick={() => {navigator.clipboard.writeText(new Date(Number(el.endDate)*1000).toLocaleDateString())}}>{new Date(Number(el.endDate)*1000).toLocaleDateString()}</td>
-                    {dsps}
+                    {workers}
                 </tr>
             )
         })
@@ -43,7 +43,7 @@ const Services = (props) => {
                     <th class={classes.tooltip}>MONTHS<span class={classes.tooltiptextForm}>{loc(`forms.months`,props.lang)}</span></th> 
                     <th class={classes.tooltip}>STARTED<span class={classes.tooltiptextForm}>{loc(`forms.started`,props.lang)}</span></th> 
                     <th class={classes.tooltip}>END DATE<span class={classes.tooltiptextForm}>{loc(`forms.endDate`,props.lang)}</span></th> 
-                    {!props.isDsp ? <th class={classes.tooltip}>DSP | ENDPOINT | IO | STORAGE<span class={classes.tooltiptextForm}>{loc(`forms.dspEndpointIoStorage`,props.lang)}</span></th> : ''}
+                    {!props.isWorker ? <th class={classes.tooltip}>WORKER | ENDPOINT | IO | STORAGE<span class={classes.tooltiptextForm}>{loc(`forms.workerEndpointIoStorage`,props.lang)}</span></th> : ''}
                 </tr>
                 {services}
             </table>

@@ -85,7 +85,7 @@ class SetConfig extends Component {
      
 
     forms = [
-        // update setDsps
+        // update setWorkers
         {
             onClick:()=>lib.web3.setConfig(this),
             buttonText:"Set Config",

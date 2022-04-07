@@ -1,98 +1,219 @@
 {
-    "consumer": {
-        "buy gas": {
-            "title": "KBUY GAS FOR DSP",
-            "subtitle": "KProvide amount, consumer address, and DSP account to fund a DSP to use DAPP Network jobs & services.",
-            "button": "KBUY GAS"
-        },
-        "sell gas": {
-            "title": "SELL GAS",
-            "subtitle": "Sell DAPP gas for DAPP.",
-            "button": "SELL GAS"
-        },
-        "request job": {
-            "title": "REQUEST JOB",
-            "subtitle": "Submit a job for the DAPP Workers to do.",
-            "button": "REQUEST JOB"
-        },
-        "request service": {
-            "title": "REQUEST SERVICE",
-            "subtitle": "Submit a service for the DAPP Workers to provide.",
-            "button": "REQUEST SERVICE"
-        },
-        "extend service": {
-            "title": "EXTEND SERVICE",
-            "subtitle": "Extend existing service time, upload/download limit, and or storage limit.",
-            "button": "EXTEND SERVICE"
-        },
-        "jobs": {
-            "title": "LIST CONSUMER JOBS",
-            "subtitle": "List of all jobs requested by consumer.",
-            "button": ""
-        },
-        "services": {
-            "title": "LIST CONSUMER SERVICES",
-            "subtitle": "List of all services requested by consumer.",
-            "button": ""
-        },
-        "set consumer": {
-            "title": "SET CONSUMER",
-            "subtitle": "Set consumer to use DAPP gas of user.",
-            "button": "SET CONSUMER"
-        },
-        "set dsps": {
-            "title": "SET DSPS",
-            "subtitle": "Select DAPP Workers to provide jobs/services.",
-            "button": "SET DSPS"
+    "forms": {
+        "worker":"작업자 EVM 주소.",
+        "image":"작업 또는 서비스에 대한 Docker 이미지입니다.",
+        "jobFee":"작업당 USD로 청구되는 수수료. 현재 DAPP/BNT Bancor 가격을 기준으로 현재 DAPP 토큰 가격을 변환하는 데 사용됩니다.",
+        "baseFee":"USD 기준 기본 요금으로 수행된 서비스당 청구되는 요금입니다.",
+        "storageFee":"USD로 저장에 사용된 MB당 요금이 부과됩니다.",
+        "ioFee":"USD로 업로드/다운로드 활동에 사용된 MB당 요금이 부과됩니다.",
+        "minStorageMb":"서비스를 수행하는 데 필요한 최소 저장 용량(MB)입니다.",
+        "endpoint":"API를 제공하는 서비스에 사용되는 WORKER 엔드포인트.",
+        "jobs":"작업이 성공적으로 완료되었습니다.",
+        "jobErrors":"작업이 오류로 실패했습니다.",
+        "services":"서비스가 성공적으로 완료되었습니다.",
+        "serviceErrors":"서비스가 오류로 인해 실패했습니다.",
+        "dappGas":"일자리와 서비스에 사용할 수 있는 DAPP Gas.",
+        "id":"작업 또는 서비스의 ID입니다.",
+        "owner":"직업이나 서비스의 소유자. 소유자는 작업 또는 서비스에 대해 DAPP Gas를 지불합니다.",
+        "consumer":"직업이나 서비스의 소비자. 소비자는 소유자와 동일하거나 소비자가 스마트 계약일 수 있습니다. 소유자가 지불하는 DAPP Gas.",
+        "months":"월 서비스 비용이 지불되었습니다.",
+        "started":"서비스가 시작되었는지 여부.",
+        "endDate":"요청한 서비스를 제공하는 WORKER의 종료 날짜입니다.",
+        "workerEndpointIoStorage":"WORKER 주소, WORKER 끝점, 전체 중 사용된 IO, 전체 중 사용된 스토리지.",
+        "callback":"작업에 스마트 계약 콜백이 필요합니까?",
+        "consistent":"Require all WORKER results be the same and throw an error if not?",
+        "gasLimit":"작업 요청을 이행하는 기능에 대한 가스 제한.",
+        "results":"WORKER가 반환한 총 결과 수입니다."
+    },
+    "home": {
+        "home": {
+            "title": "DAPP WORKERS",
+            "subtitle": "DAPP 작업자는 Docker 이미지를 사용하여 작업을 수행하거나 온체인에 대해 요청 및 지불된 서비스를 실행함으로써 고급 스마트 계약 기능을 가능하게 합니다.",
+            "buttonOne": "더 알아보기",
+            "buttonTwo": "노동자가 되십시오"
         }
     },
-    "dsp": {
-        "register": {
-            "title": "REGISTER DSP",
-            "subtitle": "Register DSP endpoint and ability to be selected for jobs and services.",
-            "button": "REGISTER DSP"
+    "consumer": {
+        "worker info": {
+            "title": "작업자 정보",
+            "subtitle": "선택된 WORKER에 대한 정보.",
+            "altSubtitle": "모든 작업자 정보",
+            "button": ""
         },
-        "deprecate": {
-            "title": "DEPRECATE DSP",
-            "subtitle": "Deprecate DSP, null endpoint, remove ability to be selected for jobs/services.",
-            "button": "DEPRECATE DSP"
+        "worker images": {
+            "title": "WORKER IMAGES",
+            "subtitle": "WORKER 작업 및 서비스 이미지 정보입니다.",
+            "button": ""
         },
-        "register image": {
-            "title": "REGISTER IMAGE",
-            "subtitle": "Register image and cost amounts for an existing image.",
-            "button": "REGISTER IMAGE"
+        "buy gas": {
+            "title": "근로자를 위한 가스 구매",
+            "subtitle": "WORKER가 DAPP 네트워크 작업 및 서비스를 사용할 수 있도록 금액, 소비자 주소 및 WORKER 계정을 제공합니다.",
+            "button": "가스 구매",
+            "previews":[
+                { "name":"DAPP", "type":"dapp","short":"소수점 이하 4자리로 조정된 DAPP 토큰."},
+                { "name":"Consumer", "type":"address","short":"소비 계정 또는 계약의 주소입니다."},
+                { "name":"WORKER", "type":"address","short":"DAPP 가스를 구매할 WORKER 주소입니다."}
+            ]
         },
-        "update image": {
-            "title": "UPDATE IMAGE",
-            "subtitle": "Update image attributes for consumers whom selected this image.",
-            "button": "UPDATE IMAGE"
+        "sell gas": {
+            "title": "가스 판매",
+            "subtitle": "DAPP용 DAPP 가스를 판매합니다.",
+            "button": "가스 판매",
+            "previews":[
+                { "name":"DAPP", "type":"dapp","short":"소수점 이하 4자리로 조정된 DAPP 토큰."},
+                { "name":"WORKER", "type":"address","short":"DAPP 가스를 판매할 WORKER 주소입니다."}
+            ]
+        },
+        "request job": {
+            "title": "작업 요청",
+            "subtitle": "DAPP 작업자가 수행할 작업을 제출합니다.",
+            "button": "작업 요청",
+            "previews":[
+                { "name":"OWNER","type": "address","short":"작업을 요청하는 주소입니다."},
+                { "name":"IMAGE","type": "string","short":"Docker 이미지 작업이 사용됩니다."},
+                { "name":"INPUT","type": "string","short":"도커 이미지에 대한 입력 명령입니다."},
+                { "name":"CALLBACK","type": "bool","short":"작업에 필요한 계약 콜백이 있습니까?"},
+                { "name":"GAS LIMIT","type": "uint","short":"작업 실행에 대한 가스 제한"},
+                { "name":"UNIFORM RESPONSE","type": "bool","short":"모든 WORKER 출력이 일치해야 합니다."},
+                { "name":"ARGUMENTS","type": "array","short":"쉼표로 구분된 docker 이미지를 제공하는 인수입니다."}
+            ],
+            "sufficientGas":"한 명 이상의 DAPP 작업자에 대한 DAPP 가스 부족",
+            "dappGas":"사용 예상 DAPP 가스"
+        },
+        "request service": {
+            "title": "서비스 요청",
+            "subtitle": "DAPP 작업자가 제공할 서비스를 제출합니다.",
+            "button": "서비스 요청",
+            "previews":[
+                { "name":"OWNER","type": "address","short":"서비스를 요청하는 주소입니다."},
+                { "name":"IMAGE","type": "string","short":"Docker 이미지 서비스가 사용됩니다."},
+                { "name":"UP/DOWNLOAD MB","type": "uint","short":"업로드/다운로드 대역폭의 메가바이트 단위입니다."},
+                { "name":"STORAGE MB","type": "uint","short":"서비스의 총 저장용량(MB)입니다."},
+                { "name":"INPUT","type": "string","short":"도커 이미지에 대한 입력 명령입니다."},
+                { "name":"ARGUMENTS","type": "array","short":"쉼표로 구분된 docker 이미지를 제공하는 인수입니다."},
+                { "name":"MONTHS","type": "uint","short":"서비스를 제공하는 개월은 기본 비용을 포함하며 업로드/다운로드/저장 비용을 곱하지 않습니다."}
+            ],
+            "sufficientGas":"한 명 이상의 DAPP 작업자에 대한 DAPP 가스 부족",
+            "dappGas":"사용 예상 DAPP 가스"
+        },
+        "extend service": {
+            "title": "서비스 확장",
+            "subtitle": "기존 서비스 시간, 업로드/다운로드 제한 및/또는 저장 제한을 연장합니다.",
+            "button": "서비스 확장",
+            "previews":[
+                { "name":"SERVICE ID","type": "uint","short":"확장할 서비스의 ID입니다."},
+                { "name":"IMAGE","type": "string","short":"Docker 이미지 서비스가 사용되었습니다."},
+                { "name":"MONTHS","type": "uint","short":"서비스를 연장할 수 있는 달은 기본 비용을 포함하며 매월 업로드/다운로드/저장 비용을 곱합니다."},
+                { "name":"UP/DOWNLOAD MB","type": "uint","short":"업로드/다운로드 대역폭의 메가바이트 단위입니다."},
+                { "name":"STORAGE MB","type": "uint","short":"서비스에 대한 추가 저장용량(MB)입니다."}
+            ]
         },
         "jobs": {
-            "title": "LIST DSP JOBS",
-            "subtitle": "List DSP jobs that include this DSP.",
+            "title": "소비자 직업",
+            "subtitle": "소비자가 요청한 모든 작업 목록입니다."
+        },
+        "services": {
+            "title": "소비자 서비스",
+            "subtitle": "소비자가 요청한 모든 서비스 목록입니다."
+        },
+        "set consumer": {
+            "title": "소비자를 설정",
+            "subtitle": "계정의 DAPP 가스를 사용할 소비자 계약 주소를 설정합니다.",
+            "button": "소비자를 설정",
+            "previews":[
+                { "name":"CONSUMER CONTRACT","type": "address","short":"작업 및 서비스에 대한 소비자 DAPP Gas의 계약 주소입니다."}
+            ]
+        },
+        "set workers": {
+            "title": "세트 워커",
+            "subtitle": "DAPP 작업자를 선택하여 작업/서비스를 제공합니다.",
+            "button": "세트 워커",
+            "previews":[
+                { "name":"WORKERS","type": "array_addresses","short":"작업/서비스에 사용할 WORKER 주소 목록입니다."}
+            ]
+        }
+    },
+    "worker": {
+        "register": {
+            "title": "작업자 등록",
+            "subtitle": "WORKER 끝점 및 작업 및 서비스에 대해 선택할 수 있는 기능을 등록합니다.",
+            "button": "작업자 등록",
+            "previews":[
+                { "name":"endpoint","type": "string","short":"서비스용 WORKER API를 제공하는 WORKER 엔드포인트."}
+            ]
+        },
+        "deprecate": {
+            "title": "비추천 작업자",
+            "subtitle": "WORKER 사용 중단, 끝점 null, 작업/서비스에 대해 선택되는 기능 제거.",
+            "button": "비추천 작업자"
+        },
+        "register image": {
+            "title": "이미지 등록",
+            "subtitle": "기존 이미지에 대한 이미지 및 비용을 등록합니다.",
+            "button": "이미지 등록",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"등록할 도커 이미지입니다."},
+                { "name":"JOB FEE","type": "uint","short":"작업을 수행하는 데 필요한 수수료."},
+                { "name":"BASE FEE","type": "uint","short":"서비스 제공 시간에 대한 기본 요금."},
+                { "name":"STORAGE FEE","type": "uint","short":"사용된 스토리지의 MB당 요금입니다."},
+                { "name":"I/O FEE","type": "uint","short":"업로드/다운로드 대역폭의 MB당 요금이 제공됩니다."},
+                { "name":"MIN STORAGE MB","type": "uint","short":"서비스를 제공하기 위한 최소 저장용량(MB)입니다."},
+                { "name":"MIN I/O MB","type": "uint","short":"서비스를 제공하기 위한 최소 I/O(MB)."}
+            ]
+        },
+        "update image": {
+            "title": "이미지 업데이트",
+            "subtitle": "이 이미지를 선택한 소비자의 이미지 속성을 업데이트하십시오.",
+            "button": "이미지 업데이트",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"업데이트할 Docker 이미지입니다."},
+                { "name":"JOB FEE","type": "uint","short":"작업을 수행하는 데 필요한 수수료."},
+                { "name":"BASE FEE","type": "uint","short":"서비스 제공 시간에 대한 기본 요금."},
+                { "name":"STORAGE FEE","type": "uint","short":"사용된 스토리지의 MB당 요금입니다."},
+                { "name":"I/O FEE","type": "uint","short":"업로드/다운로드 대역폭의 MB당 요금이 제공됩니다."},
+                { "name":"MIN STORAGE MB","type": "uint","short":"서비스를 제공하기 위한 최소 저장용량(MB)입니다."},
+                { "name":"MIN I/O MB","type": "uint","short":"서비스를 제공하기 위한 최소 I/O(MB)."}
+            ]
+        },
+        "jobs": {
+            "title": "DAPP 작업자 작업",
+            "subtitle": "이 WORKER를 포함하는 WORKER 작업을 나열합니다.",
             "button": ""
         },
         "services": {
-            "title": "LIST DSP SERVICES",
-            "subtitle": "List DSP services that include this DSP.",
+            "title": "DAPP 작업자 서비스",
+            "subtitle": "이 WORKER를 포함하는 WORKER 서비스를 나열하십시오.",
             "button": ""
         }
     },
     "admin": {
         "set config": {
-            "title": "SET CONFIG",
-            "subtitle": "Set admin config.",
-            "button": "SET CONFIG"
+            "title": "설정 구성",
+            "subtitle": "관리자 구성을 설정합니다.",
+            "button": "설정 구성",
+            "previews":[
+                { "name":"PAYMENT PREMIUM PPB","type": "uint","short":"소수점 이하 2자리의 지불 프리미엄 승수."},
+                { "name":"GAS CEILING MULT","type": "uint","short":"현재 가스 가격보다 높은 승수를 지불해야 합니다."},
+                { "name":"FALLBACK GAS PRICE","type": "uint","short":"체인링크 실패 시 대체 가스 가격."},
+                { "name":"STAILNESS SECONDS","type": "uint","short":"최신 체인링크 가격 피드가 오래되기 전 몇 초."}
+            ]
         },
         "approve image": {
-            "title": "APPROVE IMAGE",
-            "subtitle": "Approve image for use by DAPP Workers.",
-            "button": "APPROVE IMAGE"
+            "title": "이미지 승인",
+            "subtitle": "DAPP 작업자가 사용할 이미지를 승인합니다.",
+            "button": "이미지 승인",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"승인할 Docker 이미지입니다."},
+                { "name":"IMAGE HASH","type": "string","short":"승인할 도커 이미지의 해시"}
+            ]
         },
         "unapprove image": {
-            "title": "UNAPPROVE IMAGE",
-            "subtitle": "Unapprove image for use by DAPP Workers.",
-            "button": "UNAPPROVE IMAGE"
+            "title": "이미지 승인 취소",
+            "subtitle": "DAPP 작업자가 사용할 이미지를 승인하지 않았습니다.",
+            "button": "이미지 승인 취소",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"승인을 취소할 Docker 이미지입니다."}
+            ]
         }
     }
 }

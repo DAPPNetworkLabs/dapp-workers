@@ -1,0 +1,219 @@
+{
+    "forms": {
+        "worker":"Dirección EVM TRABAJADOR.",
+        "image":"Imagen de Docker para trabajo o servicio.",
+        "jobFee":"Tarifa cobrada en USD por trabajo. Se utiliza para convertir el precio actual del token DAPP en función del precio actual de DAPP/BNT Bancor",
+        "baseFee":"Tarifa cobrada por servicio realizado como tarifa base en USD.",
+        "storageFee":"Tarifa cobrada por mb utilizado para el almacenamiento en USD.",
+        "ioFee":"Tarifa cobrada por mb utilizado para la actividad de carga/descarga en USD..",
+        "minStorageMb":"Megabytes de almacenamiento mínimo requerido para realizar el servicio.",
+        "endpoint":"Punto final WORKER utilizado para servicios que proporcionan una API.",
+        "jobs":"Trabajos completados con éxito.",
+        "jobErrors":"Los trabajos fallaron por error.",
+        "services":"Servicios completados con éxito.",
+        "serviceErrors":"Los servicios fallaron por error.",
+        "dappGas":"DAPP Gas que puede ser utilizado para trabajos y servicios.",
+        "id":"ID del trabajo o servicio.",
+        "owner":"Titular de obra o servicio. El propietario paga DAPP Gas por el trabajo o servicio.",
+        "consumer":"Consumidor de trabajo o servicio. El consumidor puede ser el mismo que el propietario o el consumidor puede ser un contrato inteligente. DAPP Gas pagado por el propietario.",
+        "months":"Meses de servicio pagados",
+        "started":"El servicio ha comenzado o no.",
+        "endDate":"Fecha de finalización del TRABAJADOR prestando el servicio solicitado.",
+        "workerEndpointIoStorage":"Dirección WORKER, punto final WORKER, IO utilizado del total, almacenamiento utilizado del total.",
+        "callback":"Does job require a smart contract callback?",
+        "consistent":"¿El trabajo requiere una devolución de llamada de contrato inteligente?",
+        "gasLimit":"Límite de gas en funcionamiento cumpliendo pedido de trabajo.",
+        "results":"Número de resultados totales devueltos por TRABAJADORES."
+    },
+    "home": {
+        "home": {
+            "title": "DAPP WORKERS",
+            "subtitle": "DAPP Workers habilita capacidades avanzadas de contrato inteligente mediante el uso de imágenes de Docker para realizar trabajos o ejecutar servicios solicitados y pagados en cadena.",
+            "buttonOne": "APRENDE MÁS",
+            "buttonTwo": "Conviértete en trabajador"
+        }
+    },
+    "consumer": {
+        "worker info": {
+            "title": "INFORMACIÓN DEL TRABAJADOR",
+            "subtitle": "Información de TRABAJADORES seleccionados.",
+            "altSubtitle": "Toda la información del TRABAJADOR",
+            "button": ""
+        },
+        "worker images": {
+            "title": "WORKER IMAGES",
+            "subtitle": "TRABAJADOR información de imagen de trabajo y servicio.",
+            "button": ""
+        },
+        "buy gas": {
+            "title": "COMPRAR GAS PARA TRABAJADOR",
+            "subtitle": "Proporcione la cantidad, la dirección del consumidor y la cuenta del TRABAJADOR para financiar a un TRABAJADOR para que use los trabajos y servicios de la Red DAPP.",
+            "button": "COMPRAR GASOLINA",
+            "previews":[
+                { "name":"DAPP", "type":"dapp","short":"Token DAPP ajustado para precisión decimal 4."},
+                { "name":"Consumer", "type":"address","short":"Dirección de cuenta consumidora o contrato."},
+                { "name":"WORKER", "type":"address","short":"Dirección del TRABAJADOR para comprar gas DAPP."}
+            ]
+        },
+        "sell gas": {
+            "title": "VENDER GASOLINA",
+            "subtitle": "Vender gas DAPP por DAPP.",
+            "button": "VENDER GASOLINA",
+            "previews":[
+                { "name":"DAPP", "type":"dapp","short":"Token DAPP ajustado para precisión decimal 4."},
+                { "name":"WORKER", "type":"address","short":"Dirección del TRABAJADOR para vender gas DAPP."}
+            ]
+        },
+        "request job": {
+            "title": "SOLICITAR TRABAJO",
+            "subtitle": "Envíe un trabajo para que lo hagan los trabajadores de DAPP.",
+            "button": "SOLICITAR TRABAJO",
+            "previews":[
+                { "name":"OWNER","type": "address","short":"Dirección de solicitud de empleo."},
+                { "name":"IMAGE","type": "string","short":"Se usará el trabajo de imagen de Docker."},
+                { "name":"INPUT","type": "string","short":"Comando de entrada para la imagen de la ventana acoplable."},
+                { "name":"CALLBACK","type": "bool","short":"¿Se requiere una devolución de llamada del contrato para el trabajo?"},
+                { "name":"GAS LIMIT","type": "uint","short":"Límite de gas para trabajo en ejecución"},
+                { "name":"UNIFORM RESPONSE","type": "bool","short":"Requerir que todas las salidas de TRABAJADOR coincidan."},
+                { "name":"ARGUMENTS","type": "array","short":"Argumentos para proporcionar una imagen acoplable separada por comas."}
+            ],
+            "sufficientGas":"Gas DAPP insuficiente para uno o más trabajadores DAPP",
+            "dappGas":"Gas DAPP estimado a utilizar"
+        },
+        "request service": {
+            "title": "SOLICITAR SERVICIO",
+            "subtitle": "Presentar un servicio para que los trabajadores de DAPP proporcionen.",
+            "button": "SOLICITAR SERVICIO",
+            "previews":[
+                { "name":"OWNER","type": "address","short":"Dirección que solicita el servicio."},
+                { "name":"IMAGE","type": "string","short":"Se utilizará el servicio de imágenes de Docker."},
+                { "name":"UP/DOWNLOAD MB","type": "uint","short":"Cantidad en megabytes de ancho de banda de carga/descarga."},
+                { "name":"STORAGE MB","type": "uint","short":"Cantidad en megabytes de almacenamiento total para el servicio."},
+                { "name":"INPUT","type": "string","short":"Comando de entrada para la imagen de la ventana acoplable."},
+                { "name":"ARGUMENTS","type": "array","short":"Argumentos para proporcionar una imagen acoplable separada por comas."},
+                { "name":"MONTHS","type": "uint","short":"Meses para brindar el servicio, cubre el costo base, NO multiplica los costos de carga/descarga/almacenamiento."}
+            ],
+            "sufficientGas":"Gas DAPP insuficiente para uno o más trabajadores DAPP",
+            "dappGas":"Gas DAPP estimado a utilizar"
+        },
+        "extend service": {
+            "title": "AMPLIAR SERVICIO",
+            "subtitle": "Amplíe el tiempo de servicio existente, el límite de carga/descarga y el límite de almacenamiento.",
+            "button": "AMPLIAR SERVICIO",
+            "previews":[
+                { "name":"SERVICE ID","type": "uint","short":"ID del servicio a extender."},
+                { "name":"IMAGE","type": "string","short":"Servicio de imágenes de Docker utilizado."},
+                { "name":"MONTHS","type": "uint","short":"Meses para extender el servicio, cubre el costo base, SÍ multiplica los costos de carga/descarga/almacenamiento por mes."},
+                { "name":"UP/DOWNLOAD MB","type": "uint","short":"Cantidad en megabytes de ancho de banda de carga/descarga."},
+                { "name":"STORAGE MB","type": "uint","short":"Cantidad en megas de almacenamiento adicional para el servicio."}
+            ]
+        },
+        "jobs": {
+            "title": "TRABAJOS DE CONSUMIDOR",
+            "subtitle": "Lista de todos los trabajos solicitados por el consumidor."
+        },
+        "services": {
+            "title": "SERVICIO AL CONSUMIDOR",
+            "subtitle": "Lista de todos los servicios solicitados por el consumidor."
+        },
+        "set consumer": {
+            "title": "ESTABLECER CONSUMIDOR",
+            "subtitle": "Establezca la dirección del contrato del consumidor para usar el gas de la cuenta DAPP.",
+            "button": "ESTABLECER CONSUMIDOR",
+            "previews":[
+                { "name":"CONSUMER CONTRACT","type": "address","short":"Contrato de domicilio al consumidor DAPP Gas para trabajos y servicios."}
+            ]
+        },
+        "set workers": {
+            "title": "CONJUNTO DE TRABAJADORES",
+            "subtitle": "Seleccione Trabajadores de DAPP para proporcionar trabajos/servicios.",
+            "button": "CONJUNTO DE TRABAJADORES",
+            "previews":[
+                { "name":"WORKERS","type": "array_addresses","short":"Lista de direcciones de TRABAJADORES a usar para trabajos/servicios."}
+            ]
+        }
+    },
+    "worker": {
+        "register": {
+            "title": "Registrarse trabajador",
+            "subtitle": "Registre el punto final WORKER y la capacidad de ser seleccionado para trabajos y servicios.",
+            "button": "Registrarse trabajador",
+            "previews":[
+                { "name":"endpoint","type": "string","short":"WORKER Endpoint que proporciona la API WORKER para servicios."}
+            ]
+        },
+        "deprecate": {
+            "title": "TRABAJADOR DEPRECADO",
+            "subtitle": "Obsoleto WORKER, punto final nulo, eliminar la capacidad de ser seleccionado para trabajos/servicios.",
+            "button": "TRABAJADOR DEPRECADO"
+        },
+        "register image": {
+            "title": "IMAGEN DE REGISTRO",
+            "subtitle": "Registre la imagen y los importes de los costes de una imagen existente.",
+            "button": "IMAGEN DE REGISTRO",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Imagen de Docker para registrarse."},
+                { "name":"JOB FEE","type": "uint","short":"Tarifa requerida para realizar el trabajo."},
+                { "name":"BASE FEE","type": "uint","short":"Tarifa base por tiempo de prestación del servicio."},
+                { "name":"STORAGE FEE","type": "uint","short":"Tarifa por mb de almacenamiento utilizado."},
+                { "name":"I/O FEE","type": "uint","short":"Tarifa por mb de ancho de banda de carga/descarga proporcionado."},
+                { "name":"MIN STORAGE MB","type": "uint","short":"Almacenamiento mínimo en mb para dar servicio."},
+                { "name":"MIN I/O MB","type": "uint","short":"Mini i/o en mb para dar servicio."}
+            ]
+        },
+        "update image": {
+            "title": "ACTUALIZAR IMAGEN",
+            "subtitle": "Actualice los atributos de la imagen para los consumidores que seleccionaron esta imagen.",
+            "button": "ACTUALIZAR IMAGEN",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Imagen de Docker para actualizar."},
+                { "name":"JOB FEE","type": "uint","short":"Tarifa requerida para realizar el trabajo."},
+                { "name":"BASE FEE","type": "uint","short":"Tarifa base por tiempo de prestación del servicio."},
+                { "name":"STORAGE FEE","type": "uint","short":"Tarifa por mb de almacenamiento utilizado."},
+                { "name":"I/O FEE","type": "uint","short":"Tarifa por mb de ancho de banda de carga/descarga proporcionado."},
+                { "name":"MIN STORAGE MB","type": "uint","short":"Almacenamiento mínimo en mb para dar servicio."},
+                { "name":"MIN I/O MB","type": "uint","short":"Mini i/o en mb para dar servicio."}
+            ]
+        },
+        "jobs": {
+            "title": "TRABAJOS DE TRABAJADOR DAPP",
+            "subtitle": "Lista de trabajos de TRABAJADOR que incluyen este TRABAJADOR.",
+            "button": ""
+        },
+        "services": {
+            "title": "SERVICIOS PARA TRABAJADORES DAPP",
+            "subtitle": "Enumere los servicios WORKER que incluyen este WORKER.",
+            "button": ""
+        }
+    },
+    "admin": {
+        "set config": {
+            "title": "ESTABLECER CONFIGURACIÓN",
+            "subtitle": "Establecer configuración de administrador.",
+            "button": "ESTABLECER CONFIGURACIÓN",
+            "previews":[
+                { "name":"PAYMENT PREMIUM PPB","type": "uint","short":"Multiplicador de prima de pago con precisión de 2 decimales."},
+                { "name":"GAS CEILING MULT","type": "uint","short":"Multiplicador a pagar por encima de los precios actuales de la gasolina."},
+                { "name":"FALLBACK GAS PRICE","type": "uint","short":"Precio de la gasolina alternativo si falla el eslabón de la cadena.."},
+                { "name":"STAILNESS SECONDS","type": "uint","short":"Segundos antes de que el último feed de precios de Chainlink se vuelva obsoleto."}
+            ]
+        },
+        "approve image": {
+            "title": "APROBAR IMAGEN",
+            "subtitle": "Aprobar la imagen para uso de los trabajadores de DAPP.",
+            "button": "APROBAR IMAGEN",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Imagen de Docker para aprobar."},
+                { "name":"IMAGE HASH","type": "string","short":"Hash de la imagen de la ventana acoplable para aprobar"}
+            ]
+        },
+        "unapprove image": {
+            "title": "NO APROBAR IMAGEN",
+            "subtitle": "Desaprobar la imagen para su uso por los trabajadores de DAPP.",
+            "button": "NO APROBAR IMAGEN",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Imagen de Docker para desaprobar."}
+            ]
+        }
+    }
+}

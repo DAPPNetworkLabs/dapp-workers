@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import classes from './Deprecate.module.scss';
+import classes from './SetWorkers.module.scss';
 import Header from '@components/Header/Header';
 import Form from '@components/UI/Form/Form';
 import Title from '@components/UI/Title/Title';
@@ -18,19 +18,21 @@ import { loc } from '@loc';
 
 import * as helpers from '@helpers'
 
-const section = 'dsp'; // update
-const page = 'deprecate'; // update
-const stateSelector = 'regDSP'; // update
+const section = 'consumer'; // update
+const page = 'set workers'; // update
 
 const ethereum = window.ethereum;
 
-class Deprecate extends Component {
+class SetWorkers extends Component {
     constructor(props) {
         super(props);
         this.state = {
             account: null,
             chainId: null,
             // update
+            setWorkers: {
+                workers:[]                
+            },
             show: false
         }
         this.handleChange = this.handleChange.bind(this);
@@ -79,12 +81,14 @@ class Deprecate extends Component {
      
 
     forms = [
-        // update setDsps
+        // update setWorkers
         {
-            onClick:()=>lib.web3.deprecateDSP(this),
-            buttonText:"Deprecate DSP",
-            stateSelector:"deprecateDSP",
-            inputs:[]
+            onClick:()=>lib.web3.setWorkers(this),
+            buttonText:"Set WORKERs",
+            stateSelector:"setWorkers",
+            inputs:[
+                { name:"workers",placeholder: "address[] calldata workers"}
+            ]
         },
     ]
   
@@ -101,7 +105,7 @@ class Deprecate extends Component {
                     inputs={el.inputs}
                     previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}
-                    // previewValues={} // update
+                    previewValues={this.separateObject(this.state.setWorkers)} // update
                     isMobile={isMobile}
                     openClose={this.openClose}
                     show={this.state.show}
@@ -151,5 +155,5 @@ class Deprecate extends Component {
     };
   };
   
-  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(Deprecate));
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(SetWorkers));
   

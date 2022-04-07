@@ -1,13 +1,13 @@
 {
     "forms": {
-        "dsp":"DSP EVM address.",
+        "worker":"WORKER EVM address.",
         "image":"Docker image for job or service.",
         "jobFee":"Fee charged in USD per job. Used to convert current DAPP token price based on current DAPP/BNT Bancor price",
         "baseFee":"Fee charged per service performed as a base fee in USD.",
         "storageFee":"Fee charged per mb used for storage in USD.",
         "ioFee":"Fee charged per mb used for upload/download activity in USD.",
         "minStorageMb":"Minimum required storage megabytes to perform service.",
-        "endpoint":"DSP endpoint used for services that provide an API.",
+        "endpoint":"WORKER endpoint used for services that provide an API.",
         "jobs":"Jobs successfully completed.",
         "jobErrors":"Jobs failed by error.",
         "services":"Services successfully completed.",
@@ -18,12 +18,12 @@
         "consumer":"Consumer of job or service. Consumer can be the same as the owner or the consumer can be a smart contract.  DAPP Gas paid for by owner.",
         "months":"Months service has been paid for.",
         "started":"Service has started or not.",
-        "endDate":"End date of DSP providing requested service.",
-        "dspEndpointIoStorage":"DSP address, DSP endpoint, IO used out of total, storage used out of total.",
+        "endDate":"End date of WORKER providing requested service.",
+        "workerEndpointIoStorage":"WORKER address, WORKER endpoint, IO used out of total, storage used out of total.",
         "callback":"Does job require a smart contract callback?",
-        "consistent":"Require all DSP results be the same and throw an error if not?",
+        "consistent":"Require all WORKER results be the same and throw an error if not?",
         "gasLimit":"Gas limit on functiong fulfilling job request.",
-        "results":"Number of total results returned by DSPs."
+        "results":"Number of total results returned by WORKERs."
     },
     "home": {
         "home": {
@@ -34,25 +34,25 @@
         }
     },
     "consumer": {
-        "dsp info": {
-            "title": "DSP INFO",
-            "subtitle": "Information on selected DSPs.",
-            "altSubtitle": "All DSP info",
+        "worker info": {
+            "title": "WORKER INFO",
+            "subtitle": "Information on selected WORKERs.",
+            "altSubtitle": "All WORKER info",
             "button": ""
         },
-        "dsp images": {
-            "title": "DSP IMAGES",
-            "subtitle": "DSP job and service image information.",
+        "worker images": {
+            "title": "WORKER IMAGES",
+            "subtitle": "WORKER job and service image information.",
             "button": ""
         },
         "buy gas": {
-            "title": "BUY GAS FOR DSP",
-            "subtitle": "Provide amount, consumer address, and DSP account to fund a DSP to use DAPP Network jobs & services.",
+            "title": "BUY GAS FOR WORKER",
+            "subtitle": "Provide amount, consumer address, and WORKER account to fund a WORKER to use DAPP Network jobs & services.",
             "button": "BUY GAS",
             "previews":[
                 { "name":"DAPP", "type":"dapp","short":"DAPP token adjusted for 4 decimal precision."},
                 { "name":"Consumer", "type":"address","short":"Address of consuming account or contract."},
-                { "name":"DSP", "type":"address","short":"DSP address to buy DAPP gas for."}
+                { "name":"WORKER", "type":"address","short":"WORKER address to buy DAPP gas for."}
             ]
         },
         "sell gas": {
@@ -61,7 +61,7 @@
             "button": "SELL GAS",
             "previews":[
                 { "name":"DAPP", "type":"dapp","short":"DAPP token adjusted for 4 decimal precision."},
-                { "name":"DSP", "type":"address","short":"DSP address to sell DAPP gas for."}
+                { "name":"WORKER", "type":"address","short":"WORKER address to sell DAPP gas for."}
             ]
         },
         "request job": {
@@ -74,7 +74,7 @@
                 { "name":"INPUT","type": "string","short":"Input command for docker image."},
                 { "name":"CALLBACK","type": "bool","short":"Is there a contract callback required for the job?"},
                 { "name":"GAS LIMIT","type": "uint","short":"Gas limit for running job"},
-                { "name":"UNIFORM RESPONSE","type": "bool","short":"Require all DSP outputs to match."},
+                { "name":"UNIFORM RESPONSE","type": "bool","short":"Require all WORKER outputs to match."},
                 { "name":"ARGUMENTS","type": "array","short":"Arguments to provide docker image comma separated."}
             ],
             "sufficientGas":"Insufficient DAPP Gas for one or more DAPP Workers",
@@ -124,28 +124,28 @@
                 { "name":"CONSUMER CONTRACT","type": "address","short":"Contract address to consumer DAPP Gas for jobs and services."}
             ]
         },
-        "set dsps": {
-            "title": "SET DSPS",
+        "set workers": {
+            "title": "SET WORKERS",
             "subtitle": "Select DAPP Workers to provide jobs/services.",
-            "button": "SET DSPS",
+            "button": "SET WORKERS",
             "previews":[
-                { "name":"DSPS","type": "array_addresses","short":"List of DSP addresses to use for jobs/services."}
+                { "name":"WORKERS","type": "array_addresses","short":"List of WORKER addresses to use for jobs/services."}
             ]
         }
     },
-    "dsp": {
+    "worker": {
         "register": {
-            "title": "REGISTER DSP",
-            "subtitle": "Register DSP endpoint and ability to be selected for jobs and services.",
-            "button": "REGISTER DSP",
+            "title": "REGISTER WORKER",
+            "subtitle": "Register WORKER endpoint and ability to be selected for jobs and services.",
+            "button": "REGISTER WORKER",
             "previews":[
-                { "name":"endpoint","type": "string","short":"DSP Endpoint providing DSP API for services."}
+                { "name":"endpoint","type": "string","short":"WORKER Endpoint providing WORKER API for services."}
             ]
         },
         "deprecate": {
-            "title": "DEPRECATE DSP",
-            "subtitle": "Deprecate DSP, null endpoint, remove ability to be selected for jobs/services.",
-            "button": "DEPRECATE DSP"
+            "title": "DEPRECATE WORKER",
+            "subtitle": "Deprecate WORKER, null endpoint, remove ability to be selected for jobs/services.",
+            "button": "DEPRECATE WORKER"
         },
         "register image": {
             "title": "REGISTER IMAGE",
@@ -153,7 +153,7 @@
             "button": "REGISTER IMAGE",
             "previews":[
                 { "name":"IMAGE","type": "string","short":"Docker image to register."},
-                { "name":"JOB FEE","type": "uint","short":"Fee required to perform job.."},
+                { "name":"JOB FEE","type": "uint","short":"Fee required to perform job."},
                 { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."},
                 { "name":"STORAGE FEE","type": "uint","short":"Fee per mb of storage used."},
                 { "name":"I/O FEE","type": "uint","short":"Fee per mb of upload/download bandwidth provided."},
@@ -167,7 +167,7 @@
             "button": "UPDATE IMAGE",
             "previews":[
                 { "name":"IMAGE","type": "string","short":"Docker image to update."},
-                { "name":"JOB FEE","type": "uint","short":"Fee required to perform job.."},
+                { "name":"JOB FEE","type": "uint","short":"Fee required to perform job."},
                 { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."},
                 { "name":"STORAGE FEE","type": "uint","short":"Fee per mb of storage used."},
                 { "name":"I/O FEE","type": "uint","short":"Fee per mb of upload/download bandwidth provided."},
@@ -177,12 +177,12 @@
         },
         "jobs": {
             "title": "DAPP WORKER JOBS",
-            "subtitle": "List DSP jobs that include this DSP.",
+            "subtitle": "List WORKER jobs that include this WORKER.",
             "button": ""
         },
         "services": {
             "title": "DAPP WORKER SERVICES",
-            "subtitle": "List DSP services that include this DSP.",
+            "subtitle": "List WORKER services that include this WORKER.",
             "button": ""
         }
     },

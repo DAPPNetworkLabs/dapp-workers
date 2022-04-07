@@ -82,7 +82,7 @@ class ApproveImage extends Component {
      
 
     forms = [
-        // update setDsps
+        // update setWorkers
         {
             onClick:()=>lib.web3.approveImage(this),
             buttonText:"Approve Docker",

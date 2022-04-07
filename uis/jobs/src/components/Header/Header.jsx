@@ -22,17 +22,19 @@ class Header extends React.Component {
     isDayNight: true,
     lang: 'English',
     isLangUserSelected: this.props.isLangUserSelected,
-    langs: { 'en': 'English', 'zh': 'Chinese', 'ko': 'Korean' }
+    langs: { 'en': 'English', 'zh': 'Chinese', 'ko': 'Korean', 'sp': 'Spanish' }
   }
 
   componentDidMount() {
     if (!this.state.isLangUserSelected) {
       let userlang = detectBrowserLanguage().substring(0,2);
-      if (userlang == 'en' || 'zh' || 'ko') {
+      if (userlang == 'en' || 'zh' || 'ko' || 'sp') {
         if (userlang == 'ko') {
           this.setKorean();
         } else if (userlang == 'zh') {
           this.setChinese();
+        } else if (userlang == 'sp') {
+          this.setSpanish();
         } else {
           this.setEnglish();
         }
@@ -64,6 +66,12 @@ class Header extends React.Component {
     this.setState({ lang: 'Korean', clicked: false });
   }
 
+  setSpanish = () => {
+    this.props.setActiveLanguage('sp');
+    this.props.setLang('sp');
+    this.setState({ lang: 'Spanish', clicked: false });
+  }
+
   render() {
     const langItems = [
       {
@@ -77,6 +85,10 @@ class Header extends React.Component {
       {
         'text':'Korean',
         'onClick': this.setKorean
+      },
+      {
+        'text':'Spanish',
+        'onClick': this.setSpanish
       }
     ]
     
@@ -85,11 +97,11 @@ class Header extends React.Component {
         'text':'Consumer',
         'dropdown': [
           {
-            'name': 'Dsp Info',
-            'path': '/consumer/dsp-info'
+            'name': 'Worker Info',
+            'path': '/consumer/worker-info'
           },
           {
-            'name': 'Dsp Images',
+            'name': 'Worker Images',
             'path': '/consumer/images'
           },
           {
@@ -125,37 +137,37 @@ class Header extends React.Component {
             'path': '/consumer/set-consumer'
           },
           {
-            'name': 'Set DSPs',
-            'path': '/consumer/set-dsps'
+            'name': 'Set Workers',
+            'path': '/consumer/set-workers'
           }
       ]
     },
     {
-      'text':'DSP',
+      'text':'Worker',
       'dropdown': [
         {
           'name': 'Jobs',
-          'path': '/dsp/jobs'
+          'path': '/worker/jobs'
         },
         {
           'name': 'Services',
-          'path': '/dsp/services'
+          'path': '/worker/services'
         },
         {
-          'name': 'Register DSP',
-          'path': '/dsp/register'
+          'name': 'Register Worker',
+          'path': '/worker/register'
         },
         {
-          'name': 'Deprecate DSP',
-          'path': '/dsp/deprecate'
+          'name': 'Deprecate Worker',
+          'path': '/worker/deprecate'
         },
         {
           'name': 'Register Image',
-          'path': '/dsp/register-image'
+          'path': '/worker/register-image'
         },
         {
           'name': 'Update Image',
-          'path': '/dsp/update-image'
+          'path': '/worker/update-image'
         }
       ]
     },

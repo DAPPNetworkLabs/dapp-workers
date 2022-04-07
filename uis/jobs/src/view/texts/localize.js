@@ -16,13 +16,14 @@ const Localize = WrappedComponent => {
         languages: [
           { name: 'English', code: 'en' },
           { name: 'Chinese', code: 'zh' },
-          { name: 'Korean', code: 'ko' }
+          { name: 'Korean', code: 'ko' },
+          { name: 'Spanish', code: 'sp' }
         ],
         options: {
           renderToStaticMarkup,
           renderInnerHtml: true,
           ignoreTranslateChildren: true,
-          defaultLanguage: (detectBrowserLanguage().substring(0,2) == 'en' | 'ko' | 'zh') ? detectBrowserLanguage().substring(0,2) : 'en'
+          defaultLanguage: (detectBrowserLanguage().substring(0,2) == 'en' | 'ko' | 'zh' | 'sp') ? detectBrowserLanguage().substring(0,2) : 'en'
         }
       };
 
@@ -34,6 +35,7 @@ const Localize = WrappedComponent => {
       this.props.addTranslationForLanguage(trans.en, 'en');
       this.props.addTranslationForLanguage(trans.zh, 'zh');
       this.props.addTranslationForLanguage(trans.ko, 'ko');
+      this.props.addTranslationForLanguage(trans.sp, 'sp');
     }
 
     render() {

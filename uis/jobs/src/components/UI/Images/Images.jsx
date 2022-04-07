@@ -9,7 +9,7 @@ const Images = (props) => {
         images = props.isJob ? props.jobImages.map((el,i)=>{
             return (
                 <tr>
-                    <td onClick={() => {navigator.clipboard.writeText(`${el.dsp}`)}}>{`${el.dsp.slice(0,4)}..${el.dsp.slice(-4)}`}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.worker}`)}}>{`${el.worker.slice(0,4)}..${el.worker.slice(-4)}`}</td>
                     <td onClick={() => {navigator.clipboard.writeText(`${el.image}`)}}>{el.image}</td>
                     <td onClick={() => {navigator.clipboard.writeText(`${el.jobFee/1e6}`)}}>{el.jobFee/1e6}</td>
                 </tr>
@@ -17,7 +17,7 @@ const Images = (props) => {
         }) : props.serviceImages.map((el,i)=>{
             return (
                 <tr>
-                    <td onClick={() => {navigator.clipboard.writeText(`${el.dsp}`)}}>{`${el.dsp.slice(0,4)}..${el.dsp.slice(-4)}`}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(`${el.worker}`)}}>{`${el.worker.slice(0,4)}..${el.worker.slice(-4)}`}</td>
                     <td onClick={() => {navigator.clipboard.writeText(`${el.image}`)}}>{el.image}</td>
                     <td onClick={() => {navigator.clipboard.writeText(`${el.baseFee/1e6}`)}}>{el.baseFee/1e6}</td>
                     <td onClick={() => {navigator.clipboard.writeText(`${el.storageFee/1e6}`)}}>{el.storageFee/1e6}</td>
@@ -30,13 +30,13 @@ const Images = (props) => {
     }
     const jobService = props.isJob ? (
         <tr>
-            <th class={classes.tooltip}>DSP<span class={classes.tooltiptextForm}>{loc(`forms.dsp`,props.lang)}</span></th> 
+            <th class={classes.tooltip}>WORKER<span class={classes.tooltiptextForm}>{loc(`forms.worker`,props.lang)}</span></th> 
             <th class={classes.tooltip}>IMAGE<span class={classes.tooltiptextForm}>{loc(`forms.image`,props.lang)}</span></th> 
             <th class={classes.tooltip}>JOB FEE<span class={classes.tooltiptextForm}>{loc(`forms.jobFee`,props.lang)}</span></th> 
         </tr>
     ) : (
         <tr>
-            <th class={classes.tooltip}>DSP<span class={classes.tooltiptextForm}>{loc(`forms.dsp`,props.lang)}</span></th> 
+            <th class={classes.tooltip}>WORKER<span class={classes.tooltiptextForm}>{loc(`forms.worker`,props.lang)}</span></th> 
             <th class={classes.tooltip}>IMAGE<span class={classes.tooltiptextForm}>{loc(`forms.image`,props.lang)}</span></th> 
             <th class={classes.tooltip}>BASE FEE<span class={classes.tooltiptextForm}>{loc(`forms.baseFee`,props.lang)}</span></th> 
             <th class={classes.tooltip}>STORAGE FEE<span class={classes.tooltiptextForm}>{loc(`forms.storageFee`,props.lang)}</span></th> 

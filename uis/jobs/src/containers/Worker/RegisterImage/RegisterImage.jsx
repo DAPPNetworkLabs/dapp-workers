@@ -1,8 +1,8 @@
 
 import React, { Component } from 'react';
-import classes from './DspServices.module.scss';
+import classes from './RegisterImage.module.scss';
 import Header from '@components/Header/Header';
-import Services from '@components/UI/Services/Services';
+import Form from '@components/UI/Form/Form';
 import Title from '@components/UI/Title/Title';
 import SubTitle from '@components/UI/SubTitle/SubTitle';
 import Footer from '@components/Footer/Footer';
@@ -18,21 +18,27 @@ import { loc } from '@loc';
 
 import * as helpers from '@helpers'
 
-const section = 'dsp'; // update
-const page = 'services'; // update
-const stateSelector = 'services'; // update
+const section = 'worker'; // update
+const page = 'register image'; // update
+const stateSelector = 'setDockerImage'; // update
 
 const ethereum = window.ethereum;
 
-class DspServices extends Component {
+class RegisterImage extends Component {
     constructor(props) {
         super(props);
         this.state = {
             account: null,
             chainId: null,
             // update
-            [stateSelector]: {
-                lastJobId: 0
+            setDockerImage: {
+                imageName: null,
+                jobFee:null,
+                baseFee:null,
+                storageFee:null,
+                ioFee:null,
+                minStorageMegaBytes:null,
+                minIoMegaBytes:null
             },
             show: false
         }
@@ -40,7 +46,6 @@ class DspServices extends Component {
     }
 
     componentDidMount() {
-        lib.web3.fetchServices(this, stateSelector);
         try {
             const accounts = ethereum.request({ method: 'eth_requestAccounts' });
             this.setState({ account: accounts[0] });
@@ -57,6 +62,7 @@ class DspServices extends Component {
             if(value.length && value[0] == '') value = [];
         }
         if(type == "checkbox") value = event.target.checked;
+        
         this.setState({
             [func]: {
                 ...this.state[func],
@@ -81,10 +87,44 @@ class DspServices extends Component {
      };
      
 
-    forms = []
+    forms = [
+        // update setWorkers
+        {
+            onClick:()=>lib.web3.setDockerImage(this),
+            buttonText:"Set Docker Image",
+            stateSelector:"setDockerImage",
+            inputs:[
+                { name:"imageName",placeholder: "string imageName"},
+                { name:"jobFee",placeholder: "uint jobFee"},
+                { name:"baseFee",placeholder: "uint baseFee"},
+                { name:"storageFee",placeholder: "uint storageFee"},
+                { name:"ioFee",placeholder: "uint ioFee"},
+                { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
+                { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
+            ]
+        },
+    ]
   
     render() {
         const isMobile = helpers.isMobile();
+        const forms = this.forms.map(el => {
+            return (
+                <Form
+                    wide={true}
+                    onClick={el.onClick}
+                    onChange={this.handleChange}
+                    buttonText={loc(`${section}.${page}.button`,this.props.lang)}
+                    stateSelector={el.stateSelector}
+                    inputs={el.inputs}
+                    previews={loc(`${section}.${page}.previews`,this.props.lang)}
+                    isDayNight={this.props.isDayNight}
+                    previewValues={this.separateObject(this.state[stateSelector])} // update
+                    isMobile={isMobile}
+                    openClose={this.openClose}
+                    show={this.state.show}
+                />
+            )
+        });
         return (
             <ThemeProvider theme={this.props.isDayNight ? lightTheme : darkTheme}>
                 <div className={classes.flex}>
@@ -100,12 +140,7 @@ class DspServices extends Component {
                     <div className={isMobile ? classes.centerMobile : classes.center}>
                         <Title text={loc(`${section}.${page}.title`,this.props.lang)} isDayNight={this.props.isDayNight}/>
                         <SubTitle text={loc(`${section}.${page}.subtitle`,this.props.lang)} isDayNight={this.props.isDayNight} />
-                        <Services
-                            services={this.state[stateSelector].services}
-                            isMobile={isMobile}
-                            isDsp={true}
-                            lang={this.props.lang}
-                        />
+                        {forms}
                     </div>
                     <Footer
                         isDayNight={this.props.isDayNight}
@@ -133,5 +168,5 @@ class DspServices extends Component {
     };
   };
   
-  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(DspServices));
+  export default connect(mapStateToProps, mapDispatchToProps)(withLocalize(RegisterImage));
   
