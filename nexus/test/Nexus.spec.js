@@ -292,7 +292,7 @@ describe("Nexus", function(done) {
     expect(postTotalDappGasPaid).is.above(prevTotalDappGasPaid);
   });
 
-  it("Queue job hash mismatch", async function() {
+  it.skip("Queue job hash mismatch", async function() {
     await nexusContract.unapproveImage("rust-compiler","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
     await nexusContract.approveImage("rust-compiler","hash");
     
@@ -985,5 +985,46 @@ describe("Nexus", function(done) {
     }
 
     expect(dspData[0].endpoint).to.equal('http://wasi-service');
+  });
+
+  it("Queue job git-cloner", async function() {
+    await nexusContract.approveImage("git-cloner","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
+    await nexusContract.connect(dsp1).setDockerImage("git-cloner",100000,100000,100000,100000,100,100);
+    
+    await nexusContract.queueJob({
+      owner: addr1.address,
+      imageName: "git-cloner",
+      inputFS: loadfsRoot("liquidityMining"),
+      callback: false,
+      gasLimit: 1000000,
+      requiresConsistent: false,
+      args: []
+    });
+
+    const eventPromise = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            dsp, 
+            outputFS, 
+            outputHash,
+            dapps,
+            jobID
+          ) => {
+            resolve(outputFS);
+          }
+        );
+    });
+
+    await eventPromise.then(val => {
+      outputFSRes = val;
+    });
+
+    const job = await nexusContract.jobs(jobId++);
+
+    expect(job.consumer).to.equal(addr1.address);
+    expect(job.callback).to.equal(false);
+    expect(job.resultsCount.toString()).to.equal('1');
+    expect(job.imageName).to.equal("git-cloner");
+    expect(outputFSRes).to.equal("QmPTULeqLCtTnwStXg1dyPpQTc27TZtr13oc9VjGiTxSXY");
   });
 });

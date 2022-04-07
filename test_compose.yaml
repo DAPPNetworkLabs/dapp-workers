@@ -16,6 +16,15 @@ services:
       kompose.service.type: LoadBalancer
     environment:
       - IPFS_HOST=$IPFS_HOST
+  git-cloner:
+    image: git-cloner
+    profiles:
+      - images
+    build: images/git-cloner
+    labels:
+      kompose.service.type: LoadBalancer
+    environment:
+      - IPFS_HOST=$IPFS_HOST
   wasienv-compiler:
     profiles:
       - images    

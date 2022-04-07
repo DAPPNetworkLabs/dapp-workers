@@ -13,6 +13,15 @@ services:
       context: images/compiler/rust
     labels:
       kompose.service.type: LoadBalancer
+  git-cloner:
+    image: git-cloner
+    profiles:
+      - images
+    build: images/git-cloner
+    labels:
+      kompose.service.type: LoadBalancer
+    environment:
+      - IPFS_HOST=$IPFS_HOST
   wasienv-compiler:
     profiles:
       - images    
