@@ -30,11 +30,11 @@ function loadfsRoot(fsrootName){
 
 describe("Nexus", function(done) {
   this.timeout(1000000);
-  let owner, addr1, addr2, addr3, dsp1, dsp2, addrs;
+  let owner, addr1, addr2, addr3, worker1, worker2, addrs;
   let dappTokenContract, nexusContract, consumerContract;
 
   before(async function() {
-    [owner, addr1, addr2, addr3, dsp1, dsp2, ...addrs] = await ethers.getSigners();
+    [owner, addr1, addr2, addr3, worker1, worker2, ...addrs] = await ethers.getSigners();
 
     const dappTokenFactory = await ethers.getContractFactory("DappToken", addr1);
     console.log(addr1.address);
@@ -71,10 +71,10 @@ describe("Nexus", function(done) {
     consumerContract = await consumerTokenFactory.deploy(nexusContract.address, "hash");
 
     if(process.env.PRIVATE_KEY) {
-      dsp1 = new ethers.Wallet("278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d",dsp1.provider);
-      consumer1 = new ethers.Wallet("0xc327bdb598a257632f48e4368ebe7be66a40daff34569c2f2ba36ee96e893674",dsp1.provider);
-      consumer2 = new ethers.Wallet("0xa62d3d80840579bf62183c2c3ad2344aebeccec44b1ba719aa06f39ab47d7d5c",dsp1.provider);
-      consumer3 = new ethers.Wallet("0x2aab7d1aeca546199474f49fea602c644b96b87654a8aa834b2bf9b110bd8939",dsp1.provider);
+      worker1 = new ethers.Wallet("278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d",worker1.provider);
+      consumer1 = new ethers.Wallet("0xc327bdb598a257632f48e4368ebe7be66a40daff34569c2f2ba36ee96e893674",worker1.provider);
+      consumer2 = new ethers.Wallet("0xa62d3d80840579bf62183c2c3ad2344aebeccec44b1ba719aa06f39ab47d7d5c",worker1.provider);
+      consumer3 = new ethers.Wallet("0x2aab7d1aeca546199474f49fea602c644b96b87654a8aa834b2bf9b110bd8939",worker1.provider);
       // 0xa62d3d80840579bf62183c2c3ad2344aebeccec44b1ba719aa06f39ab47d7d5c
       // 0x2aab7d1aeca546199474f49fea602c644b96b87654a8aa834b2bf9b110bd8939
       // 10000 ETH
@@ -91,15 +91,15 @@ describe("Nexus", function(done) {
         await nexusContract.approveImage("runner","90f68b2ae2d91b55528012e711f58333b2bf1040b190b6416f5e7f3c4f1ceb85");
         await nexusContract.approveImage("rust-compiler","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
         await nexusContract.approveImage("wasi-service","8ada822a2c5d872c904d4def217387dc63400602a44862bb4102507a0e6c5498");
-        await nexusContract.connect(dsp1).regDSP(process.env.DSP_ENDPONIT || "http://localhost");
-        await nexusContract.setDsps([dsp1.address]);
+        await nexusContract.connect(worker1).regWORKER(process.env.WORKER_ENDPONIT || "http://localhost");
+        await nexusContract.setWorkers([worker1.address]);
         dapps = ethers.utils.parseUnits("80000000",4);
         await dappTokenContract.mint(addr1.address, dapps);
         await dappTokenContract.approve(nexusContract.address, dapps);
-        await nexusContract.buyGasFor(dapps, addr1.address, dsp1.address);
-        await nexusContract.connect(dsp1).setDockerImage("runner",100000,100000,100000,100000,1,1);
-        await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,1,1);
-        await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
+        await nexusContract.buyGasFor(dapps, addr1.address, worker1.address);
+        await nexusContract.connect(worker1).setDockerImage("runner",100000,100000,100000,100000,1,1);
+        await nexusContract.connect(worker1).setDockerImage("rust-compiler",100000,100000,100000,100000,1,1);
+        await nexusContract.connect(worker1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
         await dappTokenContract.approve(nexusContract.address, ethers.utils.parseUnits("80000000",4));
       }
     }
@@ -131,7 +131,7 @@ describe("Nexus", function(done) {
       stalenessSeconds
     );
 
-    const config = await nexusContract.connect(dsp1).getConfig();
+    const config = await nexusContract.connect(worker1).getConfig();
 
     expect(config.paymentPremiumPPB).to.equal(paymentPremiumPPB);
     expect(config.stalenessSeconds).to.equal(stalenessSeconds);
@@ -139,45 +139,45 @@ describe("Nexus", function(done) {
     expect(config.fallbackGasPrice.toString()).to.equal(fallbackGasPrice.toString());
   });
 
-  it("Deprecate DSP", async function() {
-    await nexusContract.connect(dsp1).deprecateDSP();
+  it("Deprecate WORKER", async function() {
+    await nexusContract.connect(worker1).deprecateWORKER();
 
-    const registeredDSPs = await nexusContract.registeredDSPs(dsp1.address);
+    const registeredWORKERs = await nexusContract.registeredWORKERs(worker1.address);
 
-    expect(registeredDSPs.active).to.equal(false);
-    expect(registeredDSPs.endpoint).to.equal("deprecated");
+    expect(registeredWORKERs.active).to.equal(false);
+    expect(registeredWORKERs.endpoint).to.equal("deprecated");
   });
 
-  it("Register DSP", async function() {
-    await nexusContract.connect(dsp1).regDSP("http://wasi-service");
+  it("Register WORKER", async function() {
+    await nexusContract.connect(worker1).regWORKER("http://wasi-service");
 
-    const registeredDSPs = await nexusContract.registeredDSPs(dsp1.address);
+    const registeredWORKERs = await nexusContract.registeredWORKERs(worker1.address);
 
-    expect(registeredDSPs.active).to.equal(true);
-    expect(registeredDSPs.endpoint).to.equal("http://wasi-service");
-    expect(registeredDSPs.claimableDapp.toString()).to.equal('0');
+    expect(registeredWORKERs.active).to.equal(true);
+    expect(registeredWORKERs.endpoint).to.equal("http://wasi-service");
+    expect(registeredWORKERs.claimableDapp.toString()).to.equal('0');
   });
 
   it("Buy dapp gas", async function() {
     const dapps = ethers.utils.parseUnits("800000",4);
     await dappTokenContract.mint(addr1.address, dapps);
     await dappTokenContract.approve(nexusContract.address, dapps);
-    await nexusContract.buyGasFor(dapps, addr1.address, dsp1.address);
+    await nexusContract.buyGasFor(dapps, addr1.address, worker1.address);
 
-    const dspData = await nexusContract.dspData(addr1.address, dsp1.address);
+    const workerData = await nexusContract.workerData(addr1.address, worker1.address);
 
-    expect(dspData.amount).to.equal(dapps);
+    expect(workerData.amount).to.equal(dapps);
   });
 
   it("Sell dapp gas", async function() {
     const dapps = ethers.utils.parseUnits("100000",4);
     const dappsLeft = ethers.utils.parseUnits("700000",4);
 
-    await nexusContract.sellGas(dapps, dsp1.address);
+    await nexusContract.sellGas(dapps, worker1.address);
 
-    const dspData = await nexusContract.dspData(addr1.address, dsp1.address);
+    const workerData = await nexusContract.workerData(addr1.address, worker1.address);
 
-    expect(dspData.amount.toString()).to.equal(dappsLeft);
+    expect(workerData.amount.toString()).to.equal(dappsLeft);
   });
 
   it("Approve image", async function() {
@@ -189,9 +189,9 @@ describe("Nexus", function(done) {
   });
 
   it("Register image", async function() {
-    await nexusContract.connect(dsp1).setDockerImage("runner",200000,200000,200000,200000,2,2);
+    await nexusContract.connect(worker1).setDockerImage("runner",200000,200000,200000,200000,2,2);
 
-    const dockerImage = await nexusContract.dspApprovedImages(dsp1.address,"runner");
+    const dockerImage = await nexusContract.workerApprovedImages(worker1.address,"runner");
 
     expect(dockerImage.jobFee.toString()).to.equal('200000');
     expect(dockerImage.baseFee.toString()).to.equal('200000');
@@ -202,9 +202,9 @@ describe("Nexus", function(done) {
   });
 
   it("Update image", async function() {
-    await nexusContract.connect(dsp1).updateDockerImage("runner",100000,100000,100000,100000,100,100);
+    await nexusContract.connect(worker1).updateDockerImage("runner",100000,100000,100000,100000,100,100);
 
-    const dockerImage = await nexusContract.dspApprovedImages(dsp1.address,"runner");
+    const dockerImage = await nexusContract.workerApprovedImages(worker1.address,"runner");
 
     expect(dockerImage.jobFee.toString()).to.equal('100000');
     expect(dockerImage.baseFee.toString()).to.equal('100000');
@@ -222,18 +222,18 @@ describe("Nexus", function(done) {
     expect(authorizedContract).to.equal(consumerContract.address);
   });
 
-  it("Set dsps", async function() {
-    await nexusContract.setDsps([dsp1.address]);
+  it("Set workers", async function() {
+    await nexusContract.setWorkers([worker1.address]);
 
     const consumerData = await nexusContract.providers(addr1.address,0);
 
-    expect(consumerData).to.equal(dsp1.address);
+    expect(consumerData).to.equal(worker1.address);
   });
 
   it("Queue job", async function() {
     const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
     await nexusContract.approveImage("rust-compiler","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
-    await nexusContract.connect(dsp1).setDockerImage("rust-compiler",100000,100000,100000,100000,100,100);
+    await nexusContract.connect(worker1).setDockerImage("rust-compiler",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -248,7 +248,7 @@ describe("Nexus", function(done) {
     const eventPromise = new Promise((resolve, reject) => {
         nexusContract.once("JobResult", (
             consumer, 
-            dsp, 
+            worker, 
             outputFS, 
             outputHash,
             dapps,
@@ -337,8 +337,8 @@ describe("Nexus", function(done) {
     const dapps = ethers.utils.parseUnits("250000",4);
     await dappTokenContract.mint(addr2.address, dapps);
     await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
-    await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, dsp1.address);
-    await nexusContract.connect(addr2).setDsps([dsp1.address]);
+    await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, worker1.address);
+    await nexusContract.connect(addr2).setWorkers([worker1.address]);
 
     await consumerContract.queueJob(addr2.address, loadfsRoot("pngWriterTest"));
 
@@ -369,7 +369,7 @@ describe("Nexus", function(done) {
 
   it("Queue service - try below min bytes", async function() {
     await nexusContract.approveImage("wasi-service","8ada822a2c5d872c904d4def217387dc63400602a44862bb4102507a0e6c5498");
-    await nexusContract.connect(dsp1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
+    await nexusContract.connect(worker1).setDockerImage("wasi-service",100000,100000,100000,100000,1,1);
 
     let failed = false;
     try {
@@ -403,7 +403,7 @@ describe("Nexus", function(done) {
     const JobPromise = new Promise((resolve, reject) => {
         nexusContract.once("JobResult", (
             consumer, 
-            dsp, 
+            worker, 
             outputFS, 
             outputHash,
             dapps,
@@ -437,7 +437,7 @@ describe("Nexus", function(done) {
     const servicePromise = new Promise((resolve, reject) => {
         nexusContract.once("ServiceRunning", (
             consumer, 
-            dsp, 
+            worker, 
             serviceId, 
             port
           ) => {
@@ -450,11 +450,11 @@ describe("Nexus", function(done) {
     
     let id = jobId++
 
-    const port = await nexusContract.getPortForDSP(id,dsp1.address);
+    const port = await nexusContract.getPortForWORKER(id,worker1.address);
 
     expect(port).to.equal(9000);
 
-    const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
+    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
     expect(endpoint).to.equal(`${endpoint}`);
     
@@ -472,15 +472,15 @@ describe("Nexus", function(done) {
     const dapps = ethers.utils.parseUnits("250000",4);
     await dappTokenContract.mint(addr2.address, dapps);
     await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
-    await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, dsp1.address);
-    await nexusContract.connect(addr2).setDsps([dsp1.address]);
+    await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, worker1.address);
+    await nexusContract.connect(addr2).setWorkers([worker1.address]);
 
     await consumerContract.queueService(addr2.address, "QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM");
     
     const servicePromise = new Promise((resolve, reject) => {
         nexusContract.once("ServiceRunning", (
             consumer, 
-            dsp, 
+            worker, 
             serviceId, 
             port
           ) => {
@@ -491,11 +491,11 @@ describe("Nexus", function(done) {
 
     await servicePromise.then();
 
-    const port = await nexusContract.getPortForDSP(jobId,dsp1.address);
+    const port = await nexusContract.getPortForWORKER(jobId,worker1.address);
 
     expect(port).to.equal(9001);
 
-    const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
+    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
     expect(endpoint).to.equal(`${endpoint}`);
     
@@ -512,7 +512,7 @@ describe("Nexus", function(done) {
   });
 
   it("Min job balance", async function() {
-    const min = await nexusContract.getMinBalance(2,"job",dsp1.address);
+    const min = await nexusContract.getMinBalance(2,"job",worker1.address);
 
     // console.log(min.toString());
     // 76,349.8769 * 0.00730 $/DAPP = $557.35
@@ -521,7 +521,7 @@ describe("Nexus", function(done) {
   });
 
   it("Min job balance with callback", async function() {
-    const min = await nexusContract.getMinBalance(3,"job",dsp1.address);
+    const min = await nexusContract.getMinBalance(3,"job",worker1.address);
 
     // console.log(min.toString());
     // 76,349.8769 * 0.00730 $/DAPP = $557.35
@@ -530,7 +530,7 @@ describe("Nexus", function(done) {
   });
 
   it("Min service balance", async function() {
-    const min = await nexusContract.getMinBalance(6,"service",dsp1.address);
+    const min = await nexusContract.getMinBalance(6,"service",worker1.address);
 
     // console.log(min.toString());
     // 9,315.0201 * 0.00730 $/DAPP = $68.00
@@ -538,27 +538,27 @@ describe("Nexus", function(done) {
     expect(min).is.above(50000000);
   });
 
-  it("Set dsps", async function() {
-    await nexusContract.connect(dsp2).regDSP("endpoint");
+  it("Set workers", async function() {
+    await nexusContract.connect(worker2).regWORKER("endpoint");
 
     const dapps = ethers.utils.parseUnits("800000",4);
     await dappTokenContract.mint(addr1.address, dapps);
     await dappTokenContract.approve(nexusContract.address, dapps);
-    await nexusContract.buyGasFor(dapps, addr1.address, dsp2.address);
+    await nexusContract.buyGasFor(dapps, addr1.address, worker2.address);
 
-    await nexusContract.setDsps([dsp1.address,dsp2.address]);
+    await nexusContract.setWorkers([worker1.address,worker2.address]);
 
-    const dsps = await nexusContract.getDspAddresses();
+    const workers = await nexusContract.getWorkerAddresses();
 
-    expect(JSON.stringify(dsps)).to.equal(JSON.stringify([dsp1.address,dsp2.address]));
+    expect(JSON.stringify(workers)).to.equal(JSON.stringify([worker1.address,worker2.address]));
     
-    await nexusContract.setDsps([dsp1.address]);
-    await nexusContract.connect(dsp2).deprecateDSP();
+    await nexusContract.setWorkers([worker1.address]);
+    await nexusContract.connect(worker2).deprecateWORKER();
   });
 
   it("Run is job complete", async function() {
-    const isCocmplete1 = await nexusContract.jobServiceCompleted(1,dsp1.address,true);
-    const isCocmplete2 = await nexusContract.jobServiceCompleted(2,dsp1.address,true);
+    const isCocmplete1 = await nexusContract.jobServiceCompleted(1,worker1.address,true);
+    const isCocmplete2 = await nexusContract.jobServiceCompleted(2,worker1.address,true);
 
     expect(isCocmplete1).to.equal(true);
     expect(isCocmplete2).to.equal(true);
@@ -566,7 +566,7 @@ describe("Nexus", function(done) {
 
   it("Try double run service", async function() {let failed = false;
     try {
-      await nexusContract.connect(dsp1).serviceCallback(5,9000);
+      await nexusContract.connect(worker1).serviceCallback(5,9000);
     } catch(e) {
       failed = true;
     }
@@ -575,7 +575,7 @@ describe("Nexus", function(done) {
   });
   
   it("Run job - error", async function() {
-    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    const preWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
 
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -606,18 +606,18 @@ describe("Nexus", function(done) {
     
     await completePromise.then();
 
-    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    const postWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
     
     // ensure get base payment for job
-    expect(postDspBal).is.above(preDspBal);
+    expect(postWorkerBal).is.above(preWorkerBal);
     
-    const isCocmplete1 = await nexusContract.jobServiceCompleted(id,dsp1.address,true);
+    const isCocmplete1 = await nexusContract.jobServiceCompleted(id,worker1.address,true);
 
     expect(isCocmplete1).to.equal(true);
   });
 
   it("Run service - error", async function() {
-    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    const preWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
 
     await nexusContract.queueService({
       owner: addr1.address,
@@ -634,7 +634,7 @@ describe("Nexus", function(done) {
     const completePromise = new Promise((resolve, reject) => {
         nexusContract.on("ServiceError", (
             consumer,
-            dsp,
+            worker,
             stdErr, 
             outputFS, 
             jobID
@@ -650,20 +650,20 @@ describe("Nexus", function(done) {
     
     await completePromise.then();
 
-    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    const postWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
     
     // ensure get base payment for job
-    expect(postDspBal).is.above(preDspBal);
+    expect(postWorkerBal).is.above(preWorkerBal);
     
-    const isCocmplete1 = await nexusContract.jobServiceCompleted(id,dsp1.address,false);
+    const isCocmplete1 = await nexusContract.jobServiceCompleted(id,worker1.address,false);
 
     expect(isCocmplete1).to.equal(true);
   });
 
   it("Extend service", async function() {
-    const preDspEnDate = (await nexusContract.services(6)).endDate;
-    const preDspIoLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).ioMegaBytesLimit;
-    const preDspStorageLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).storageMegaBytesLimit;
+    const preWorkerEnDate = (await nexusContract.services(6)).endDate;
+    const preWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
+    const preWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
 
     const dapps = ethers.utils.parseUnits("200000",4);
     await dappTokenContract.approve(nexusContract.address, dapps);
@@ -675,19 +675,19 @@ describe("Nexus", function(done) {
       100
     );
 
-    const postDspEnDate = (await nexusContract.services(6)).endDate;
-    const postDspIoLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).ioMegaBytesLimit;
-    const postDspStorageLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).storageMegaBytesLimit;
+    const postWorkerEnDate = (await nexusContract.services(6)).endDate;
+    const postWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
+    const postWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
     
-    expect(postDspEnDate).is.above(preDspEnDate);
-    expect(postDspIoLimit).is.above(preDspIoLimit);
-    expect(postDspStorageLimit).is.above(preDspStorageLimit);
+    expect(postWorkerEnDate).is.above(preWorkerEnDate);
+    expect(postWorkerIoLimit).is.above(preWorkerIoLimit);
+    expect(postWorkerStorageLimit).is.above(preWorkerStorageLimit);
   });
 
   it("Extend service same month", async function() {
-    const preDspEnDate = (await nexusContract.services(6)).endDate;
-    const preDspIoLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).ioMegaBytesLimit;
-    const preDspStorageLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).storageMegaBytesLimit;
+    const preWorkerEnDate = (await nexusContract.services(6)).endDate;
+    const preWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
+    const preWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
 
     const dapps = ethers.utils.parseUnits("200000",4);
     await dappTokenContract.approve(nexusContract.address, dapps);
@@ -699,17 +699,17 @@ describe("Nexus", function(done) {
       1
     );
 
-    const postDspEnDate = (await nexusContract.services(6)).endDate;
-    const postDspIoLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).ioMegaBytesLimit;
-    const postDspStorageLimit = (await nexusContract.getDSPDataLimits(6,dsp1.address)).storageMegaBytesLimit;
+    const postWorkerEnDate = (await nexusContract.services(6)).endDate;
+    const postWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
+    const postWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
     
-    expect(postDspEnDate).to.equal(preDspEnDate);
-    expect(postDspIoLimit).is.above(preDspIoLimit);
-    expect(postDspStorageLimit).is.above(preDspStorageLimit);
+    expect(postWorkerEnDate).to.equal(preWorkerEnDate);
+    expect(postWorkerIoLimit).is.above(preWorkerIoLimit);
+    expect(postWorkerStorageLimit).is.above(preWorkerStorageLimit);
   });
 
   it("Get get max payment for gas", async function() {
-    const data = await nexusContract.getMaxPaymentForGas("1000000","runner",dsp1.address);
+    const data = await nexusContract.getMaxPaymentForGas("1000000","runner",worker1.address);
     
     expect(data).is.above(100000000);
   });
@@ -728,7 +728,7 @@ describe("Nexus", function(done) {
     const JobPromise = new Promise((resolve, reject) => {
         nexusContract.once("JobResult", (
             consumer, 
-            dsp, 
+            worker, 
             outputFS, 
             outputHash,
             dapps,
@@ -760,7 +760,7 @@ describe("Nexus", function(done) {
     const servicePromise = new Promise((resolve, reject) => {
         nexusContract.once("ServiceRunning", (
             consumer, 
-            dsp, 
+            worker, 
             serviceId, 
             port
           ) => {
@@ -780,7 +780,7 @@ describe("Nexus", function(done) {
     const completePromise = new Promise((resolve, reject) => {
         nexusContract.on("ServiceError", (
             consumer,
-            dsp, 
+            worker, 
             stdErr,
             outputFS, 
             jobID
@@ -798,7 +798,7 @@ describe("Nexus", function(done) {
     
     console.log('service error done')
     
-    const isCocmplete = await nexusContract.jobServiceCompleted(id,dsp1.address,false);
+    const isCocmplete = await nexusContract.jobServiceCompleted(id,worker1.address,false);
     
     expect(isCocmplete).to.equal(true);
   });
@@ -819,7 +819,7 @@ describe("Nexus", function(done) {
     const JobPromise = new Promise((resolve, reject) => {
         nexusContract.once("JobResult", (
             consumer, 
-            dsp, 
+            worker, 
             outputFS, 
             outputHash,
             dapps,
@@ -834,7 +834,7 @@ describe("Nexus", function(done) {
       outputFSRes = val;
     });
     
-    const preDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    const preWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
 
     await nexusContract.queueService({
       owner: addr1.address,
@@ -851,7 +851,7 @@ describe("Nexus", function(done) {
     const servicePromise = new Promise((resolve, reject) => {
         nexusContract.once("ServiceRunning", (
             consumer, 
-            dsp, 
+            worker, 
             serviceId, 
             port
           ) => {
@@ -865,7 +865,7 @@ describe("Nexus", function(done) {
 
     let failed = false;
     try {
-      await nexusContract.connect(dsp1).serviceComplete({
+      await nexusContract.connect(worker1).serviceComplete({
         jobID: id,
         outputFS: "",
         ioMegaBytesUsed: 100,
@@ -883,7 +883,7 @@ describe("Nexus", function(done) {
     const completePromise = new Promise((resolve, reject) => {
         nexusContract.on("ServiceComplete", (
             consumer,
-            dsp, 
+            worker, 
             outputFS, 
             jobID
           ) => {
@@ -897,13 +897,13 @@ describe("Nexus", function(done) {
 
     await completePromise.then();
 
-    const postDspBal = (await nexusContract.registeredDSPs(dsp1.address)).claimableDapp;
+    const postWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
     
-    expect(postDspBal).is.above(preDspBal);
+    expect(postWorkerBal).is.above(preWorkerBal);
 
-    const port = await nexusContract.getPortForDSP(id,dsp1.address);
+    const port = await nexusContract.getPortForWORKER(id,worker1.address);
 
-    const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
+    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
     failed = false;
     try {
@@ -914,82 +914,82 @@ describe("Nexus", function(done) {
 
     expect(failed).to.equal(true);
     
-    const isCocmplete = await nexusContract.jobServiceCompleted(id,dsp1.address,false);
+    const isCocmplete = await nexusContract.jobServiceCompleted(id,worker1.address,false);
     
     expect(isCocmplete).to.equal(true);
   });
 
   // test relies on above increase time to assume the feed is stale
   it("Get get max payment for gas with fallback time", async function() {
-    const data = await nexusContract.getMaxPaymentForGas("1000000","runner",dsp1.address);
+    const data = await nexusContract.getMaxPaymentForGas("1000000","runner",worker1.address);
     
     expect(data).is.above(100000000);
   });
 
-  it("Claim dsp dapp", async function() {
-    const preDspBal = await dappTokenContract.balanceOf(dsp1.address);
+  it("Claim worker dapp", async function() {
+    const preWorkerBal = await dappTokenContract.balanceOf(worker1.address);
 
-    await nexusContract.connect(dsp1).claim();
+    await nexusContract.connect(worker1).claim();
 
-    const postDspBal = await dappTokenContract.balanceOf(dsp1.address);
+    const postWorkerBal = await dappTokenContract.balanceOf(worker1.address);
     
-    expect(postDspBal).is.above(preDspBal);
+    expect(postWorkerBal).is.above(preWorkerBal);
   });
 
-  it("Get dsp amount", async function() {
-    const amount = await nexusContract.getDSPAmount(addr1.address,dsp1.address);
+  it("Get worker amount", async function() {
+    const amount = await nexusContract.getWORKERAmount(addr1.address,worker1.address);
     
     expect(amount).is.above(0);
   });
 
-  it("Get image approved for dsp", async function() {
-    const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"runner");
+  it("Get image approved for worker", async function() {
+    const approved = await nexusContract.isImageApprovedForWORKER(worker1.address,"runner");
     
     expect(approved).to.equal(true);
   });
 
-  it("Unapprove image for dsp", async function() {
-    await nexusContract.connect(dsp1).unapproveDockerForDSP("runner");
+  it("Unapprove image for worker", async function() {
+    await nexusContract.connect(worker1).unapproveDockerForWORKER("runner");
 
-    const approved = await nexusContract.isImageApprovedForDSP(dsp1.address,"runner");
+    const approved = await nexusContract.isImageApprovedForWORKER(worker1.address,"runner");
     
     expect(approved).to.equal(false);
   });
 
-  it("Get dsp port", async function() {
-    const port = await nexusContract.getPortForDSP(6,dsp1.address);
+  it("Get worker port", async function() {
+    const port = await nexusContract.getPortForWORKER(6,worker1.address);
 
     expect(port).to.equal(9000);
   });
 
-  it("Get dsp endpoint", async function() {
-    const endpoint = await nexusContract.getDSPEndpoint(dsp1.address);
+  it("Get worker endpoint", async function() {
+    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
     expect(endpoint).to.equal("http://wasi-service");
   });
 
-  it("Get dsp list", async function() {
-    const dsps = await nexusContract.getDspAddresses();
+  it("Get worker list", async function() {
+    const workers = await nexusContract.getWorkerAddresses();
 
-    const expectedResult = [ dsp1.address,dsp2.address ];
+    const expectedResult = [ worker1.address,worker2.address ];
 
-    expect(JSON.stringify(dsps)).to.equal(JSON.stringify(expectedResult));
+    expect(JSON.stringify(workers)).to.equal(JSON.stringify(expectedResult));
   });
 
-  it("Get dsp data", async function() {
-    const dsps = await nexusContract.getDspAddresses();
+  it("Get worker data", async function() {
+    const workers = await nexusContract.getWorkerAddresses();
 
-    let dspData = [];
-    for(let i=0; i<dsps.length; i++) {
-      dspData.push(await nexusContract.registeredDSPs(dsps[i]));
+    let workerData = [];
+    for(let i=0; i<workers.length; i++) {
+      workerData.push(await nexusContract.registeredWORKERs(workers[i]));
     }
 
-    expect(dspData[0].endpoint).to.equal('http://wasi-service');
+    expect(workerData[0].endpoint).to.equal('http://wasi-service');
   });
 
   it("Queue job git-cloner", async function() {
     await nexusContract.approveImage("git-cloner","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
-    await nexusContract.connect(dsp1).setDockerImage("git-cloner",100000,100000,100000,100000,100,100);
+    await nexusContract.connect(worker1).setDockerImage("git-cloner",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -1004,7 +1004,7 @@ describe("Nexus", function(done) {
     const eventPromise = new Promise((resolve, reject) => {
         nexusContract.once("JobResult", (
             consumer, 
-            dsp, 
+            worker, 
             outputFS, 
             outputHash,
             dapps,

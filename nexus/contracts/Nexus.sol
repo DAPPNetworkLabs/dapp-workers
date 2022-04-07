@@ -35,24 +35,24 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     event BoughtGas(
         address indexed buyer,
         address indexed consumer,
-        address indexed dsp,
+        address indexed worker,
         uint amount
     );
 
     event SoldGas(
         address indexed consumer,
-        address indexed dsp,
+        address indexed worker,
         uint amount
     );
 
     event ClaimedGas(
-        address indexed dsp,
+        address indexed worker,
         uint amount
     );
 
     event JobResult(
         address indexed consumer, 
-        address indexed dsp,
+        address indexed worker,
         string outputFS,
         string outputHash,
         uint dapps,
@@ -69,14 +69,14 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     event ServiceRunning(
         address indexed consumer,
-        address indexed dsp,
+        address indexed worker,
         uint id,
         uint port
     );
 
     event ServiceExtended(
         address indexed consumer,
-        address indexed dsp,
+        address indexed worker,
         uint id,
         uint ioMegaBytes, 
         uint storageMegaBytes,
@@ -85,7 +85,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     event UsedGas(
         address indexed consumer,
-        address indexed dsp,
+        address indexed worker,
         uint amount
     );
 
@@ -114,14 +114,14 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint id
     );
 
-    event DSPStatusChanged(
-        address indexed dsp,
+    event WORKERStatusChanged(
+        address indexed worker,
         bool active,
         string endpoint
     );
 
     event DockerApprovalChanged(
-        address indexed dsp,
+        address indexed worker,
         string image,
         bool approved
     );
@@ -135,7 +135,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     
     event ServiceError(
         address indexed consumer, 
-        address indexed dsp, 
+        address indexed worker, 
         string stdErr,
         string outputFS,
         uint id
@@ -143,7 +143,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     
     event ServiceComplete(
         address indexed consumer, 
-        address indexed dsp, 
+        address indexed worker, 
         string outputFS,
         uint id
     );
@@ -155,17 +155,17 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint24 stalenessSeconds
     );
     
-    event UpdateDsps(
+    event UpdateWorkers(
         address consumer,
-        address[] dsps
+        address[] workers
     );
 
-    struct PerConsumerDSPEntry {
+    struct PerConsumerWORKEREntry {
         uint amount;
         uint claimable;
     }
 
-    struct RegisteredDSP {
+    struct RegisteredWORKER {
         bool active;
         string endpoint;
         uint claimableDapp;
@@ -174,7 +174,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     struct JobData {
         address consumer;
         address owner;
-        address[] dsps;
+        address[] workers;
         bool callback;
         uint resultsCount;
         string imageName;
@@ -184,7 +184,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         mapping(uint => bytes32) dataHash;
     }
 
-    struct DspServiceData {
+    struct WorkerServiceData {
         uint port;
         uint ioMegaBytesLimit;
         uint storageMegaBytesLimit;
@@ -193,19 +193,19 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     struct ServiceData {
         address consumer;
         address owner;
-        address[] dsps;
+        address[] workers;
         string imageName;
         bool started;
         uint endDate;
         uint months;
         uint ioMegaBytes;
         uint storageMegaBytes;
-        mapping(address => DspServiceData) dspServiceData;
+        mapping(address => WorkerServiceData) workerServiceData;
         mapping(address => bytes32) dataHash;
         mapping(uint => bool) done;
     }
 
-    struct DspDockerImage {
+    struct WorkerDockerImage {
         uint jobFee;
         uint baseFee;
         uint storageFee;
@@ -249,7 +249,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint storageMegaBytesUsed;
     }
 
-    struct DspLimits {
+    struct WorkerLimits {
         uint ioMegaBytesLimit;
         uint storageMegaBytesLimit;
     }
@@ -285,8 +285,8 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address _usdtBntToken;
     }
 
-    mapping(address => RegisteredDSP) public registeredDSPs;
-    mapping(address => mapping(address => PerConsumerDSPEntry)) public dspData;
+    mapping(address => RegisteredWORKER) public registeredWORKERs;
+    mapping(address => mapping(address => PerConsumerWORKEREntry)) public workerData;
 
     mapping(address => address[]) public providers;
 
@@ -296,14 +296,14 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     mapping(uint => ServiceData) public services;
 
     mapping(string => string) public approvedImages;
-    mapping(address => mapping(string => DspDockerImage)) public dspApprovedImages;
+    mapping(address => mapping(string => WorkerDockerImage)) public workerApprovedImages;
 
-    uint public totalDsps;
+    uint public totalWorkers;
     uint public totalDappGasPaid;
 
     uint public lastJobID;
 
-    mapping(uint => address) public dspList;
+    mapping(uint => address) public workerList;
 
     Config private s_config;  
     uint256 private s_fallbackGasPrice; // not in config object for gas savings
@@ -362,19 +362,19 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         );
     }
 
-    function jobServiceCompleted(uint id, address dsp, bool isJob) external view returns (bool) {
+    function jobServiceCompleted(uint id, address worker, bool isJob) external view returns (bool) {
         if(isJob) {
             JobData storage jd = jobs[id];
-            address[] storage dsps = providers[jd.owner];
-            int founds = validateDspCaller(dsps, dsp, false);
+            address[] storage workers = providers[jd.owner];
+            int founds = validateWorkerCaller(workers, worker, false);
 
             if(founds == -1) return false;
             
             return jd.done[uint(founds)];
         } else {
             ServiceData storage sd = services[id];
-            address[] storage dsps = providers[sd.owner];
-            int founds = validateDspCaller(dsps, dsp, false);
+            address[] storage workers = providers[sd.owner];
+            int founds = validateWorkerCaller(workers, worker, false);
 
             if(founds == -1) return false;
 
@@ -383,16 +383,16 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
     
     /**
-     * @dev set dsps
+     * @dev set workers
      */
-    function setDsps(address[] calldata dsps) external {
-        validateActiveDsps(dsps);
+    function setWorkers(address[] calldata workers) external {
+        validateActiveWorkers(workers);
 
-        providers[msg.sender] = dsps;
+        providers[msg.sender] = workers;
 
-        emit UpdateDsps(
+        emit UpdateWorkers(
             msg.sender,
-            dsps
+            workers
         );
     }
     
@@ -410,15 +410,15 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function buyGasFor(
         uint _amount,
         address _consumer,
-        address _dsp
+        address _worker
     ) public nonReentrant {
-        require(registeredDSPs[_dsp].active,"inactive");
+        require(registeredWORKERs[_worker].active,"inactive");
 
         token.safeTransferFrom(msg.sender, address(this), _amount);
         
-        dspData[_consumer][_dsp].amount += _amount;
+        workerData[_consumer][_worker].amount += _amount;
         
-        emit BoughtGas(msg.sender, _consumer, _dsp, _amount);
+        emit BoughtGas(msg.sender, _consumer, _worker, _amount);
     }
     
     /**
@@ -426,24 +426,24 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      */
     function sellGas(
         uint _amountToSell,
-        address _dsp
+        address _worker
     ) public nonReentrant {
         address _consumer = msg.sender;
 
-        require(!(_amountToSell > dspData[_consumer][_dsp].amount),"overdrawn");
+        require(!(_amountToSell > workerData[_consumer][_worker].amount),"overdrawn");
         
-        dspData[_consumer][_dsp].amount -= _amountToSell;
+        workerData[_consumer][_worker].amount -= _amountToSell;
 
         token.safeTransfer(_consumer, _amountToSell);
         
-        emit SoldGas(_consumer, _dsp, _amountToSell);
+        emit SoldGas(_consumer, _worker, _amountToSell);
     }
     
     /**
-     * @dev allows dsp to claim for consumer
+     * @dev allows worker to claim for consumer
      */
     function claim() external nonReentrant {
-        uint claimableAmount = registeredDSPs[msg.sender].claimableDapp;
+        uint claimableAmount = registeredWORKERs[msg.sender].claimableDapp;
 
         require(claimableAmount != 0,"req pos bal");
         
@@ -455,15 +455,15 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
     * @notice calculates the minimum balance required for an upkeep to remain eligible
     */
-    function getMinBalance(uint256 id, string memory jobType, address dsp) external view returns (uint) {
+    function getMinBalance(uint256 id, string memory jobType, address worker) external view returns (uint) {
         if(compareStrings(jobType, "job")) {
-            return calculatePaymentAmount(jobs[id].gasLimit,jobs[id].imageName, dsp);
+            return calculatePaymentAmount(jobs[id].gasLimit,jobs[id].imageName, worker);
         } else if(compareStrings(jobType, "service")) {
             return calcServiceDapps(
                 services[id].imageName, 
                 services[id].ioMegaBytes, 
                 services[id].storageMegaBytes, 
-                dsp, 
+                worker, 
                 true
             );
         }
@@ -475,10 +475,10 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function queueJob(queueJobArgs calldata args) public {
         validateConsumer(msg.sender);
 
-        address[] storage dsps = providers[args.owner];
-        require(dsps.length > 0,"no dsps");
+        address[] storage workers = providers[args.owner];
+        require(workers.length > 0,"no workers");
         
-        validateActiveDsps(dsps);
+        validateActiveWorkers(workers);
 
         lastJobID = lastJobID + 1;
 
@@ -491,12 +491,12 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         jd.imageName = args.imageName;
         jd.gasLimit = args.gasLimit;
 
-        for(uint i=0;i<dsps.length;i++) {
-            require(isImageApprovedForDSP(dsps[i], args.imageName), "not approved");
+        for(uint i=0;i<workers.length;i++) {
+            require(isImageApprovedForWORKER(workers[i], args.imageName), "not approved");
             require(
-                dspData[msg.sender][dsps[i]].amount 
+                workerData[msg.sender][workers[i]].amount 
                 >= 
-                calculatePaymentAmount(jobs[lastJobID].gasLimit,jobs[lastJobID].imageName, dsps[i])
+                calculatePaymentAmount(jobs[lastJobID].gasLimit,jobs[lastJobID].imageName, workers[i])
                 ,"bal not met"
             );
         }
@@ -517,19 +517,19 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function queueService(queueServiceArgs calldata args) public {
         validateConsumer(msg.sender);
 
-        address[] storage dsps = providers[args.owner];
-        require(dsps.length > 0,"no dsps");
+        address[] storage workers = providers[args.owner];
+        require(workers.length > 0,"no workers");
 
-        validateActiveDsps(dsps);
+        validateActiveWorkers(workers);
 
-        for(uint i=0;i<dsps.length;i++) {
-            require(isImageApprovedForDSP(dsps[i], args.imageName), "not approved");
+        for(uint i=0;i<workers.length;i++) {
+            require(isImageApprovedForWORKER(workers[i], args.imageName), "not approved");
             validateMin(
                 args.ioMegaBytes, 
                 args.storageMegaBytes, 
                 args.imageName, 
                 args.months, 
-                dsps[i]
+                workers[i]
             );
         }
 
@@ -557,15 +557,15 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
     
     /**
-     * @dev dsp run job, determines data hash consistency and performs optional callback
+     * @dev worker run job, determines data hash consistency and performs optional callback
      */
     function jobCallback(jobCallbackArgs calldata args) public {
         JobData storage jd = jobs[args.jobID];
 
-        address[] storage dsps = providers[jd.owner];
-        require(dsps.length > 0,"no dsps");
+        address[] storage workers = providers[jd.owner];
+        require(workers.length > 0,"no workers");
         
-        require(!jd.done[uint(validateDspCaller(dsps,msg.sender,true))], "completed");
+        require(!jd.done[uint(validateWorkerCaller(workers,msg.sender,true))], "completed");
 
         // maybe throw if user doesn't want to accept inconsistency
         bool inconsistent = submitResEntry(
@@ -583,7 +583,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         if(jd.callback){
             gasUsed = gasleft();
             callWithExactGas(jd.gasLimit, jd.consumer, abi.encodeWithSignature(
-                "_dspcallback(string,string)",
+                "_workercallback(string,string)",
                 args.outputFS,
                 args.outputHash
             ));
@@ -622,18 +622,18 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
     
     /**
-     * @dev dsp run service
+     * @dev worker run service
      */
-    // add check for not conflicting with DSP frontend default ports
+    // add check for not conflicting with WORKER frontend default ports
     function serviceCallback(uint serviceId, uint port) public {
         require(port != 8888,"overlap");
 
         ServiceData storage sd = services[serviceId];
 
-        address[] storage dsps = providers[sd.owner];
-        require(dsps.length > 0,"no dsps");
+        address[] storage workers = providers[sd.owner];
+        require(workers.length > 0,"no workers");
 
-        validateDspCaller(dsps,msg.sender,true);
+        validateWorkerCaller(workers,msg.sender,true);
 
         require(sd.started == false, "started");
 
@@ -642,9 +642,9 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         
         address _consumer = sd.consumer;
 
-        sd.dspServiceData[msg.sender].port = port;
-        sd.dspServiceData[msg.sender].ioMegaBytesLimit += sd.ioMegaBytes;
-        sd.dspServiceData[msg.sender].storageMegaBytesLimit += sd.storageMegaBytes;
+        sd.workerServiceData[msg.sender].port = port;
+        sd.workerServiceData[msg.sender].ioMegaBytesLimit += sd.ioMegaBytes;
+        sd.workerServiceData[msg.sender].storageMegaBytesLimit += sd.storageMegaBytes;
         
         uint dapps = calcServiceDapps(
             sd.imageName,
@@ -678,10 +678,10 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     ) public {
         JobData storage jd = jobs[jobID];
 
-        address[] storage dsps = providers[jd.owner];
-        require(dsps.length > 0,"no dsps");
+        address[] storage workers = providers[jd.owner];
+        require(workers.length > 0,"no workers");
 
-        uint founds = uint(validateDspCaller(dsps,msg.sender,true));
+        uint founds = uint(validateWorkerCaller(workers,msg.sender,true));
 
         require(!jd.done[founds], "completed");
 
@@ -704,10 +704,10 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function serviceError(serviceErrorArgs calldata args) public {
         ServiceData storage sd = services[args.jobID];
 
-        address[] storage dsps = providers[sd.owner];
-        require(dsps.length > 0,"no dsps");
+        address[] storage workers = providers[sd.owner];
+        require(workers.length > 0,"no workers");
         
-        uint founds = uint(validateDspCaller(dsps,msg.sender,true));
+        uint founds = uint(validateWorkerCaller(workers,msg.sender,true));
 
         require(!sd.done[founds], "completed");
         
@@ -754,10 +754,10 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         require(sd.started == true, "not started");
         require(sd.endDate < block.timestamp, "time remaining");
 
-        address[] storage dsps = providers[sd.owner];
-        require(dsps.length > 0,"no dsps");
+        address[] storage workers = providers[sd.owner];
+        require(workers.length > 0,"no workers");
         
-        uint founds = uint(validateDspCaller(dsps,msg.sender,true));
+        uint founds = uint(validateWorkerCaller(workers,msg.sender,true));
 
         require(!sd.done[founds], "completed");
         
@@ -802,44 +802,44 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         require(compareStrings(imageName, sd.imageName),"missmatch");
         require(sd.endDate > block.timestamp, "time remaining");
 
-        address[] storage dsps = providers[msg.sender];
-        require(dsps.length > 0,"no dsps");
+        address[] storage workers = providers[msg.sender];
+        require(workers.length > 0,"no workers");
 
         // require service not completed
-        // if service completed by dsp, do not charge
+        // if service completed by worker, do not charge
 
-        for(uint i=0;i<dsps.length;i++) {
+        for(uint i=0;i<workers.length;i++) {
             bool include_base = months == 0 ? false : true;
             
             uint dapps = calcServiceDapps(
                 imageName,
                 ioMb,
                 storageMb,
-                dsps[i],
+                workers[i],
                 include_base
             );
 
             if(include_base) {
                 dapps *= months;
-                validateMin(ioMb, storageMb, imageName, months, dsps[i]);
+                validateMin(ioMb, storageMb, imageName, months, workers[i]);
                 sd.endDate = sd.endDate + ( months * 30 days );
             }
 
             buyGasFor(
                 dapps,
                 msg.sender,
-                dsps[i]
+                workers[i]
             );
 
-            sd.dspServiceData[dsps[i]].ioMegaBytesLimit += ioMb;
-            sd.dspServiceData[dsps[i]].storageMegaBytesLimit += storageMb;
+            sd.workerServiceData[workers[i]].ioMegaBytesLimit += ioMb;
+            sd.workerServiceData[workers[i]].storageMegaBytesLimit += storageMb;
 
             emit ServiceExtended(
                 msg.sender, 
-                dsps[i], 
+                workers[i], 
                 serviceId, 
-                sd.dspServiceData[dsps[i]].ioMegaBytesLimit, 
-                sd.dspServiceData[dsps[i]].storageMegaBytesLimit, 
+                sd.workerServiceData[workers[i]].ioMegaBytesLimit, 
+                sd.workerServiceData[workers[i]].storageMegaBytesLimit, 
                 sd.endDate
             );
         }
@@ -851,9 +851,9 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function getMaxPaymentForGas(
         uint256 gasLimit, 
         string memory imageName, 
-        address dsp
+        address worker
     ) external view returns (uint256 maxPayment) {
-        return calculatePaymentAmount(gasLimit, imageName, dsp);
+        return calculatePaymentAmount(gasLimit, imageName, worker);
     }
     
     /**
@@ -875,37 +875,37 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
     
     /**
-     * @dev active and set endpoint for dsp
+     * @dev active and set endpoint for worker
      */
-    function regDSP(string calldata endpoint) public {
+    function regWORKER(string calldata endpoint) public {
         require(bytes(endpoint).length != 0, "invalid endpoint");
 
-        address _dsp = msg.sender;
+        address _worker = msg.sender;
 
-        if(bytes(registeredDSPs[_dsp].endpoint).length == 0) {
-            dspList[totalDsps++] = _dsp;
+        if(bytes(registeredWORKERs[_worker].endpoint).length == 0) {
+            workerList[totalWorkers++] = _worker;
         }
 
-        registeredDSPs[_dsp].active = true;
-        registeredDSPs[_dsp].endpoint = endpoint;
+        registeredWORKERs[_worker].active = true;
+        registeredWORKERs[_worker].endpoint = endpoint;
         
-        emit DSPStatusChanged(_dsp, true, endpoint);
+        emit WORKERStatusChanged(_worker, true, endpoint);
     }
     
     /**
-     * @dev deprecate dsp
+     * @dev deprecate worker
      */
-    function deprecateDSP() public {
-        address _dsp = msg.sender;
+    function deprecateWORKER() public {
+        address _worker = msg.sender;
 
-        if(bytes(registeredDSPs[_dsp].endpoint).length == 0) {
-            dspList[totalDsps++] = _dsp;
+        if(bytes(registeredWORKERs[_worker].endpoint).length == 0) {
+            workerList[totalWorkers++] = _worker;
         }
 
-        registeredDSPs[_dsp].active = false;
-        registeredDSPs[_dsp].endpoint = "deprecated";
+        registeredWORKERs[_worker].active = false;
+        registeredWORKERs[_worker].endpoint = "deprecated";
 
-        emit DSPStatusChanged(_dsp, false,"deprecated");
+        emit WORKERStatusChanged(_worker, false,"deprecated");
     }
     
     /**
@@ -932,14 +932,14 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         , "invalid fee");
 
         // job related
-        dspApprovedImages[owner][imageName].jobFee = jobFee;
+        workerApprovedImages[owner][imageName].jobFee = jobFee;
 
         // service related
-        dspApprovedImages[owner][imageName].baseFee = baseFee;
-        dspApprovedImages[owner][imageName].storageFee = storageFee;
-        dspApprovedImages[owner][imageName].ioFee = ioFee;
-        dspApprovedImages[owner][imageName].minStorageMegaBytes = minStorageMegaBytes;
-        dspApprovedImages[owner][imageName].minIoMegaBytes = minIoMegaBytes;
+        workerApprovedImages[owner][imageName].baseFee = baseFee;
+        workerApprovedImages[owner][imageName].storageFee = storageFee;
+        workerApprovedImages[owner][imageName].ioFee = ioFee;
+        workerApprovedImages[owner][imageName].minStorageMegaBytes = minStorageMegaBytes;
+        workerApprovedImages[owner][imageName].minIoMegaBytes = minIoMegaBytes;
     }
     
     /**
@@ -956,12 +956,12 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     ) external {
         bool diff = false;
 
-        if(dspApprovedImages[msg.sender][imageName].jobFee != jobFee) diff = true;
-        if(dspApprovedImages[msg.sender][imageName].baseFee != baseFee) diff = true;
-        if(dspApprovedImages[msg.sender][imageName].storageFee != storageFee) diff = true;
-        if(dspApprovedImages[msg.sender][imageName].ioFee != ioFee) diff = true;
-        if(dspApprovedImages[msg.sender][imageName].minStorageMegaBytes != minStorageMegaBytes) diff = true;
-        if(dspApprovedImages[msg.sender][imageName].minIoMegaBytes != minIoMegaBytes) diff = true;
+        if(workerApprovedImages[msg.sender][imageName].jobFee != jobFee) diff = true;
+        if(workerApprovedImages[msg.sender][imageName].baseFee != baseFee) diff = true;
+        if(workerApprovedImages[msg.sender][imageName].storageFee != storageFee) diff = true;
+        if(workerApprovedImages[msg.sender][imageName].ioFee != ioFee) diff = true;
+        if(workerApprovedImages[msg.sender][imageName].minStorageMegaBytes != minStorageMegaBytes) diff = true;
+        if(workerApprovedImages[msg.sender][imageName].minIoMegaBytes != minIoMegaBytes) diff = true;
 
         require(diff, "no diff");
 
@@ -977,39 +977,39 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
     
     /**
-     * @dev returns approval status of image for dsp
+     * @dev returns approval status of image for worker
      */
-    function isImageApprovedForDSP(address dsp, string calldata imageName) public view returns (bool) {
-        return dspApprovedImages[dsp][imageName].jobFee > 0;
+    function isImageApprovedForWORKER(address worker, string calldata imageName) public view returns (bool) {
+        return workerApprovedImages[worker][imageName].jobFee > 0;
     }
     
     /**
-     * @dev unapprove docker image for dsp
+     * @dev unapprove docker image for worker
      */
-    function unapproveDockerForDSP(string calldata imageName) public  {
-        address _dsp = msg.sender;
+    function unapproveDockerForWORKER(string calldata imageName) public  {
+        address _worker = msg.sender;
 
-        delete dspApprovedImages[_dsp][imageName];
+        delete workerApprovedImages[_worker][imageName];
 
-        emit DockerApprovalChanged(_dsp,imageName,false);
+        emit DockerApprovalChanged(_worker,imageName,false);
     }
     
     /**
      * @dev ensures returned data hash is universally accepted
      */
-    function submitResEntry(uint jobID,bytes32 dataHash, address[] memory dsps) private returns (bool) {
+    function submitResEntry(uint jobID,bytes32 dataHash, address[] memory workers) private returns (bool) {
         JobData storage jd = jobs[jobID];
-        address _dsp = msg.sender;
+        address _worker = msg.sender;
         int founds = -1;
         bool inconsistent = false;
 
-        for (uint i=0; i<dsps.length; i++) {
+        for (uint i=0; i<workers.length; i++) {
             if(jd.done[i]){
                 if(jd.dataHash[i] != dataHash){
                     inconsistent = true;
                 }
             }
-            if(dsps[i] == _dsp){
+            if(workers[i] == _worker){
                 founds = int(i);
                 break;
             }
@@ -1031,9 +1031,9 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function calculatePaymentAmount(
         uint gas,
         string memory imageName,
-        address dsp
+        address worker
     ) private view returns (uint) {
-        uint jobDapps = calcJobDapps(imageName,dsp);
+        uint jobDapps = calcJobDapps(imageName,worker);
         uint gasWei = getFeedData();
         uint dappEth = getDappEth();
         
@@ -1051,8 +1051,8 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev calculate job fee
      */
-    function calcJobDapps(string memory imageName, address dsp) private view returns (uint) {
-        return getDappUsd() * ( dspApprovedImages[dsp][imageName].jobFee / usdtPrecision );
+    function calcJobDapps(string memory imageName, address worker) private view returns (uint) {
+        return getDappUsd() * ( workerApprovedImages[worker][imageName].jobFee / usdtPrecision );
     }
 
     /**
@@ -1062,15 +1062,15 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         string memory imageName, 
         uint ioMegaBytes, 
         uint storageMegaBytes, 
-        address dsp, 
+        address worker, 
         bool include_base
     ) public view returns (uint) {
         // base fee per hour * 24 hours * 30 days for monthly rate
         uint dappUsd = getDappUsd();
 
-        uint baseFee = dspApprovedImages[dsp][imageName].baseFee;
-        uint storageFee = dspApprovedImages[dsp][imageName].storageFee;
-        uint ioFee = dspApprovedImages[dsp][imageName].ioFee;
+        uint baseFee = workerApprovedImages[worker][imageName].baseFee;
+        uint storageFee = workerApprovedImages[worker][imageName].storageFee;
+        uint ioFee = workerApprovedImages[worker][imageName].ioFee;
 
         baseFee = include_base ? baseFee * 24 * 30 * dappUsd : 0;
         storageFee = storageFee * storageMegaBytes * dappUsd;
@@ -1128,18 +1128,18 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint storageMegaBytes, 
         string calldata imageName, 
         uint months, 
-        address dsp
+        address worker
     ) public view {
         require(
             ioMegaBytes 
             >= 
-            dspApprovedImages[dsp][imageName].minIoMegaBytes * months
+            workerApprovedImages[worker][imageName].minIoMegaBytes * months
             ,"min io"
         );
         require(
             storageMegaBytes 
             >= 
-            dspApprovedImages[dsp][imageName].minStorageMegaBytes * months
+            workerApprovedImages[worker][imageName].minStorageMegaBytes * months
             ,"min storage"
         );
     }
@@ -1158,13 +1158,13 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
     
     /**
-     * @dev validates dsp is authorized for job or service
+     * @dev validates worker is authorized for job or service
      */
-    function validateDspCaller(address[] memory dsps, address dsp, bool error) private pure returns(int) {
+    function validateWorkerCaller(address[] memory workers, address worker, bool error) private pure returns(int) {
         int founds = -1;
         
-        for (uint i=0; i<dsps.length; i++) {
-            if(dsps[i] == dsp){
+        for (uint i=0; i<workers.length; i++) {
+            if(workers[i] == worker){
                 founds = int(i);
                 break;
             }
@@ -1178,12 +1178,12 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
 
     /**
-     * @dev require all dsps be active
+     * @dev require all workers be active
      */
-    function validateActiveDsps(address[] memory dsps) public view {
-        require(dsps.length > 0, "no dsps");
-        for (uint i=0; i<dsps.length; i++) {
-            require(registeredDSPs[dsps[i]].active, "not active");
+    function validateActiveWorkers(address[] memory workers) public view {
+        require(workers.length > 0, "no workers");
+        for (uint i=0; i<workers.length; i++) {
+            require(registeredWORKERs[workers[i]].active, "not active");
         }
     }
 
@@ -1262,49 +1262,49 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
     
     /**
-     * @dev return dsp addresses
+     * @dev return worker addresses
      */
-    function getDspAddresses() public view returns (address[] memory) {
-        address[] memory addresses = new address[](totalDsps);
+    function getWorkerAddresses() public view returns (address[] memory) {
+        address[] memory addresses = new address[](totalWorkers);
 
-        for(uint i=0; i<totalDsps; i++) {
-            addresses[i] = dspList[i];
+        for(uint i=0; i<totalWorkers; i++) {
+            addresses[i] = workerList[i];
         }
 
         return addresses;
     }
     
     /**
-     * @dev returns port for dsp and job id
+     * @dev returns port for worker and job id
      */
-    function getPortForDSP(uint jobID, address dsp) public view returns (uint) {        
+    function getPortForWORKER(uint jobID, address worker) public view returns (uint) {        
         ServiceData storage sd = services[jobID];
 
-        return sd.dspServiceData[dsp].port;
+        return sd.workerServiceData[worker].port;
     }
     
     /**
-     * @dev returns dsp endpoint
+     * @dev returns worker endpoint
      */
-    function getDSPEndpoint(address dsp) public view returns (string memory) {
-        return registeredDSPs[dsp].endpoint;
+    function getWORKEREndpoint(address worker) public view returns (string memory) {
+        return registeredWORKERs[worker].endpoint;
     }
     
     /**
-     * @dev returns dsp data limits
+     * @dev returns worker data limits
      */
-    function getDSPDataLimits(uint id, address dsp) public view returns (DspLimits memory) {
-        return DspLimits(
-            services[id].dspServiceData[dsp].ioMegaBytesLimit,
-            services[id].dspServiceData[dsp].storageMegaBytesLimit
+    function getWORKERDataLimits(uint id, address worker) public view returns (WorkerLimits memory) {
+        return WorkerLimits(
+            services[id].workerServiceData[worker].ioMegaBytesLimit,
+            services[id].workerServiceData[worker].storageMegaBytesLimit
         );
     }
     
     /**
-     * @dev returns dsp amount
+     * @dev returns worker amount
      */
-    function getDSPAmount(address account, address dsp) external view returns (uint) {
-        return dspData[account][dsp].amount;
+    function getWORKERAmount(address account, address worker) external view returns (uint) {
+        return workerData[account][worker].amount;
     }
     
     /**
@@ -1313,16 +1313,16 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function useGas(
         address _consumer,
         uint _amountToUse,
-        address _dsp
+        address _worker
     ) internal {
-        require(_amountToUse <= dspData[_consumer][_dsp].amount, "insuficient gas");
+        require(_amountToUse <= workerData[_consumer][_worker].amount, "insuficient gas");
 
-        dspData[_consumer][_dsp].amount -= _amountToUse;
-        registeredDSPs[_dsp].claimableDapp += _amountToUse;
+        workerData[_consumer][_worker].amount -= _amountToUse;
+        registeredWORKERs[_worker].claimableDapp += _amountToUse;
 
         totalDappGasPaid += _amountToUse;
 
-        emit UsedGas(_consumer, _dsp, _amountToUse);
+        emit UsedGas(_consumer, _worker, _amountToUse);
     }
     
     /**

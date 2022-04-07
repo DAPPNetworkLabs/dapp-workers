@@ -33,7 +33,7 @@ contract Consumer {
         nexus.queueService(INexus.queueServiceArgs(owner,"wasi-service",100,100,inputFS,arr,1));
     }
 
-    function _dspcallback(string calldata outputFS, string  calldata outputHash) external {
+    function _workercallback(string calldata outputFS, string  calldata outputHash) external {
         lastHash = outputFS;
 
         emit UpdatedHash(lastHash);

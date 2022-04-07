@@ -24,5 +24,5 @@ interface INexus {
   }
   function queueService(queueServiceArgs calldata args) external;
   function setConsumerContract(address authorized_contract) external;
-  function setQuorum(address consumer, address[] calldata dsps) external;
+  function setQuorum(address consumer, address[] calldata workers) external;
 }
