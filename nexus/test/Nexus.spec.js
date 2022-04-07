@@ -959,7 +959,7 @@ describe("Nexus", function(done) {
   it("Get worker port", async function() {
     const port = await nexusContract.getPortForWORKER(6,worker1.address);
 
-    expect(port).to.equal(9000);
+    expect(port).to.equal(9001);
   });
 
   it("Get worker endpoint", async function() {
