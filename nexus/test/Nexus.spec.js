@@ -959,7 +959,7 @@ describe("Nexus", function(done) {
   it("Get dsp port", async function() {
     const port = await nexusContract.getPortForDSP(6,dsp1.address);
 
-    expect(port).to.equal(9000);
+    expect(port).to.equal(9001);
   });
 
   it("Get dsp endpoint", async function() {
