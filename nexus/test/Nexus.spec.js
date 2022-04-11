@@ -857,7 +857,7 @@ describe("Nexus", function(done) {
       callback: false,
       gasLimit: 1000000,
       requiresConsistent: false,
-      args: []
+      args: ["bancor-liquidity-mining"]
     });
 
     const eventPromise = new Promise((resolve, reject) => {

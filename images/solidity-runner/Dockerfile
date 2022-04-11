@@ -11,9 +11,6 @@ RUN wget https://dist.ipfs.io/go-ipfs/v0.9.1/go-ipfs_v0.9.1_linux-amd64.tar.gz &
     rm go-ipfs_v0.9.1_linux-amd64.tar.gz
 RUN ipfs init
 
-RUN "cd /tmp1"
-RUN "npm install --save-dev hardhat"
-
 ADD entrypoint.sh /
 
 ENTRYPOINT [ "/entrypoint.sh" ]
