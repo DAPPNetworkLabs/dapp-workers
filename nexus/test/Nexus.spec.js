@@ -846,6 +846,49 @@ describe("Nexus", function(done) {
     expect(outputFSRes).to.equal("QmPTULeqLCtTnwStXg1dyPpQTc27TZtr13oc9VjGiTxSXY");
   });
 
+  it.skip("Queue job solidity-runner", async function() {
+    await nexusContract.approveImage("solidity-runner","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
+    await nexusContract.connect(worker1).setDockerImage("solidity-runner",100000,100000,100000,100000,100,100);
+    
+    await nexusContract.queueJob({
+      owner: addr1.address,
+      imageName: "solidity-runner",
+      inputFS: "QmPTULeqLCtTnwStXg1dyPpQTc27TZtr13oc9VjGiTxSXY",
+      callback: false,
+      gasLimit: 1000000,
+      requiresConsistent: false,
+      args: []
+    });
+
+    const eventPromise = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            worker, 
+            outputFS, 
+            outputHash,
+            dapps,
+            jobID
+          ) => {
+            console.log('jobID',jobID)
+            resolve(outputFS);
+          }
+        );
+    });
+
+    await eventPromise.then(val => {
+      outputFSRes = val;
+    });
+
+    const id = await nexusContract.lastJobID();
+    const job = await nexusContract.jobs(id);
+
+    expect(job.consumer).to.equal(addr1.address);
+    expect(job.callback).to.equal(false);
+    expect(job.resultsCount.toString()).to.equal('1');
+    expect(job.imageName).to.equal("solidity-runner");
+    expect(outputFSRes).to.equal("QmPTULeqLCtTnwStXg1dyPpQTc27TZtr13oc9VjGiTxSXY");
+  });
+
   it("Run service - complete", async function() {
     await nexusContract.queueJob({
       owner: addr1.address,

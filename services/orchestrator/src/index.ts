@@ -44,11 +44,11 @@ const toMegaBytes = (item) => {
     // console.log(`size: ${size} | base: ${base} | base / 1000: ${base / 1000}, size == 'KB': ${size == 'KB'}`);
     
     if(size == 'B') {
+        return base / (1000 * 1000);
+    } else if(size == 'KB') {
         return base / 1000;
     } else if(size == 'MB') {
         return base;
-    } else if(size == 'KB') {
-        return base / 1000;
     } else if(size == 'GB') {
         return base * 1000;
     } else if(size == 'TB') {

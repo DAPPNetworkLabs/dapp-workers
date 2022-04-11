@@ -22,6 +22,15 @@ services:
       kompose.service.type: LoadBalancer
     environment:
       - IPFS_HOST=$IPFS_HOST
+  solidity-runner:
+    image: solidity-runner
+    profiles:
+      - images
+    build: images/solidity-runner
+    labels:
+      kompose.service.type: LoadBalancer
+    environment:
+      - IPFS_HOST=$IPFS_HOST
   wasienv-compiler:
     profiles:
       - images    
