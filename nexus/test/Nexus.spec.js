@@ -810,7 +810,7 @@ describe("Nexus", function(done) {
     await nexusContract.queueJob({
       owner: addr1.address,
       imageName: "git-cloner",
-      inputFS: loadfsRoot("liquidityMining"),
+      inputFS: loadfsRoot("solidityRunner"),
       callback: false,
       gasLimit: 1000000,
       requiresConsistent: false,
@@ -843,21 +843,21 @@ describe("Nexus", function(done) {
     expect(job.callback).to.equal(false);
     expect(job.resultsCount.toString()).to.equal('1');
     expect(job.imageName).to.equal("git-cloner");
-    expect(outputFSRes).to.equal("QmPTULeqLCtTnwStXg1dyPpQTc27TZtr13oc9VjGiTxSXY");
+    expect(outputFSRes).to.equal("QmcREDmdnLtn41V4JGADUA81eQEPeJ86raGETT43ShJqNU");
   });
 
-  it.skip("Queue job solidity-runner", async function() {
+  it("Queue job solidity-runner", async function() {
     await nexusContract.approveImage("solidity-runner","a2abab32c09fbcf07daba4f0ed4798df0f3ffe6cece68a3a49152fa75a9832e3");
     await nexusContract.connect(worker1).setDockerImage("solidity-runner",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
       owner: addr1.address,
       imageName: "solidity-runner",
-      inputFS: "QmPTULeqLCtTnwStXg1dyPpQTc27TZtr13oc9VjGiTxSXY",
+      inputFS: "QmezhC5XeojouKMuBNEbyP36J8K6HW6mLdUJF5aBeUexKB",
       callback: false,
       gasLimit: 1000000,
       requiresConsistent: false,
-      args: ["bancor-liquidity-mining"]
+      args: ["example-solidity-runner"]
     });
 
     const eventPromise = new Promise((resolve, reject) => {
@@ -886,7 +886,7 @@ describe("Nexus", function(done) {
     expect(job.callback).to.equal(false);
     expect(job.resultsCount.toString()).to.equal('1');
     expect(job.imageName).to.equal("solidity-runner");
-    expect(outputFSRes).to.equal("QmPTULeqLCtTnwStXg1dyPpQTc27TZtr13oc9VjGiTxSXY");
+    expect(outputFSRes).to.equal("18");
   });
 
   it("Run service - complete", async function() {
@@ -939,7 +939,6 @@ describe("Nexus", function(done) {
             serviceId, 
             port
           ) => {
-            id = serviceId;
             resolve();
           }
         );
@@ -971,6 +970,8 @@ describe("Nexus", function(done) {
             outputFS, 
             jobID
           ) => {
+            console.log('id',Number(id));
+            console.log('jobID',Number(jobID));
             if(Number(id) == Number(jobID)) {
               id = jobID;
               resolve();
