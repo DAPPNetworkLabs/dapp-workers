@@ -31,6 +31,15 @@ services:
       kompose.service.type: LoadBalancer
     environment:
       - IPFS_HOST=$IPFS_HOST
+  monte-carlo-dice:
+    image: monte-carlo-dice
+    profiles:
+      - images
+    build: images/monte-carlo-dice
+    labels:
+      kompose.service.type: LoadBalancer
+    environment:
+      - IPFS_HOST=$IPFS_HOST
   wasienv-compiler:
     profiles:
       - images    
