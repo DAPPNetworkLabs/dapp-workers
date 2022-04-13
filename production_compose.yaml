@@ -97,6 +97,12 @@ services:
       - DATABASE_TIMEOUT=10000
       - WAIT_DELAY=0
       - FROM_BLOCK=11985126
+      # FOR AWS KMS
+      - WORKER_AWS_KMS_ENABLED=true
+      - WORKER_AWS_KMS_ACCESS_KEY_ID=$WORKER_AWS_KMS_ACCESS_KEY_ID
+      - WORKER_AWS_KMS_SECRET_ACCESS_KEY=$WORKER_AWS_KMS_SECRET_ACCESS_KEY
+      - WORKER_AWS_KMS_REGION=$WORKER_AWS_KMS_REGION
+      - WORKER_AWS_KMS_KEY_ID=$WORKER_AWS_KMS_KEY_ID
     command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=60", "eth:8545", "--", "node", "./dist/index.js"]
     privileged: true
     volumes:
