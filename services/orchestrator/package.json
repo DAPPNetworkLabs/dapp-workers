@@ -62,12 +62,17 @@
     "uglifyjs-folder": "^2.0.0"
   },
   "dependencies": {
+    "@aws-sdk/client-kms": "^3.67.0",
     "@openzeppelin/contracts": "^4.3.2",
+    "asn1.js": "^5.4.1",
+    "aws-sdk": "^2.1113.0",
     "bip39": "^3.0.4",
+    "bn.js": "^5.2.0",
     "cors": "^2.8.5",
     "docker-client": "^1.38.1",
     "dockerode": "^3.3.1",
     "ethereumjs-wallet": "^1.0.1",
+    "ethers": "^5.6.3",
     "express": "^4.17.3",
     "ganache": "^6.4.5",
     "hardhat": "^2.6.8",
