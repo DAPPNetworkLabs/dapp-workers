@@ -1,13 +1,13 @@
 import { ethers } from "ethers";
 import { KMS } from "aws-sdk";
 import * as asn1 from "asn1.js";
-import BN from "bn.js";
+const { BN } = require('bn.js');
 import { AwsKmsSignerCredentials } from "../kms";
-
+console.log(BN);
 /* this asn1.js library has some funky things going on */
 /* eslint-disable func-names */
 
-const EcdsaSigAsnParse: { decode: (asnStringBuffer: Buffer, format: "der") => { r: BN; s: BN } } = asn1.define(
+const EcdsaSigAsnParse: { decode: (asnStringBuffer: Buffer, format: "der") => { r: typeof BN; s: typeof BN } } = asn1.define(
   "EcdsaSig",
   function (this: any) {
     // parsing this according to https://tools.ietf.org/html/rfc3279#section-2.2.3
@@ -81,7 +81,7 @@ export async function requestKmsSignature(plaintext: Buffer, kmsCredentials: Aws
   return findEthereumSig(signature.Signature as Buffer);
 }
 
-function recoverPubKeyFromSig(msg: Buffer, r: BN, s: BN, v: number) {
+function recoverPubKeyFromSig(msg: Buffer, r: typeof BN, s: typeof BN, v: number) {
   return ethers.utils.recoverAddress(`0x${msg.toString("hex")}`, {
     r: `0x${r.toString("hex")}`,
     s: `0x${s.toString("hex")}`,
@@ -89,7 +89,7 @@ function recoverPubKeyFromSig(msg: Buffer, r: BN, s: BN, v: number) {
   });
 }
 
-export function determineCorrectV(msg: Buffer, r: BN, s: BN, expectedEthAddr: string) {
+export function determineCorrectV(msg: Buffer, r: typeof BN, s: typeof BN, expectedEthAddr: string) {
   // This is the wrapper function to find the right v value
   // There are two matching signatues on the elliptic curve
   // we need to find the one that matches to our public key
