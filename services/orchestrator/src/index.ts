@@ -7,7 +7,6 @@ import { web3, provider } from './web3global';
 import { postTrx } from './postTrx';
 import { callTrx } from './callTrx';
 
-const Web3 = require('web3');
 let abi = require(process.env.NEXUS_PATH || '/nexus/artifacts/contracts/Nexus.sol/Nexus.json');
 
 export { address };
@@ -175,6 +174,11 @@ let workerAccount;
 let ownerAccount;
 const run = () => {
     workerAccount = getAccount();
+    if(process.env.WORKER_AWS_KMS_ENABLED && process.env.WORKER_AWS_KMS_ENABLED.toString() == "true") {
+        workerAccount.address = process.env.WORKER_AWS_KMS_ADDRESS;
+        console.log('setting address',workerAccount)
+        console.log('setting address',workerAccount.address)
+    }
     subscribe(theContract);
     setInterval(() => {
         intervalCallback();
@@ -198,7 +202,7 @@ async function validateJobBalance(consumer, gasLimit, imageName) {
     if (Number(workerData.amount) >= Number(requiredAmount)) {
         return true;
     } else {
-        console.log(`validateJobBalance: false ${imageName} ${gasLimit} ${workerData.amount} ${requiredAmount} ${typeof(workerData.amount)} ${typeof(requiredAmount)} ${workerData.amount >= requiredAmount}`);
+        console.log(`validateJobBalance: false ${imageName} ${gasLimit} ${workerData.amount} ${requiredAmount} ${typeof(workerData.amount)} ${typeof(requiredAmount)} ${workerAccount.address}`);
         return false;
     }
 }
@@ -210,7 +214,7 @@ async function validateServiceBalance(consumer, serviceId) {
     if (Number(workerData.amount) >= Number(requiredAmount)) {
         return true;
     } else {
-        console.log(`validateServiceBalance: false ${workerData.amount} ${requiredAmount} ${typeof(workerData.amount)} ${typeof(requiredAmount)} ${workerData.amount >= requiredAmount}`);
+        console.log(`validateServiceBalance: false ${workerData.amount} ${requiredAmount} ${typeof(workerData.amount)} ${typeof(requiredAmount)} ${workerAccount.address}`);
         return false;
     }
 }
@@ -303,6 +307,7 @@ const runService = async (returnValues) => {
 
 function subscribe(theContract: any) {
     theContract.events["QueueJob"]({}, async function (error, result) {
+        console.log('QueueJob hit');
         if (error) {
             console.log(error);
             return;
@@ -349,7 +354,7 @@ function subscribe(theContract: any) {
                 outputFS: outputFS,
                 outputHash: "hash"
             });
-            console.log(`posted results`, jobInfo.consumer, job.jobImage, rcpt.transactionHash);
+            console.log(`posted results`, jobInfo.consumer, job.imageName, rcpt.transactionHash);
         }
     });
 

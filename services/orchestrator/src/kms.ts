@@ -31,6 +31,7 @@ export class AwsKmsSigner extends ethers.Signer {
     const digestBuffer = Buffer.from(ethers.utils.arrayify(digestString));
     const sig = await requestKmsSignature(digestBuffer, this.kmsCredentials);
     const ethAddr = await this.getAddress();
+    console.log('signing with', ethAddr);
     const { v } = determineCorrectV(digestBuffer, sig.r, sig.s, ethAddr);
     return ethers.utils.joinSignature({
       v,

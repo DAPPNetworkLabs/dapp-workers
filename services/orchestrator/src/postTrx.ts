@@ -3,42 +3,97 @@ import { address } from './index';
 import { AwsKmsSigner } from "./kms";
 import { ethers } from "ethers";
 
+let nonce = 0;
+
+const numberToHex = (number) => {
+  if (typeof (number) == 'number')
+    return `0x${number.toString(16)}`;
+  if (typeof (number) == 'string' && !(number.startsWith('0x')))
+    return `0x${parseInt(number).toString(16)}`;
+  return number;
+};
+
+const signKms = async (unsignedTx, nexusContract, signer) => {
+    console.log('unsignedTx',unsignedTx);
+    const voidSigner = nexusContract.provider.getSigner(process.env.WORKER_AWS_KMS_ADDRESS);
+    const txPop = await voidSigner.populateTransaction(unsignedTx);
+    
+    console.log('txPop',txPop);
+    const txPopCopy = {
+      ...txPop
+    };
+    // delete txPopCopy.from;
+  
+    const utx = txPopCopy;
+    const nonce = await web3.eth.getTransactionCount(process.env.WORKER_AWS_KMS_ADDRESS);
+    utx.nonce = nonce;
+    console.log(nonce);
+    
+    // const gasLimit = process.env.WORKER_EVM_GAS_LIMIT || 1000000;
+    // const maxPriorityFeePerGas = process.env.WORKER_EVM_MAX_PRIORITY_FEE_PER_GAS || 3000000000;
+    // const maxFeePerGas = process.env.WORKER_EVM_MAX_FEE_PER_GAS || 100000000000;
+    
+    // utx.gasLimit = numberToHex(gasLimit);
+    // utx.maxPriorityFeePerGas = numberToHex(maxPriorityFeePerGas);
+    // utx.maxFeePerGas = numberToHex(maxFeePerGas);
+    
+    console.log('utx',utx);
+    
+    const txSign = await signer.signTransaction(utx);
+    
+    const res = await nexusContract.provider.sendTransaction(txSign);
+    
+    console.log('res',res);
+    
+    const wait_res = await res.wait()
+    
+    console.log('wait_res',wait_res);
+    console.log('next nonce',await web3.eth.getTransactionCount(process.env.WORKER_AWS_KMS_ADDRESS))
+  
+    return wait_res;
+}
+
 let abi = require(process.env.NEXUS_PATH || '/nexus/artifacts/contracts/Nexus.sol/Nexus.json');
 export async function postTrx(method, account_from, ...args) {
-    const theContract2 = new web3.eth.Contract(abi.abi, address, {
-        from: account_from.address
-    });
-    const nexusTx = theContract2.methods[method](...args);
-    if(process.env.WORKER_AWS_KMS_ENABLED.toString() == "true") {
-        const trx = {
-            to: address,
-            value: 0.1
-            // data: await nexusTx.encodeABI(),
-            // gasPrice: await nexusTx.estimateGas(),
-        };
-        
+    if(process.env.WORKER_AWS_KMS_ENABLED && process.env.WORKER_AWS_KMS_ENABLED.toString() == "true") {
         const kmsCredentials = {
             accessKeyId: process.env.WORKER_AWS_KMS_ACCESS_KEY_ID || "AKIAxxxxxxxxxxxxxxxx", // credentials for your IAM user with KMS access
             secretAccessKey: process.env.WORKER_AWS_KMS_SECRET_ACCESS_KEY || "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // credentials for your IAM user with KMS access
             region: process.env.WORKER_AWS_KMS_REGION || "ap-southeast-1",
             keyId: process.env.WORKER_AWS_KMS_KEY_ID || "arn:aws:kms:ap-southeast-1:123456789012:key/123a1234-1234-4111-a1ab-a1abc1a12b12",
         };
+        const signer = new AwsKmsSigner(kmsCredentials);
+        const provider = ethers.getDefaultProvider(process.env.ETH_ADDR);
+        const nexusContract = new ethers.Contract(address, abi.abi, provider);
+        console.log('method',method);
+        console.log('args',...args);
+        const unsignedTx = await nexusContract.populateTransaction[method](...args);
+        // const unsignedTx = await nexusContract.populateTransaction.regWORKER("http://wasi-service");
         
-        const provider = ethers.providers.getDefaultProvider("ropsten");
-        let signer = new AwsKmsSigner(kmsCredentials);
-        signer = signer.connect(provider);
-        console.log('signer connected')
-        
-        const tx = await signer.signTransaction(trx);
-        console.log('signed transaction, sendint trx')
-        console.log(tx);
-        return await web3.eth.sendSignedTransaction(tx);
+        return await signKms(unsignedTx, nexusContract, signer);
     } else {
-        const trx = {
-            from: account_from.address,
-            to: address,
-            data: await nexusTx.encodeABI(),
-            gas: await nexusTx.estimateGas(),
+        const theContract2 = new web3.eth.Contract(abi.abi, address, {
+            from: account_from.address
+        });
+        const nexusTx = theContract2.methods[method](...args);
+        let trx;
+        
+        if(process.env.WORKER_EIP1559_ENABLED && process.env.WORKER_EIP1559_ENABLED.toString() == "true") {
+            trx = {
+                from: account_from.address,
+                to: address,
+                data: await nexusTx.encodeABI(),
+                gasLimit: process.env.WORKER_EVM_GAS_LIMIT || await nexusTx.estimateGas(),
+                maxPriorityFeePerGas: process.env.WORKER_EVM_MAX_PRIORITY_FEE_PER_GAS || 3000000000,
+                maxFeePerGas: process.env.WORKER_EVM_MAX_FEE_PER_GAS || 100000000000
+            }
+        } else {
+            trx = {
+                from: account_from.address,
+                to: address,
+                data: await nexusTx.encodeABI(),
+                gas: await nexusTx.estimateGas(),
+            }
         }
         const createTransaction = await web3.eth.accounts.signTransaction(trx, account_from.privateKey);
         return await web3.eth.sendSignedTransaction(createTransaction.rawTransaction);

@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { KMS } from "aws-sdk";
 import * as asn1 from "asn1.js";
-const { BN } = require('bn.js');
+const { BN } = require('bn.js'); // eslint-disable-line @typescript-eslint/no-var-requires
 import { AwsKmsSignerCredentials } from "../kms";
 console.log(BN);
 /* this asn1.js library has some funky things going on */

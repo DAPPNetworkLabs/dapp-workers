@@ -80,7 +80,14 @@ services:
       - SEED=cruel rebel frown short month love belt weather sense hood cage pact
       - ETH_ADDR=ws://eth:8545
       - PRIVATE_KEY=0x278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d
-    command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "npx", "hardhat", "--network", "tests", "test", "test/Nexus.spec.js"]
+      - ADDRESS=0x9d8e2c06e418e6c61785a7e4c65dd447ddc25aa0
+      # FOR AWS KMS
+      - WORKER_AWS_KMS_ENABLED=$WORKER_AWS_KMS_ENABLED
+      - WORKER_AWS_KMS_ACCESS_KEY_ID=$WORKER_AWS_KMS_ACCESS_KEY_ID
+      - WORKER_AWS_KMS_SECRET_ACCESS_KEY=$WORKER_AWS_KMS_SECRET_ACCESS_KEY
+      - WORKER_AWS_KMS_REGION=$WORKER_AWS_KMS_REGION
+      - WORKER_AWS_KMS_KEY_ID=$WORKER_AWS_KMS_KEY_ID
+    command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "npx", "hardhat", "--network", "tests", "test", "test/KMS.spec.js"]
     depends_on:
       - "eth"
       - "orchestrator"
@@ -97,17 +104,18 @@ services:
       - ETH_ADDR=ws://eth:8545
       - COMPOSE_PROFILES
       - NODE_OPTIONS=--openssl-legacy-provider
-      - ADDRESS=0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5
+      - ADDRESS=0xFB5708c88C17DD7506DB21f8ecA92221Ab87d7dB
       - DATABASE_URL=postgres://user:password@postgres:5432/orchestrator
       - DATABASE_NODE_ENV="production"
       - DATABASE_TIMEOUT=10000
       - FROM_BLOCK=0
       # FOR AWS KMS
-      - WORKER_AWS_KMS_ENABLED=false
-      # - WORKER_AWS_KMS_ACCESS_KEY_ID=$WORKER_AWS_KMS_ACCESS_KEY_ID
-      # - WORKER_AWS_KMS_SECRET_ACCESS_KEY=$WORKER_AWS_KMS_SECRET_ACCESS_KEY
-      # - WORKER_AWS_KMS_REGION=$WORKER_AWS_KMS_REGION
-      # - WORKER_AWS_KMS_KEY_ID=$WORKER_AWS_KMS_KEY_ID
+      - WORKER_AWS_KMS_ENABLED=$WORKER_AWS_KMS_ENABLED
+      - WORKER_AWS_KMS_ADDRESS=0x9d8e2c06e418e6c61785a7e4c65dd447ddc25aa0
+      - WORKER_AWS_KMS_ACCESS_KEY_ID=$WORKER_AWS_KMS_ACCESS_KEY_ID
+      - WORKER_AWS_KMS_SECRET_ACCESS_KEY=$WORKER_AWS_KMS_SECRET_ACCESS_KEY
+      - WORKER_AWS_KMS_REGION=$WORKER_AWS_KMS_REGION
+      - WORKER_AWS_KMS_KEY_ID=$WORKER_AWS_KMS_KEY_ID
       # gas related options
       - WORKER_EVM_GAS_PRICE=2000000000
       - WORKER_EVM_GAS_LIMIT=1000000

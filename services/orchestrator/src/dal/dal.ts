@@ -1,4 +1,4 @@
-let model_db = require('./models');
+const model_db = require('./models'); // eslint-disable-line @typescript-eslint/no-var-requires
 
 // gross syncing solution as sync() must be called in each method
 let synced = false;
@@ -31,19 +31,17 @@ async function createUsageInfo(key, dockerId) {
   const res = await model_db.UsageInfo.findOne({
     where: { key }
   });
-  while (true) {
-    if (!res) {
-      try {
-        return model_db.UsageInfo.create({ key, dockerId, io_usage:0, storage_usage:0 });
-      }
-      catch (e) {
-        if (e.name === 'SequelizeOptimisticLockError')
-          continue;
-        else throw e;
-      }
+  if (!res) {
+    try {
+      return model_db.UsageInfo.create({ key, dockerId, io_usage:0, storage_usage:0 });
     }
-    return res;
+    catch (e) {
+      if (e.name === 'SequelizeOptimisticLockError')
+        createUsageInfo(key, dockerId);
+      else throw e;
+    }
   }
+  return res;
 }
 
 async function getUsageInfo(key) {
@@ -76,15 +74,14 @@ async function updateUsageInfo(key, io_usage, storage_usage, last_io_usage) {
 
 async function removeUsageInfo(key) {
   await sync();
-  var res = await model_db.UsageInfo.destroy({
+  return await model_db.UsageInfo.destroy({
     where: { key }
   });
-  return res;
 }
 
 async function fetchAllUsageInfo() {
   await sync();
-  var res = await model_db.UsageInfo.findAll();
+  const res = await model_db.UsageInfo.findAll();
   if (!res) {
     return;
   }
