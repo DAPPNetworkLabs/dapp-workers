@@ -3,8 +3,6 @@ import { address } from './index';
 import { AwsKmsSigner } from "./kms";
 import { ethers } from "ethers";
 
-let nonce = 0;
-
 const numberToHex = (number) => {
   if (typeof (number) == 'number')
     return `0x${number.toString(16)}`;
@@ -41,16 +39,20 @@ const signKms = async (unsignedTx, nexusContract, signer) => {
     
     const txSign = await signer.signTransaction(utx);
     
-    const res = await nexusContract.provider.sendTransaction(txSign);
-    
-    console.log('res',res);
-    
-    const wait_res = await res.wait()
-    
-    console.log('wait_res',wait_res);
-    console.log('next nonce',await web3.eth.getTransactionCount(process.env.WORKER_AWS_KMS_ADDRESS))
-  
-    return wait_res;
+    try {
+        const res = await nexusContract.provider.sendTransaction(txSign);
+        
+        console.log('res',res);
+        
+        const wait_res = await res.wait()
+        
+        console.log('wait_res',wait_res);
+        console.log('next nonce',await web3.eth.getTransactionCount(process.env.WORKER_AWS_KMS_ADDRESS))
+      
+        return wait_res;
+    } catch(e) {
+        console.log(e);
+    }
 }
 
 let abi = require(process.env.NEXUS_PATH || '/nexus/artifacts/contracts/Nexus.sol/Nexus.json');
@@ -68,7 +70,6 @@ export async function postTrx(method, account_from, ...args) {
         console.log('method',method);
         console.log('args',...args);
         const unsignedTx = await nexusContract.populateTransaction[method](...args);
-        // const unsignedTx = await nexusContract.populateTransaction.regWORKER("http://wasi-service");
         
         return await signKms(unsignedTx, nexusContract, signer);
     } else {
@@ -95,7 +96,24 @@ export async function postTrx(method, account_from, ...args) {
                 gas: await nexusTx.estimateGas(),
             }
         }
+        trx.nonce = await web3.eth.getTransactionCount(account_from.address);
         const createTransaction = await web3.eth.accounts.signTransaction(trx, account_from.privateKey);
-        return await web3.eth.sendSignedTransaction(createTransaction.rawTransaction);
+        try {
+            return await web3.eth.sendSignedTransaction(createTransaction.rawTransaction);
+        } catch(e) {
+            console.log('caught e',e,typeof(e));
+            console.log('e.message',e.message,typeof(e.message));
+            if(e && e.message && e.message.includes('Nonce')) {
+                const first = e.message.indexOf('be');
+                const last = e.message.indexOf(' but');
+                const newNonce = parseInt(e.message.slice(first+3,last));
+                console.log('newNonce',newNonce,typeof(newNonce),first,last);
+                trx.nonce = newNonce;
+                const createTransaction = await web3.eth.accounts.signTransaction(trx, account_from.privateKey);
+                return await web3.eth.sendSignedTransaction(createTransaction.rawTransaction);
+            } else {
+                console.log(e);
+            }
+        }
     }
 }

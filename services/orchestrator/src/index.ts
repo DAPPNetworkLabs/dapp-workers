@@ -228,10 +228,15 @@ const getInfo = async (jobId, type) => {
 }
 
 const verifyImageHash = async (image, id, isJob) => {
+    console.log('verifyImageHash',image, id, isJob);
     let hash:any = await execPromise(`docker images --no-trunc --quiet ${image}`,{});
-    hash = hash.slice(7);
+    hash = hash.slice(7).replace(/ +/g, "").replace(/[\n\r]/g, '');
+    // hash = hash.slice(7).split().join('');
+    console.log('hash',hash,typeof(hash),hash.length);
     const chainHash = await theContract.methods.approvedImages(image).call({ from: workerAccount.address });
+    console.log('chainHash',chainHash,typeof(chainHash),chainHash.length);
     if(hash != chainHash) {
+        console.log('not equal')
         if(isJob) {
             await postTrx("jobError", workerAccount, id, "chain hash mismatch", "");
         } else {
@@ -258,7 +263,7 @@ const runService = async (returnValues) => {
         const inputFS = returnValues[fidx++];
         const args = returnValues[fidx++];
 
-        // await verifyImageHash(imageName, id, false);
+        await verifyImageHash(imageName, id, false);
         
         const ioMegaBytesUsed = 0;
         const storageMegaBytesUsed = 0;
@@ -323,7 +328,7 @@ function subscribe(theContract: any) {
             args: returnValues[fidx++]
         }
 
-        // await verifyImageHash(jobInfo.imageName, jobInfo.jobID, true);
+        await verifyImageHash(jobInfo.imageName, jobInfo.jobID, true);
 
         const jobType = "job";
 

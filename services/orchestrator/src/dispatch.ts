@@ -121,10 +121,14 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
     console.log('first service timeout');
   }, killDelay);
   
-  let dockerId
+  let dockerId, imageName = dockerImage;
+  
+  if(imageName.indexOf('/')) {
+    imageName = imageName.slice(imageName.indexOf('/')+1);
+  }
   
   try {
-    dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${dockerImage}-${id} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+    dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName}-${id} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
   } catch(e) {
     console.log(`docker error:`,e);
     return { error:e };

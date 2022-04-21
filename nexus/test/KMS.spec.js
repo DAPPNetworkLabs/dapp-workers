@@ -36,6 +36,7 @@ const signKms = async (unsignedTx, nexusContract, signer) => {
     utx.nonce = nonce++;
     console.log('utx',utx);
     let txSign = await signer.signTransaction(utx);
+    console.log('txSign',txSign);
   
     await nexusContract.provider.sendTransaction(txSign);
 }
