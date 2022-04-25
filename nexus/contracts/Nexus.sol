@@ -7,7 +7,7 @@ import "./ReentrancyGuardUpgradeable.sol";
 import "./interfaces/IBancorNetwork.sol";
 import "./interfaces/AggregatorV3Interface.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -1036,8 +1036,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint jobDapps = calcJobDapps(imageName,worker);
         uint gasWei = getFeedData();
         uint dappEth = getDappEth();
-        console.log('dappEth');
-        console.log(dappEth);
         
         gas += JOB_GAS_OVERHEAD;
         
@@ -1069,8 +1067,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     ) public view returns (uint) {
         // base fee per hour * 24 hours * 30 days for monthly rate
         uint dappUsd = getDappUsd();
-        console.log('dappUsd');
-        console.log(dappUsd);
 
         uint baseFee = workerApprovedImages[worker][imageName].baseFee;
         uint storageFee = workerApprovedImages[worker][imageName].storageFee;
@@ -1081,16 +1077,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         ioFee = ioFee * ioMegaBytes * dappUsd;
         // ((100000 * 24 * 30) / 1e6) * 1249348) = 89,953,056 -> 4 dec adjusted -> 8,995.3056 DAPP ~ $72
         return ( baseFee + storageFee + ioFee ) / usdtPrecision;
-    }
-
-    /**
-    * @notice use max of transaction gas price and adjusted price
-    */
-    function adjustGasPrice(uint256 gasWei, bool useTxGasPrice) private view returns (uint256 adjustedPrice) {
-        adjustedPrice = gasWei * s_config.gasCeilingMultiplier;
-        if (useTxGasPrice && tx.gasprice < adjustedPrice) {
-            adjustedPrice = tx.gasprice;
-        }
     }
 
     /**

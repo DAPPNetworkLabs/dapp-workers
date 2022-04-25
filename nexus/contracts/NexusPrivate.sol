@@ -6,7 +6,7 @@ import "./ReentrancyGuardUpgradeable.sol";
 
 import "./interfaces/IDappOracle.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -141,7 +141,8 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     
     event ConfigSet(
         uint32 paymentPremiumPPB,
-        uint16 gasCeilingMultiplier
+        uint16 gasCeilingMultiplier,
+        uint fallbackGasPrice
     );
     
     event UpdateWorkers(
@@ -246,6 +247,7 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     struct Config {
         uint32 paymentPremiumPPB;
         uint16 gasCeilingMultiplier;
+        uint fallbackGasPrice;
     }
 
     struct jobCallbackArgs {
@@ -260,6 +262,7 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint32 _paymentPremiumPPB;
         uint16 _gasCeilingMultiplier;
         uint256 _usdtPrecision;
+        uint256 _fallbackGasPrice;
     }
 
     mapping(address => RegisteredWORKER) public registeredWORKERs;
@@ -296,7 +299,8 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         setConfig(
             args._paymentPremiumPPB,
-            args._gasCeilingMultiplier
+            args._gasCeilingMultiplier,
+            args._fallbackGasPrice
         );
     }
       
@@ -305,17 +309,20 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     */
     function setConfig(
         uint32 paymentPremiumPPB,
-        uint16 gasCeilingMultiplier
+        uint16 gasCeilingMultiplier,
+        uint fallbackGasPrice
     ) public onlyOwner {
         s_config = Config({
             paymentPremiumPPB: paymentPremiumPPB,
-            gasCeilingMultiplier: gasCeilingMultiplier
+            gasCeilingMultiplier: gasCeilingMultiplier,
+            fallbackGasPrice: fallbackGasPrice
         });
 
 
         emit ConfigSet(
             paymentPremiumPPB,
-            gasCeilingMultiplier
+            gasCeilingMultiplier,
+            fallbackGasPrice
         );
     }
 
@@ -1037,16 +1044,6 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
 
     /**
-    * @notice use max of transaction gas price and adjusted price
-    */
-    function adjustGasPrice(uint256 gasWei, bool useTxGasPrice) private view returns (uint256 adjustedPrice) {
-        adjustedPrice = gasWei * s_config.gasCeilingMultiplier;
-        if (useTxGasPrice && tx.gasprice < adjustedPrice) {
-            adjustedPrice = tx.gasprice;
-        }
-    }
-
-    /**
     * @dev calls target address with exactly gasAmount gas and data as calldata
     * or reverts if at least gasAmount gas is not available
     */
@@ -1165,7 +1162,8 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     * price in order to reduce costs for the upkeep clients.
     */
     function getFeedData() private view returns (uint) {
-        return tx.gasprice;
+        Config memory config = s_config;
+        return config.fallbackGasPrice;
     }
 
     /**
@@ -1176,14 +1174,16 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         view
         returns (
             uint32 paymentPremiumPPB,
-            uint16 gasCeilingMultiplier
+            uint16 gasCeilingMultiplier,
+            uint fallbackGasPrice
         )
     {
         Config memory config = s_config;
 
         return (
             config.paymentPremiumPPB,
-            config.gasCeilingMultiplier
+            config.gasCeilingMultiplier,
+            config.fallbackGasPrice
         );
     }
     

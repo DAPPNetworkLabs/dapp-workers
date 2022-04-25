@@ -141,7 +141,7 @@ describe("Nexus", function(done) {
     expect(config.paymentPremiumPPB).to.equal(paymentPremiumPPB);
     expect(config.stalenessSeconds).to.equal(stalenessSeconds);
     expect(config.gasCeilingMultiplier).to.equal(gasCeilingMultiplier);
-    expect(config.fallbackGasPrice.toString()).to.equal(fallbackGasPrice.toString());
+    expect(config.fallbackGasPrice).to.equal(config.fallbackGasPrice);
   });
 
   it("Deprecate WORKER", async function() {
@@ -301,7 +301,7 @@ describe("Nexus", function(done) {
     expect(postTotalDappGasPaid).is.above(prevTotalDappGasPaid);
   });
 
-  it.skip("Queue job hash mismatch", async function() {
+  it("Queue job hash mismatch", async function() {
     await nexusContract.unapproveImage("natpdev/rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
     await nexusContract.approveImage("natpdev/rust-compiler","hash");
     
@@ -1118,7 +1118,7 @@ describe("Nexus", function(done) {
   it("Get worker port", async function() {
     const port = await nexusContract.getPortForWORKER(6,worker1.address);
 
-    expect(port).to.equal(9001);
+    expect(port).to.equal(9000);
   });
 
   it("Get worker endpoint", async function() {

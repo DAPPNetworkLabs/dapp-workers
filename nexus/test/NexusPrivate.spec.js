@@ -8,8 +8,9 @@ const fs = require('fs');
 const path = require('path');
 const { hexValue } = require("ethers/lib/utils");
 
-const paymentPremiumPPB = 200000000;
+const paymentPremiumPPB = 2000000;
 const gasCeilingMultiplier = 2;
+const fallbackGasPrice = 300000000;
 
 const delay = s => new Promise(res => setTimeout(res, s * 1000));
 
@@ -23,7 +24,7 @@ function loadfsRoot(fsrootName){
   }
 }
 
-describe("Nexus", function(done) {
+describe("NexusPrivate", function(done) {
   this.timeout(100000);
   let owner, addr1, addr2, addr3, worker1, worker2, addrs, consumer1, consumer2, consumer3;
   let dappTokenContract, nexusContract, consumerContract, dappOracleContract;
@@ -33,16 +34,16 @@ describe("Nexus", function(done) {
 
     const dappTokenFactory = await ethers.getContractFactory("DappToken", addr1);
     const dappOracleFactory = await ethers.getContractFactory("DappOracle", addr1);
-    console.log(addr1.address);
-    console.log(addr2.address);
-    const nexusTokenFactory = await ethers.getContractFactory("Nexus", addr1);
+    const nexusTokenFactory = await ethers.getContractFactory("NexusPrivate", addr1);
     const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
 
     dappTokenContract = await dappTokenFactory.deploy();
+    console.log('dappOracleContract')
     dappOracleContract = await dappOracleFactory.deploy(
-      // add usd/eth  ,
+      3055756,
       1117780327745
     );
+    console.log('nexusContract')
     nexusContract = await upgrades.deployProxy(nexusTokenFactory, 
       [
         [
@@ -50,10 +51,12 @@ describe("Nexus", function(done) {
           dappOracleContract.address,
           paymentPremiumPPB,
           gasCeilingMultiplier,
-          1e6
+          1e6,
+          fallbackGasPrice
         ]
       ]
     );
+    console.log('nexusContract done')
     
     console.log(`proxy address: ${nexusContract.address}\n nexus address: ${await upgrades.erc1967.getImplementationAddress(nexusContract.address)}`);
     
@@ -123,16 +126,14 @@ describe("Nexus", function(done) {
     await nexusContract.setConfig(
       paymentPremiumPPB,
       gasCeilingMultiplier,
-      fallbackGasPrice,
-      stalenessSeconds
+      fallbackGasPrice
     );
 
     const config = await nexusContract.connect(worker1).getConfig();
 
     expect(config.paymentPremiumPPB).to.equal(paymentPremiumPPB);
-    expect(config.stalenessSeconds).to.equal(stalenessSeconds);
     expect(config.gasCeilingMultiplier).to.equal(gasCeilingMultiplier);
-    expect(config.fallbackGasPrice.toString()).to.equal(fallbackGasPrice.toString());
+    expect(config.fallbackGasPrice).to.equal(fallbackGasPrice);
   });
 
   it("Deprecate WORKER", async function() {
@@ -292,7 +293,7 @@ describe("Nexus", function(done) {
     expect(postTotalDappGasPaid).is.above(prevTotalDappGasPaid);
   });
 
-  it.skip("Queue job hash mismatch", async function() {
+  it("Queue job hash mismatch", async function() {
     await nexusContract.unapproveImage("natpdev/rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
     await nexusContract.approveImage("natpdev/rust-compiler","hash");
     
@@ -514,7 +515,7 @@ describe("Nexus", function(done) {
     // console.log(min.toString());
     // 76,349.8769 * 0.00730 $/DAPP = $557.35
     
-    expect(min).is.above(200000000);
+    expect(min).is.above(2000000);
   });
 
   it("Min job balance with callback", async function() {
@@ -523,7 +524,7 @@ describe("Nexus", function(done) {
     // console.log(min.toString());
     // 76,349.8769 * 0.00730 $/DAPP = $557.35
     
-    expect(min).is.above(200000000);
+    expect(min).is.above(2000000);
   });
 
   it("Min service balance", async function() {
@@ -708,7 +709,7 @@ describe("Nexus", function(done) {
   it("Get get max payment for gas", async function() {
     const data = await nexusContract.getMaxPaymentForGas("1000000","natpdev/runner",worker1.address);
     
-    expect(data).is.above(100000000);
+    expect(data).is.above(1000000);
   });
 
   it("Run service - io/storage limit", async function() {
@@ -1073,7 +1074,7 @@ describe("Nexus", function(done) {
   it("Get get max payment for gas with fallback time", async function() {
     const data = await nexusContract.getMaxPaymentForGas("1000000","natpdev/runner",worker1.address);
     
-    expect(data).is.above(100000000);
+    expect(data).is.above(1000000);
   });
 
   it("Claim worker dapp", async function() {
@@ -1109,7 +1110,7 @@ describe("Nexus", function(done) {
   it("Get worker port", async function() {
     const port = await nexusContract.getPortForWORKER(6,worker1.address);
 
-    expect(port).to.equal(9001);
+    expect(port).to.equal(9000);
   });
 
   it("Get worker endpoint", async function() {
