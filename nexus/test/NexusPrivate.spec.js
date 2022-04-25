@@ -26,7 +26,7 @@ function loadfsRoot(fsrootName){
 describe("Nexus", function(done) {
   this.timeout(100000);
   let owner, addr1, addr2, addr3, worker1, worker2, addrs, consumer1, consumer2, consumer3;
-  let dappTokenContract, nexusContract, consumerContract;
+  let dappTokenContract, nexusContract, consumerContract, dappOracleContract;
 
   before(async function() {
     [owner, addr1, addr2, addr3, worker1, worker2, ...addrs] = await ethers.getSigners();
@@ -39,7 +39,10 @@ describe("Nexus", function(done) {
     const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
 
     dappTokenContract = await dappTokenFactory.deploy();
-    dappOracleContract = await dappOracleFactory.deploy();
+    dappOracleContract = await dappOracleFactory.deploy(
+      // add usd/eth  ,
+      1117780327745
+    );
     nexusContract = await upgrades.deployProxy(nexusTokenFactory, 
       [
         [
