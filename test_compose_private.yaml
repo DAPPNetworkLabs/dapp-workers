@@ -102,6 +102,8 @@ services:
       - DATABASE_NODE_ENV="production"
       - DATABASE_TIMEOUT=10000
       - FROM_BLOCK=0
+      - WORKER_PRIVATE_CHAIN=true
+      - NEXUS_PATH=/nexus/artifacts/contracts/NexusPrivate.sol/NexusPrivate.json
       # FOR AWS KMS
       - WORKER_AWS_KMS_ENABLED=false
       # - WORKER_AWS_KMS_ACCESS_KEY_ID=$WORKER_AWS_KMS_ACCESS_KEY_ID

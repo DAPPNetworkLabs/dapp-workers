@@ -1,5 +1,5 @@
 import Web3 from 'web3';
-import NexusJSON from '../../abi/Nexus.json';
+import NexusJSON from process.env.WORKER_PRIVATE_CHAIN ? '../../abi/NexusPrivate.json' : '../../abi/Nexus.json';
 
 // const provider = new Web3.providers.WebsocketProvider(process.env.REACT_APP_ETH_ADDR || 'ws://localhost:8545');
 // const web3 = new Web3(provider);
