@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f test_compose_kms.yaml -o ./k8s/test_kms/
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ipfs0
+  name: ipfs0
+spec:
+  ports:
+    - name: "4001"
+      port: 4001
+      targetPort: 4001
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+  selector:
+    io.kompose.service: ipfs0
+status:
+  loadBalancer: {}

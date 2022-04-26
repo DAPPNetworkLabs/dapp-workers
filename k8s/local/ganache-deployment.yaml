@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f local_compose.yaml
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ganache
+  name: ganache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ganache
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f local_compose.yaml
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/: "true"
+        io.kompose.service: ganache
+    spec:
+      containers:
+        - args:
+            - ganache-cli
+            - --fork=
+            - --mnemonic
+            - cruel rebel frown short month love belt weather sense hood cage pact
+          image: trufflesuite/ganache-cli
+          name: ganache
+          ports:
+            - containerPort: 8545
+          resources: {}
+      restartPolicy: Always
+status: {}

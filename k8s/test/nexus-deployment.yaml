@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: nexus
+  name: nexus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nexus
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: nexus
+    spec:
+      containers:
+        - args:
+            - /bin/bash
+            - /app/nexus/wait-for-it.sh
+            - --timeout=15
+            - eth:8545
+            - --
+            - npx
+            - hardhat
+            - --network
+            - tests
+            - test
+            - test/Nexus.spec.js
+          env:
+            - name: ETH_ADDR
+              value: ws://eth:8545
+            - name: PRIVATE_KEY
+              value: 0x278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d
+            - name: SEED
+              value: cruel rebel frown short month love belt weather sense hood cage pact
+          image: nexus
+          name: nexus
+          resources: {}
+          volumeMounts:
+            - mountPath: /services/orchestrator
+              name: nexus-claim0
+      restartPolicy: Always
+      volumes:
+        - name: nexus-claim0
+          persistentVolumeClaim:
+            claimName: nexus-claim0
+status: {}

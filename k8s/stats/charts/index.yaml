@@ -1,0 +1,23 @@
+apiVersion: v1
+entries:
+  grafana:
+  - apiVersion: v1
+    appVersion: "1.1"
+    created: "2022-04-25T19:26:53.345959422Z"
+    description: Grafana Setup
+    digest: fe18fa50b288441e73440c8179bc9abf225f019de23c73843f2f1b552c3ce9bf
+    name: grafana
+    urls:
+    - grafana-0.2.tgz
+    version: "0.2"
+  prometheus:
+  - apiVersion: v1
+    appVersion: "1.1"
+    created: "2022-04-25T19:26:53.346117609Z"
+    description: Prometheus Setup
+    digest: 1d9c0ea207e86f7af27bea4122f49084656316b8573bb65947b8e39cc997acd0
+    name: prometheus
+    urls:
+    - prometheus-0.2.tgz
+    version: "0.2"
+generated: "2022-04-25T19:26:53.345676239Z"

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f local_compose.yaml
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: wasi-service
+  name: wasi-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: wasi-service
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f local_compose.yaml
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/: "true"
+        io.kompose.service: wasi-service
+    spec:
+      containers:
+        - image: wasi-service
+          name: wasi-service
+          resources: {}
+      restartPolicy: Always
+status: {}
