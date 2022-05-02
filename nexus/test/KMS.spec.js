@@ -41,7 +41,7 @@ const signKms = async (unsignedTx, nexusContract, signer) => {
     await nexusContract.provider.sendTransaction(txSign);
 }
 
-describe("Nexus", function(done) {
+describe("Nexus KMS", function(done) {
   this.timeout(1000000);
   let addr1, addr2;
   let dappTokenContract, nexusContract;

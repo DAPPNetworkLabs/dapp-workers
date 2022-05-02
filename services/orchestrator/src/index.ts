@@ -188,7 +188,13 @@ const run = () => {
 run();
 
 async function isProcessed(jobID, isJob) {
-    return await theContract.methods.jobServiceCompleted(jobID, workerAccount.address, isJob).call({ from: workerAccount.address });
+    console.log('job',await theContract.methods.jobs(jobID).call({ from: workerAccount.address }));
+    console.log('job done',await theContract.methods.jobs.done(jobID,0).call({ from: workerAccount.address }));
+    console.log('args',jobID, workerAccount.address, isJob, typeof(isJob));
+    const res = await theContract.methods.jobServiceCompleted(jobID, workerAccount.address, isJob).call({ from: workerAccount.address });
+    console.log('res',res);
+    // return res;
+    return false;
 }
 
 async function isServiceDone(jobID) {
@@ -329,8 +335,9 @@ function subscribe(theContract: any) {
 
         const job = await getInfo(jobInfo.jobID, jobType);
 
-
-        if (await isProcessed(jobInfo.jobID, true)) {
+        const processed = await isProcessed(jobInfo.jobID, true);
+        console.log('processed',processed);
+        if (processed) {
             console.log(`already processed job or worker not selected: ${jobInfo.jobID}`)
             return;
         }

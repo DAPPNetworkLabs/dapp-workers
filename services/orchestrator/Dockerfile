@@ -25,6 +25,6 @@ RUN apt-get update && apt-get install \
     ca-certificates \
     curl \
     gnupg \
-    lsb-release
+    lsb-release -y
 RUN curl -fsSL https://get.docker.com -o get-docker.sh
 RUN sh get-docker.sh

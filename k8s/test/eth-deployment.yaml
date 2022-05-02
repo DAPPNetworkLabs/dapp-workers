@@ -29,7 +29,7 @@ spec:
               value: http://0.0.0.0:8545
             - name: SEED
               value: cruel rebel frown short month love belt weather sense hood cage pact
-          image: eth
+          image: natpdev/eth
           name: eth
           ports:
             - containerPort: 8545
