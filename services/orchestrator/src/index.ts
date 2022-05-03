@@ -189,7 +189,7 @@ run();
 
 async function isProcessed(jobID, isJob) {
     console.log('job',await theContract.methods.jobs(jobID).call({ from: workerAccount.address }));
-    console.log('job done',await theContract.methods.jobs.done(jobID,0).call({ from: workerAccount.address }));
+    // console.log('job done',await theContract.methods.jobs.done(jobID,0).call({ from: workerAccount.address }));
     console.log('args',jobID, workerAccount.address, isJob, typeof(isJob));
     const res = await theContract.methods.jobServiceCompleted(jobID, workerAccount.address, isJob).call({ from: workerAccount.address });
     console.log('res',res);

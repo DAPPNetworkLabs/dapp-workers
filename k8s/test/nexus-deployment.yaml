@@ -57,5 +57,5 @@ spec:
           hostPath:
             # path: /dapp-workers/services/orchestrator
             path: /local/home/ubuntu/environment/dapp-workers/services/orchestrator
-            type: Directory
+            # type: Directory
 status: {}

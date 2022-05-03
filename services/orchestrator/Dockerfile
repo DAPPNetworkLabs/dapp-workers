@@ -6,11 +6,6 @@ RUN apt-get upgrade -y
 RUN apt-get -y install curl gnupg wget make cmake
 RUN curl -sL https://deb.nodesource.com/setup_17.x  | bash -
 RUN apt-get -y install nodejs
-RUN apt-get update && apt-get install \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release
 RUN curl -fsSL https://get.docker.com -o get-docker.sh
 RUN sh get-docker.sh
 
@@ -21,10 +16,3 @@ RUN npm install\
 COPY . .
 RUN tsc
 RUN chmod +x /app/orchestrator/wait-for-it.sh
-RUN apt-get update && apt-get install \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release -y
-RUN curl -fsSL https://get.docker.com -o get-docker.sh
-RUN sh get-docker.sh

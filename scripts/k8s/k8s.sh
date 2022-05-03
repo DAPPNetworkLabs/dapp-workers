@@ -4,3 +4,4 @@ kubectl apply -f postgres-deployment.yaml,postgres-service.yaml
 kubectl apply -f eth-deployment.yaml,eth-service.yaml
 kubectl apply -f orchestrator-deployment.yaml
 kubectl apply -f nexus-deployment.yaml
+kubectl delete -f eth-deployment.yaml,eth-service.yaml ;kubectl delete -f orchestrator-deployment.yaml; kubectl delete -f nexus-deployment.yaml;kubectl apply -f eth-deployment.yaml,eth-service.yaml ;kubectl apply -f orchestrator-deployment.yaml; kubectl apply -f nexus-deployment.yaml
