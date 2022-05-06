@@ -28,7 +28,7 @@ spec:
       containers:
         - env:
             - name: IPFS_HOST
-          image: solidity-runner
+          image: natpdev/solidity-runner
           name: solidity-runner
           resources: {}
       restartPolicy: Always

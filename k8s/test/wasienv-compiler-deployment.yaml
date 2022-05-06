@@ -9,7 +9,7 @@ metadata:
     io.kompose.service: wasienv-compiler
   name: wasienv-compiler
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       io.kompose.service: wasienv-compiler

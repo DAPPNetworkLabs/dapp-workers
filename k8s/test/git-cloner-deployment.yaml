@@ -28,7 +28,7 @@ spec:
       containers:
         - env:
             - name: IPFS_HOST
-          image: git-cloner
+          image: natpdev/git-cloner
           name: git-cloner
           resources: {}
       restartPolicy: Always

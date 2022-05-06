@@ -16,8 +16,8 @@ export const execPromise = function(cmd, options) {
       options.stdio = ['ignore'];
     }
     var childproc = exec(cmd, options, function(err, stdout) {
-        console.log(`err: ${err}`);
-        console.log(`stdout: ${stdout}`);
+        // console.log(`err: ${err}`);
+        // console.log(`stdout: ${stdout}`);
     });
     options = options || {};
     var { printOutStream, printErrStream, printOutCB, printErrCB } = options;

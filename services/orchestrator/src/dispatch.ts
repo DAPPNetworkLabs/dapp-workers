@@ -127,8 +127,23 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
     imageName = imageName.slice(imageName.indexOf('/')+1);
   }
   
+  let innerPort = port;
+  
+  args.forEach(el => {
+    console.log(`el`,el,typeof(el))
+    if(typeof(el) === 'string' && el.length > 4 && el.slice(0,4) === 'PORT') {
+      innerPort = Number(el.slice(-4))
+      console.log(`innerPort`,innerPort)
+    }
+  })
+  
   try {
-    dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName}-${id} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${port} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+    if(process.env.DAPP_WORKERS_K8S) {
+      dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+    } else {
+      console.log(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`)
+      dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+    }
   } catch(e) {
     console.log(`docker error:`,e);
     return { error:e };

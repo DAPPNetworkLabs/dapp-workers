@@ -103,8 +103,8 @@ const intervalCallback = async () => {
     const jobs = await fetchAllUsageInfo();
     for(const index in jobs) {
         const job = jobs[index];
-        console.log(`ids: ${job.key}`);
-        console.log(`docker id: ${job.dockerId}`);
+        // console.log(`ids: ${job.key}`);
+        // console.log(`docker id: ${job.dockerId}`);
         
         if (await isProcessed(job.key, false)) {
             throw new Error(`already processed job or worker not selected: ${job.key}`)
@@ -120,7 +120,7 @@ const intervalCallback = async () => {
     
             ioInfo = await execPromise(cmd,{});
         } catch(e) {
-            console.log('error right about here');
+            console.log('error right about here',e);
             await postTrx("serviceError", workerAccount, {
                 jobID: job.key,
                 stdErr: "error dispatching",
@@ -188,13 +188,7 @@ const run = () => {
 run();
 
 async function isProcessed(jobID, isJob) {
-    console.log('job',await theContract.methods.jobs(jobID).call({ from: workerAccount.address }));
-    // console.log('job done',await theContract.methods.jobs.done(jobID,0).call({ from: workerAccount.address }));
-    console.log('args',jobID, workerAccount.address, isJob, typeof(isJob));
-    const res = await theContract.methods.jobServiceCompleted(jobID, workerAccount.address, isJob).call({ from: workerAccount.address });
-    console.log('res',res);
-    // return res;
-    return false;
+    return await theContract.methods.jobServiceCompleted(jobID, workerAccount.address, isJob).call({ from: workerAccount.address });
 }
 
 async function isServiceDone(jobID) {
@@ -239,8 +233,10 @@ const verifyImageHash = async (image, id, isJob) => {
     const chainHash = await theContract.methods.approvedImages(image).call({ from: workerAccount.address });
     if(hash != chainHash) {
         if(isJob) {
+            console.log('jobError chain hash mismatch,image,hash,chainHash',image,hash,chainHash);
             await postTrx("jobError", workerAccount, id, "chain hash mismatch", "");
         } else {
+            console.log('serviceError chain hash mismatch,image,hash,chainHash',image,hash,chainHash);
             await postTrx("serviceError", workerAccount, {
                 jobID: id,
                 stdErr: "chain hash mismatch",
@@ -264,7 +260,7 @@ const runService = async (returnValues) => {
         const inputFS = returnValues[fidx++];
         const args = returnValues[fidx++];
 
-        await verifyImageHash(imageName, id, false);
+        // await verifyImageHash(imageName, id, false);
         
         const ioMegaBytesUsed = 0;
         const storageMegaBytesUsed = 0;
@@ -329,15 +325,13 @@ function subscribe(theContract: any) {
             args: returnValues[fidx++]
         }
 
-        await verifyImageHash(jobInfo.imageName, jobInfo.jobID, true);
+        // await verifyImageHash(jobInfo.imageName, jobInfo.jobID, true);
 
         const jobType = "job";
 
         const job = await getInfo(jobInfo.jobID, jobType);
 
-        const processed = await isProcessed(jobInfo.jobID, true);
-        console.log('processed',processed);
-        if (processed) {
+        if (await isProcessed(jobInfo.jobID, true)) {
             console.log(`already processed job or worker not selected: ${jobInfo.jobID}`)
             return;
         }
@@ -353,7 +347,7 @@ function subscribe(theContract: any) {
             console.log("jobError", dispatchResult.dockerError, dispatchResult);
             await postTrx("jobError", workerAccount, jobInfo.jobID, "error dispatching", "");
         } else {
-            console.log("dispatchResult", dispatchResult);
+            // console.log("dispatchResult", dispatchResult);
             const { outputFS } = dispatchResult;
     
             const rcpt = await postTrx("jobCallback", workerAccount, {

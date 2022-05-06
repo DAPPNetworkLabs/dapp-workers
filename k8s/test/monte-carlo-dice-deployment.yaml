@@ -28,7 +28,7 @@ spec:
       containers:
         - env:
             - name: IPFS_HOST
-          image: monte-carlo-dice
+          image: natpdev/monte-carlo-dice
           name: monte-carlo-dice
           resources: {}
       restartPolicy: Always

@@ -59,13 +59,13 @@ function addTimeoutProxy(obj, timeout, objName) {
         return origMethod;
 
       return function (...args) {
-        console.log(`${objName} with method ${propKey} calling`);
+        // console.log(`${objName} with method ${propKey} calling`);
         const timedMethod = async function () {
           const beforeTime = Date.now();
           const result = await origMethod.apply(target, args);
           const totalTime = Date.now() - beforeTime;
-          if (totalTime > 200)
-            console.log(`${objName} with method ${propKey} took ${totalTime} ms`);
+          // if (totalTime > 200)
+          //   console.log(`${objName} with method ${propKey} took ${totalTime} ms`);
 
           return result;
         }

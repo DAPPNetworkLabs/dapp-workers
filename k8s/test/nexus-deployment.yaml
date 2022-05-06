@@ -56,6 +56,6 @@ spec:
         - name: nexus-claim0
           hostPath:
             # path: /dapp-workers/services/orchestrator
-            path: /local/home/ubuntu/environment/dapp-workers/services/orchestrator
+            path: /k8s/home/ubuntu/environment/dapp-workers/services/orchestrator
             # type: Directory
 status: {}

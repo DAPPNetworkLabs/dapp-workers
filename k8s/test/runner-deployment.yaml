@@ -26,7 +26,7 @@ spec:
       containers:
         - env:
             - name: IPFS_HOST
-          image: runner
+          image: natpdev/runner
           name: runner
           resources: {}
       restartPolicy: Always

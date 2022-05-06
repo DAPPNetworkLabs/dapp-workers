@@ -26,7 +26,7 @@ spec:
       containers:
         - env:
             - name: IPFS_HOST
-          image: wasi-service
+          image: natpdev/wasi-service
           name: wasi-service
           resources: {}
       restartPolicy: Always

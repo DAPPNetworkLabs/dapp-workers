@@ -57,6 +57,11 @@ services:
     image: wasi-service  
     environment:
       - IPFS_HOST=$IPFS_HOST
+  poa-evm-network:
+    profiles:
+      - images
+    build: images/poa-evm-network
+    image: poa-evm-network
   ipfs0:
     container_name: ipfs0
     image: ipfs/go-ipfs:latest

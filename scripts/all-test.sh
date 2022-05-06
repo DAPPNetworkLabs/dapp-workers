@@ -1,6 +1,6 @@
 SCRIPT_DIR="$( dirname $0 )"
 
-docker image prune
+docker image prune -f
 docker volume rm dapp-workers_pg-data
 docker stop $(docker container ls -q -a)
 docker rm $(docker container ls -q -a) -v

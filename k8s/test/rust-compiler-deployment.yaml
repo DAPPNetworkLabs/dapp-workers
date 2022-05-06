@@ -28,7 +28,7 @@ spec:
       containers:
         - env:
             - name: IPFS_HOST
-          image: rust-compiler
+          image: natpdev/rust-compiler
           name: rust-compiler
           resources: {}
       restartPolicy: Always
