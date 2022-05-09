@@ -14,4 +14,4 @@ export EXTRA_DATA=0x000000000000000000000000000000000000000000000000000000000000
 echo "$(jq '.alloc[$POA_ADDRESS] = { "balance": "0x200000000000000000000000000000000000000000000000000000000000000" }' --arg POA_ADDRESS "$POA_ADDRESS" genesis.json)" > genesis.json
 echo "$(jq '.extraData = $EXTRA_DATA' --arg EXTRA_DATA "$EXTRA_DATA" genesis.json)" > genesis.json
 geth init genesis.json --datadir node1/
-geth --datadir node1/ --syncmode 'full' --networkid 888 --http --http.addr 0.0.0.0 --http.api "personal,eth,net,web3" --http.corsdomain "*" --miner.threads 1 --unlock $SEAL_ADDRESS --password node1/password.txt --mine --allow-insecure-unlock
+geth --datadir node1/ --syncmode 'full' --networkid 888 --http --http.addr 0.0.0.0 --http.api "personal,eth,net,web3" --http.corsdomain "*" --http.vhosts "*" --miner.threads 1 --unlock $SEAL_ADDRESS --password node1/password.txt --mine --allow-insecure-unlock
