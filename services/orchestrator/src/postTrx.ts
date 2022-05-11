@@ -57,6 +57,8 @@ const signKms = async (unsignedTx, nexusContract, signer) => {
 
 let abi = require(process.env.NEXUS_PATH || '/nexus/artifacts/contracts/Nexus.sol/Nexus.json');
 export async function postTrx(method, account_from, ...args) {
+    console.log('method',method);
+    console.log('args',...args);
     if(process.env.WORKER_AWS_KMS_ENABLED && process.env.WORKER_AWS_KMS_ENABLED.toString() == "true") {
         const kmsCredentials = {
             accessKeyId: process.env.WORKER_AWS_KMS_ACCESS_KEY_ID || "AKIAxxxxxxxxxxxxxxxx", // credentials for your IAM user with KMS access
@@ -67,8 +69,6 @@ export async function postTrx(method, account_from, ...args) {
         const signer = new AwsKmsSigner(kmsCredentials);
         const provider = ethers.getDefaultProvider(process.env.ETH_ADDR);
         const nexusContract = new ethers.Contract(address, abi.abi, provider);
-        console.log('method',method);
-        console.log('args',...args);
         const unsignedTx = await nexusContract.populateTransaction[method](...args);
         
         return await signKms(unsignedTx, nexusContract, signer);

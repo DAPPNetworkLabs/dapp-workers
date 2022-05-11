@@ -37,15 +37,33 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
         rej('docker container took too long');
       }, killDelay);
   
-      let dockerId
+      let HostConfig:any = { AutoRemove: false };
+
+      if(dockerImage==='nvidia-docker') {
+        HostConfig = {
+          AutoRemove: false,
+          DeviceRequests: [
+            {
+              Count: -1,
+              Driver: "nvidia",
+              Capabilities: [["gpu"]]
+            }
+          ]
+        }
+      }
+      console.log('HostConfig',HostConfig);
+
+      const dockerArgs = ipfsInput ? [ipfsInput, ...args] : [...args];
+
+      console.log('dockerArgs',dockerArgs);
       
       // try {
-        docker.run(dockerImage,  [ipfsInput, ...args],  [writableStream, writableStream2],{
+        docker.run(dockerImage,  dockerArgs,  [writableStream, writableStream2],{
           Tty:false,
           AttachStdout: true,
           AttachStderr: true,
-          HostConfig: { AutoRemove: false}}
-        ).then((data) => {
+          HostConfig 
+        }).then((data) => {
           clearTimeout(timeout);
           res(data);
         }).catch((e) => {
@@ -57,6 +75,25 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
       //   rej(e);
       // }
     });
+
+    function calculateDaysBetweenDates(begin, end) {
+      // Remove time parts from dates.
+      begin = new Date(begin.getFullYear(), begin.getMonth(), begin.getDate());
+      end = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+      // Get 1 day in milliseconds.
+      const oneDay = 1000 * 60 * 60 * 24;
+
+      // Convert both dates to milliseconds.
+      const date1Ms = begin.getTime();
+      const date2Ms = end.getTime();
+
+      // Calculate the difference in milliseconds.
+      const differenceMs = Math.abs(date2Ms - date1Ms);
+
+      // Convert back to days and return.
+      return Math.round(differenceMs / oneDay);
+    }
 
     await p.then(val => {
       data = val
@@ -73,9 +110,11 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
         console.log("error",error);
         dockerError = error
     }
-    console.log("output",output);
+    console.log("output",{stdOut:output,stderr: error,statusCode:data[0].StatusCode, dockerError});
     const lines = output.split("\n")
-    const outputfs = lines[lines.length-2];
+    console.log(1);
+    const outputfs = lines[lines.length-2] ? lines[lines.length-2] : "";
+    console.log(2, outputfs);
     return {stdOut:output,stderr: error, outputFS:outputfs,statusCode:data[0].StatusCode, dockerError}
 }
 

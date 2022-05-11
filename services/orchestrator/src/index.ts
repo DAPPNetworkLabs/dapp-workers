@@ -347,8 +347,8 @@ function subscribe(theContract: any) {
             console.log("jobError", dispatchResult.dockerError, dispatchResult);
             await postTrx("jobError", workerAccount, jobInfo.jobID, "error dispatching", "");
         } else {
-            // console.log("dispatchResult", dispatchResult);
             const { outputFS } = dispatchResult;
+            console.log("outputFS", outputFS);
     
             const rcpt = await postTrx("jobCallback", workerAccount, {
                 jobID: jobInfo.jobID,

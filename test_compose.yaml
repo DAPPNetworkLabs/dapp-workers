@@ -63,9 +63,9 @@ services:
     build: images/poa-evm-network
     image: poa-evm-network
   nvidia-docker:
+    build: images/nvidia-docker
     profiles:
       - images
-    build: images/nvidia-docker
     image: nvidia-docker
   ipfs0:
     container_name: ipfs0

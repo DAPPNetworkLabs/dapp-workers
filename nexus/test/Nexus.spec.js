@@ -28,7 +28,7 @@ function loadfsRoot(fsrootName){
 }
 
 describe("Nexus", function(done) {
-  this.timeout(100000);
+  this.timeout(1000000);
   let owner, addr1, addr2, addr3, worker1, worker2, addrs, consumer1, consumer2, consumer3;
   let dappTokenContract, nexusContract, consumerContract;
 
@@ -235,19 +235,85 @@ describe("Nexus", function(done) {
     expect(consumerData).to.equal(worker1.address);
   });
 
-  it("Queue job", async function() {
+  // it("Queue job", async function() {
+  //   const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
+  //   await nexusContract.approveImage("natpdev/rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
+  //   await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,100000,100000,100000,100,100);
+    
+  //   await nexusContract.queueJob({
+  //     owner: addr1.address,
+  //     imageName: "natpdev/rust-compiler",
+  //     inputFS: loadfsRoot("pngWriterTest"),
+  //     callback: false,
+  //     gasLimit: 1000000,
+  //     requiresConsistent: false,
+  //     args: []
+  //   });
+    
+  //   const id1 = await nexusContract.lastJobID();
+
+  //   const eventPromise = new Promise((resolve, reject) => {
+  //       nexusContract.once("JobResult", (
+  //           consumer, 
+  //           worker, 
+  //           outputFS, 
+  //           outputHash,
+  //           dapps,
+  //           jobID
+  //         ) => {
+  //           resolve(outputFS);
+  //         }
+  //       );
+  //   });
+
+  //   await eventPromise.then(val => {
+  //     outputFSRes = val;
+  //   });
+
+  //   await nexusContract.queueJob({
+  //     owner: addr1.address,
+  //     imageName: "natpdev/runner",
+  //     inputFS: outputFSRes,
+  //     // inputFS: "QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx",
+  //     callback: false,
+  //     gasLimit: 1000000,
+  //     requiresConsistent: false,
+  //     args: ["target/wasm32-wasi/release/test"]
+  //   });
+    
+  //   const id2 = await nexusContract.lastJobID();
+
+  //   const job = await nexusContract.jobs(id1);
+
+  //   expect(job.consumer).to.equal(addr1.address);
+  //   expect(job.callback).to.equal(false);
+  //   expect(job.resultsCount.toString()).to.equal('1');
+  //   expect(job.imageName).to.equal("natpdev/rust-compiler");
+
+  //   const job2 = await nexusContract.jobs(id2);
+
+  //   expect(job2.consumer).to.equal(addr1.address);
+  //   expect(job2.callback).to.equal(false);
+  //   expect(job2.resultsCount.toString()).to.equal('0');
+  //   expect(job2.imageName).to.equal("natpdev/runner");
+
+  //   const postTotalDappGasPaid = await nexusContract.totalDappGasPaid();
+  //   expect(postTotalDappGasPaid).is.above(prevTotalDappGasPaid);
+  // });
+
+  it("Queue job - nvidia-docker", async function() {
     const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
-    await nexusContract.approveImage("natpdev/rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,100000,100000,100000,100,100);
+    await nexusContract.approveImage("nvidia-docker","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
+    await nexusContract.connect(worker1).setDockerImage("nvidia-docker",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
       owner: addr1.address,
-      imageName: "natpdev/rust-compiler",
-      inputFS: loadfsRoot("pngWriterTest"),
+      imageName: "nvidia-docker",
+      inputFS: "",
       callback: false,
       gasLimit: 1000000,
       requiresConsistent: false,
-      args: []
+      args: ["nvidia-smi"]
     });
     
     const id1 = await nexusContract.lastJobID();
@@ -269,72 +335,6 @@ describe("Nexus", function(done) {
     await eventPromise.then(val => {
       outputFSRes = val;
     });
-
-    await nexusContract.queueJob({
-      owner: addr1.address,
-      imageName: "natpdev/runner",
-      inputFS: outputFSRes,
-      // inputFS: "QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx",
-      callback: false,
-      gasLimit: 1000000,
-      requiresConsistent: false,
-      args: ["target/wasm32-wasi/release/test"]
-    });
-    
-    const id2 = await nexusContract.lastJobID();
-
-    const job = await nexusContract.jobs(id1);
-
-    expect(job.consumer).to.equal(addr1.address);
-    expect(job.callback).to.equal(false);
-    expect(job.resultsCount.toString()).to.equal('1');
-    expect(job.imageName).to.equal("natpdev/rust-compiler");
-
-    const job2 = await nexusContract.jobs(id2);
-
-    expect(job2.consumer).to.equal(addr1.address);
-    expect(job2.callback).to.equal(false);
-    expect(job2.resultsCount.toString()).to.equal('0');
-    expect(job2.imageName).to.equal("natpdev/runner");
-
-    const postTotalDappGasPaid = await nexusContract.totalDappGasPaid();
-    expect(postTotalDappGasPaid).is.above(prevTotalDappGasPaid);
-  });
-
-  it("Queue job - nvidia-docker", async function() {
-    const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
-    await nexusContract.approveImage("natpdev/nvidia-docker","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/nvidia-docker",100000,100000,100000,100000,100,100);
-    
-    await nexusContract.queueJob({
-      owner: addr1.address,
-      imageName: "natpdev/nvidia-docker",
-      inputFS: loadfsRoot("pngWriterTest"),
-      callback: false,
-      gasLimit: 1000000,
-      requiresConsistent: false,
-      args: []
-    });
-    
-    const id1 = await nexusContract.lastJobID();
-
-    const eventPromise = new Promise((resolve, reject) => {
-        nexusContract.once("JobResult", (
-            consumer, 
-            worker, 
-            outputFS, 
-            outputHash,
-            dapps,
-            jobID
-          ) => {
-            resolve(outputFS);
-          }
-        );
-    // });
-
-    // await eventPromise.then(val => {
-    //   outputFSRes = val;
-    // });
 
     // await nexusContract.queueJob({
     //   owner: addr1.address,
