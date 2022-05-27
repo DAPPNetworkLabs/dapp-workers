@@ -176,6 +176,8 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
     }
   })
   
+  imageName = `${imageName}-${id}`
+  
   try {
     if(process.env.DAPP_WORKERS_K8S) {
       dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});

@@ -71,7 +71,6 @@ const completeService = async (jobID, outputFS, ioMegaBytesUsed, storageMegaByte
 }
 
 const endService = async (job, msg, log) => {
-    console.log(log);
     await execPromise(`docker stop ${job.dockerId}`,{});
     // await execPromise(`docker rm ${job.dockerId}`,{});
     // await execPromise(`docker rm ${job.dockerId} -v`,{});
@@ -85,7 +84,6 @@ const endService = async (job, msg, log) => {
 }
 
 const endServiceError = async (job, msg, log) => {
-    console.log(log);
     await execPromise(`docker stop ${job.dockerId}`,{});
     // await execPromise(`docker rm ${job.dockerId}`,{});
     // await execPromise(`docker rm ${job.dockerId} -v`,{});
@@ -260,7 +258,7 @@ const runService = async (returnValues) => {
         const inputFS = returnValues[fidx++];
         const args = returnValues[fidx++];
 
-        // await verifyImageHash(imageName, id, false);
+        await verifyImageHash(imageName, id, false);
         
         const ioMegaBytesUsed = 0;
         const storageMegaBytesUsed = 0;
@@ -325,7 +323,7 @@ function subscribe(theContract: any) {
             args: returnValues[fidx++]
         }
 
-        // await verifyImageHash(jobInfo.imageName, jobInfo.jobID, true);
+        await verifyImageHash(jobInfo.imageName, jobInfo.jobID, true);
 
         const jobType = "job";
 
@@ -397,7 +395,9 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 app.use(cors());
+app.use(express.json());
 const port = 8050;
+const fetch = require('node-fetch');
 
 app.get('/dapp-workers/io', async function(req, res, next) {
     try {
@@ -426,6 +426,62 @@ app.get('/dapp-workers/storage', async function(req, res, next) {
         res.send({
             storage_usage: Math.floor(toMegaBytes(storageUsed.split(' ')[0]))
         })
+    } catch(e) {
+        next(e);
+    }
+});
+
+app.get('/dapp-workers', async function(req, res, next) {
+    try {
+        console.log(`url`,`http://${req.query.image}-${req.query.id}:${req.query.port}`);
+        const response = await fetch(`http://${req.query.image}-${req.query.id}:${req.query.port}`, {method: 'GET'});
+        console.log('response',response);
+    
+        let body = {};
+        if(req.query.text && req.query.text.toString() == "true") {
+            console.log('text')
+            body = await response.text();
+        } else {
+            console.log('json')
+            body = await response.json();
+        }
+                
+        res.send(body)
+    } catch(e) {
+        next(e);
+    }
+});
+
+app.post('/dapp-workers', async function(req, res, next) {
+    try {
+        console.log(`url`,`http://${req.query.image}-${req.query.id}:${req.query.port}`);
+        console.log(`req.body`,req.body);
+        const response = await fetch(`http://${req.query.image}-${req.query.id}:${req.query.port}`, {
+          method: 'POST', 
+          body: req.body,
+          headers: { "Content-Type": "application/json" }
+        });
+        // console.log('response',response);
+    
+        let body = {};
+        if(req.query.text && req.query.text.toString() == "true") {
+            console.log('text')
+            body = await response.text();
+        } else {
+            console.log('json')
+            body = await response.json();
+        }
+        console.log('body',body)
+                
+        res.send(body)
+        // console.log(`url`,`http://${req.query.image}-${req.query.id}:${req.query.port}`);
+        // const response = await fetch(`http://${req.query.image}-${req.query.id}:${req.query.port}`, {
+        //   method: 'POST', 
+        //   body: req.body,
+        //   headers: req.headers
+        // });
+                
+        // res.send(response)
     } catch(e) {
         next(e);
     }
