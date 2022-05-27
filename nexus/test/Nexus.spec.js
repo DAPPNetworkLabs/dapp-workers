@@ -102,7 +102,7 @@ describe("Nexus", function(done) {
       if(process.env.RUN_LOCAL) {
         await nexusContract.approveImage("natpdev/runner","15aab65a942d55b580fc05b12e702183eda34db24c334f899e5a896e92ffe609");
         await nexusContract.approveImage("natpdev/rust-compiler","070c6f2713c01bb0629c991ba617370ceac6a22c0946fdcb8422a1a611608910");
-        await nexusContract.approveImage("natpdev/wasi-service","2fdd1ad45eac13d38b29021c7899d7ba47a22dd25d815602013e6e4638fd88fd");
+        await nexusContract.approveImage("natpdev/wasi-service","68e1213fe0c05250e9d9bdc8182946227d331c7277e53aab1d88e0e693cf81f5");
         await nexusContract.approveImage("natpdev/git-cloner","bc940a60e4d785e70ef0bc79e135bfc0afdda61f6f341157289494b7e0045515");
         await nexusContract.approveImage("natpdev/solidity-runner","7dc8e832ebd3672a2b5f89a662d70366ba411a6ef0f52cc0216322374a6af8be");
         await nexusContract.approveImage("natpdev/monte-carlo-dice","74795c9d22d565eeba205393c709f2670d7b940ee8b73252d744673548ec765c");
@@ -431,7 +431,7 @@ describe("Nexus", function(done) {
   // natpdev/wasi-service /bin/bash entrypoint.sh QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM 
   // target/wasm32-wasi/release/test 9000
   it("Queue service - try below min bytes", async function() {
-    await nexusContract.approveImage("natpdev/wasi-service","2fdd1ad45eac13d38b29021c7899d7ba47a22dd25d815602013e6e4638fd88fd");
+    await nexusContract.approveImage("natpdev/wasi-service","68e1213fe0c05250e9d9bdc8182946227d331c7277e53aab1d88e0e693cf81f5");
     await nexusContract.connect(worker1).setDockerImage("natpdev/wasi-service",100000,100000,100000,100000,1,1);
 
     let failed = false;
@@ -792,23 +792,23 @@ describe("Nexus", function(done) {
   });
 
   it("Extend service", async function() {
-    const preWorkerEnDate = (await nexusContract.services(7)).endDate;
-    const preWorkerIoLimit = (await nexusContract.getWORKERDataLimits(7,worker1.address)).ioMegaBytesLimit;
-    const preWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(7,worker1.address)).storageMegaBytesLimit;
+    const preWorkerEnDate = (await nexusContract.services(6)).endDate;
+    const preWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
+    const preWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
 
     const dapps = ethers.utils.parseUnits("200000",4);
     await dappTokenContract.approve(nexusContract.address, dapps);
     await nexusContract.extendService(
-      7,
+      6,
       "natpdev/wasi-service",
       1,
       100,
       100
     );
 
-    const postWorkerEnDate = (await nexusContract.services(7)).endDate;
-    const postWorkerIoLimit = (await nexusContract.getWORKERDataLimits(7,worker1.address)).ioMegaBytesLimit;
-    const postWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(7,worker1.address)).storageMegaBytesLimit;
+    const postWorkerEnDate = (await nexusContract.services(6)).endDate;
+    const postWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
+    const postWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
     
     expect(postWorkerEnDate).is.above(preWorkerEnDate);
     expect(postWorkerIoLimit).is.above(preWorkerIoLimit);
@@ -816,23 +816,23 @@ describe("Nexus", function(done) {
   });
 
   it("Extend service same month", async function() {
-    const preWorkerEnDate = (await nexusContract.services(7)).endDate;
-    const preWorkerIoLimit = (await nexusContract.getWORKERDataLimits(7,worker1.address)).ioMegaBytesLimit;
-    const preWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(7,worker1.address)).storageMegaBytesLimit;
+    const preWorkerEnDate = (await nexusContract.services(6)).endDate;
+    const preWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
+    const preWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
 
     const dapps = ethers.utils.parseUnits("200000",4);
     await dappTokenContract.approve(nexusContract.address, dapps);
     await nexusContract.extendService(
-      7,
+      6,
       "natpdev/wasi-service",
       0,
       1,
       1
     );
 
-    const postWorkerEnDate = (await nexusContract.services(7)).endDate;
-    const postWorkerIoLimit = (await nexusContract.getWORKERDataLimits(7,worker1.address)).ioMegaBytesLimit;
-    const postWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(7,worker1.address)).storageMegaBytesLimit;
+    const postWorkerEnDate = (await nexusContract.services(6)).endDate;
+    const postWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
+    const postWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
     
     expect(postWorkerEnDate).to.equal(preWorkerEnDate);
     expect(postWorkerIoLimit).is.above(preWorkerIoLimit);
@@ -1243,7 +1243,7 @@ describe("Nexus", function(done) {
   it("Get worker port", async function() {
     const port = await nexusContract.getPortForWORKER(6,worker1.address);
 
-    expect(port).to.equal(9001);
+    expect(port).to.equal(9000);
   });
 
   it("Get worker endpoint", async function() {
