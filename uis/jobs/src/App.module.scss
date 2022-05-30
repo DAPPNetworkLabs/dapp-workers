@@ -1,0 +1,199 @@
+// font global imports
+
+@import url("https://fonts.googleapis.com/css?family=Rajdhani:400,500,600,700");
+@import url("https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,500,600,700");
+
+// mixin global sizes
+
+$mobile: 500px;
+
+@mixin mobile {
+  @media (max-width: #{$mobile}) {
+    @content;
+  }
+}
+
+$tablet: 501px;
+
+@mixin tablet {
+  @media (min-width: #{$tablet}) and (max-width: #{$desktop}) {
+    @content;
+  }
+}
+
+$desktop: 1000px;
+
+@mixin desktop {
+  @media (min-width: #{$desktop}) {
+    @content;
+  }
+}
+
+// color variables
+
+$color-white: #FFFFFF;
+$color-light-blue: #30E0FF;
+$color-blue: #3131FF;
+$color-dark-blue: #0F1032;
+$color-purple: #201F46;
+$color-light-grey: #F4F5FB;
+$color-grey: #4B5671;
+$color-error: red;
+
+.center, .centerMobile{
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.centerMobile{
+  margin-top: 50px;
+  margin-bottom:50px;
+}
+
+.div {
+  height: 100%;
+}
+
+.flex {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  margin-right: 20px;
+  margin-left: 20px;
+}
+
+table, th, td {
+  border: 5px solid $color-blue;
+  border-collapse: collapse;
+}
+
+th,td {
+  padding: 5px;
+}
+
+td:hover {
+  background: $color-light-blue;
+  cursor: pointer;
+  color:$color-dark-blue;
+}
+
+th {
+  background-color: $color-dark-blue;
+  color: $color-white;
+}
+
+th:hover {
+  cursor: pointer;
+}
+
+table {
+  margin-top: 20px;
+}
+
+.overflow {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.desktopOverflow{
+  max-width: 90%;
+}
+
+.soloButton{
+    margin-top: 20px;
+    width: 200px;
+}
+
+.formSpan {
+    margin-left: 5px;
+    border: 1px solid $color-blue;
+    border-radius: 100%;
+    padding-left: 5px;
+    padding-right: 5px;
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+    height: 20px;
+}
+
+.formSpan .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: $color-blue;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltiptext{
+    font-size: 14px;
+}
+
+
+.formSpan .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+  }
+  
+  .formSpan:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .tooltip {
+      border: 5px solid $color-blue;
+      cursor: pointer;
+      position: relative;
+  }
+  
+  .tooltip .tooltiptextForm {
+      visibility: hidden;
+      width: 200px;
+      background-color: $color-blue;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px 0;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -100px;
+      opacity: 0;
+      transition: opacity 0.3s;
+  }
+  
+  .tooltiptextForm{
+      font-size: 14px;
+  }
+  
+  
+  .tooltip .tooltiptextForm::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+    }
+    
+    .tooltip:hover .tooltiptextForm {
+      visibility: visible;
+      opacity: 1;
+    }

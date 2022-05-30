@@ -1,0 +1,18 @@
+@import 'src/App.module.scss';
+
+.dayTitle, .nightTitle {
+    font-size: 14px;
+    margin-top: 16px;
+}
+
+.dayTitle {
+
+}
+
+.nightTitle {
+
+}
+
+.red {
+    color: $color-error;
+}

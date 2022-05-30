@@ -1,0 +1,159 @@
+version: "3"
+services:  
+  runner:
+    image: runner
+    profiles:
+      - images
+    build: images/runner
+    environment:
+      - IPFS_HOST=$IPFS_HOST
+  rust-compiler:
+    image: rust-compiler
+    profiles:
+      - images
+    build: images/compiler/rust
+    labels:
+      kompose.service.type: LoadBalancer
+    environment:
+      - IPFS_HOST=$IPFS_HOST
+  git-cloner:
+    image: git-cloner
+    profiles:
+      - images
+    build: images/git-cloner
+    labels:
+      kompose.service.type: LoadBalancer
+    environment:
+      - IPFS_HOST=$IPFS_HOST
+  solidity-runner:
+    image: solidity-runner
+    profiles:
+      - images
+    build: images/solidity-runner
+    labels:
+      kompose.service.type: LoadBalancer
+    environment:
+      - IPFS_HOST=$IPFS_HOST
+  monte-carlo-dice:
+    image: monte-carlo-dice
+    profiles:
+      - images
+    build: images/monte-carlo-dice
+    labels:
+      kompose.service.type: LoadBalancer
+    environment:
+      - IPFS_HOST=$IPFS_HOST
+  wasienv-compiler:
+    profiles:
+      - images    
+    build: images/compiler/wasienv
+    image: wasienv-compiler
+    environment:
+      - IPFS_HOST=$IPFS_HOST
+  wasi-service:
+    profiles:
+      - images    
+    build: images/wasi-service
+    image: wasi-service  
+    environment:
+      - IPFS_HOST=$IPFS_HOST
+  ipfs0:
+    container_name: ipfs0
+    image: ipfs/go-ipfs:latest
+    ports:
+      - "4001:4001" 
+      - "8080:8080"
+    volumes:
+      - ipfs-data:/data/ipfs
+  eth:
+    image: eth
+    build: eth
+    ports:
+      - "8545:8545"
+    environment:
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - ETH_ADDR=http://0.0.0.0:8545
+  nexus:
+    image: nexus
+    build: nexus
+    environment:
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - ETH_ADDR=ws://eth:8545
+      - PRIVATE_KEY=0x278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d
+    command: ["/bin/bash", "/app/nexus/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "npx", "hardhat", "--network", "tests", "test", "test/NexusPrivate.spec.js"]
+    depends_on:
+      - "eth"
+      - "orchestrator"
+    links:
+      - eth
+      - orchestrator
+    volumes:
+      - ./services/orchestrator:/services/orchestrator
+  orchestrator:
+    image: orchestrator
+    build: services/orchestrator
+    environment:
+      - SEED=cruel rebel frown short month love belt weather sense hood cage pact
+      - ETH_ADDR=ws://eth:8545
+      - COMPOSE_PROFILES
+      - NODE_OPTIONS=--openssl-legacy-provider
+      - ADDRESS=0x1607d3411FA887F7A0ec23aCC6FF195d169e3Cb9
+      - DATABASE_URL=postgres://user:password@postgres:5432/orchestrator
+      - DATABASE_NODE_ENV="production"
+      - DATABASE_TIMEOUT=10000
+      - FROM_BLOCK=0
+      - WORKER_PRIVATE_CHAIN=true
+      - NEXUS_PATH=/nexus/artifacts/contracts/NexusPrivate.sol/NexusPrivate.json
+      # FOR AWS KMS
+      - WORKER_AWS_KMS_ENABLED=false
+      # - WORKER_AWS_KMS_ACCESS_KEY_ID=$WORKER_AWS_KMS_ACCESS_KEY_ID
+      # - WORKER_AWS_KMS_SECRET_ACCESS_KEY=$WORKER_AWS_KMS_SECRET_ACCESS_KEY
+      # - WORKER_AWS_KMS_REGION=$WORKER_AWS_KMS_REGION
+      # - WORKER_AWS_KMS_KEY_ID=$WORKER_AWS_KMS_KEY_ID
+      # gas related options
+      - WORKER_EVM_GAS_PRICE=2000000000
+      - WORKER_EVM_GAS_LIMIT=1000000
+      - WORKER_EVM_MAX_PRIORITY_FEE_PER_GAS=3000000000
+      - WORKER_EVM_MAX_FEE_PER_GAS=100000000000
+    command: ["/bin/bash", "/app/orchestrator/wait-for-it.sh", "--timeout=15", "eth:8545", "--", "node", "./dist/index.js"]
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./nexus:/nexus
+    depends_on:
+      - "eth"
+    links:
+      - eth
+  # dspportal:
+  #   image: dspportal
+  #   build: uis/jobs
+  #   ports:
+  #     - 8888:80
+  #   depends_on:
+  #     - "eth"
+  #   links:
+  #     - eth
+  postgres:
+    image: postgres 
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: orchestrator
+      PGDATA: /var/lib/postgresql/data/pgdata
+    # volumes:
+    #   - pg-data:/var/lib/postgresql/data/pgdata
+volumes:
+  keys:
+    external: false
+  pg-data:
+    external: false
+  rabbit-data:
+    external: false    
+  ipfs-data:
+    external: false       
+  nexus:
+    external: false    
+networks:
+  bridge:

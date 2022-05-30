@@ -1,0 +1,219 @@
+{
+    "forms": {
+        "worker":"WORKER EVM address.",
+        "image":"Docker image for job or service.",
+        "jobFee":"Fee charged in USD per job. Used to convert current DAPP token price based on current DAPP/BNT Bancor price",
+        "baseFee":"Fee charged per service performed as a base fee in USD.",
+        "storageFee":"Fee charged per mb used for storage in USD.",
+        "ioFee":"Fee charged per mb used for upload/download activity in USD.",
+        "minStorageMb":"Minimum required storage megabytes to perform service.",
+        "endpoint":"WORKER endpoint used for services that provide an API.",
+        "jobs":"Jobs successfully completed.",
+        "jobErrors":"Jobs failed by error.",
+        "services":"Services successfully completed.",
+        "serviceErrors":"Services failed by error.",
+        "dappGas":"DAPP Gas that can be used for jobs and services.",
+        "id":"ID of job or service.",
+        "owner":"Owner of job or service. The owner pays DAPP Gas for the job or service.",
+        "consumer":"Consumer of job or service. Consumer can be the same as the owner or the consumer can be a smart contract.  DAPP Gas paid for by owner.",
+        "months":"Months service has been paid for.",
+        "started":"Service has started or not.",
+        "endDate":"End date of WORKER providing requested service.",
+        "workerEndpointIoStorage":"WORKER address, WORKER endpoint, IO used out of total, storage used out of total.",
+        "callback":"Does job require a smart contract callback?",
+        "consistent":"Require all WORKER results be the same and throw an error if not?",
+        "gasLimit":"Gas limit on functiong fulfilling job request.",
+        "results":"Number of total results returned by WORKERs."
+    },
+    "home": {
+        "home": {
+            "title": "DAPP WORKERS",
+            "subtitle": "DAPP Workers enables advanced smart contract capabilities by using Docker images to perform jobs or run services requested and paid for on-chain.",
+            "buttonOne": "LEARN MORE",
+            "buttonTwo": "BECOME A WORKER"
+        }
+    },
+    "consumer": {
+        "worker info": {
+            "title": "WORKER INFO",
+            "subtitle": "Information on selected WORKERs.",
+            "altSubtitle": "All WORKER info",
+            "button": ""
+        },
+        "worker images": {
+            "title": "WORKER IMAGES",
+            "subtitle": "WORKER job and service image information.",
+            "button": ""
+        },
+        "buy gas": {
+            "title": "BUY GAS FOR WORKER",
+            "subtitle": "Provide amount, consumer address, and WORKER account to fund a WORKER to use DAPP Network jobs & services.",
+            "button": "BUY GAS",
+            "previews":[
+                { "name":"DAPP", "type":"dapp","short":"DAPP token adjusted for 4 decimal precision."},
+                { "name":"Consumer", "type":"address","short":"Address of consuming account or contract."},
+                { "name":"WORKER", "type":"address","short":"WORKER address to buy DAPP gas for."}
+            ]
+        },
+        "sell gas": {
+            "title": "SELL GAS",
+            "subtitle": "Sell DAPP gas for DAPP.",
+            "button": "SELL GAS",
+            "previews":[
+                { "name":"DAPP", "type":"dapp","short":"DAPP token adjusted for 4 decimal precision."},
+                { "name":"WORKER", "type":"address","short":"WORKER address to sell DAPP gas for."}
+            ]
+        },
+        "request job": {
+            "title": "REQUEST JOB",
+            "subtitle": "Submit a job for the DAPP Workers to do.",
+            "button": "REQUEST JOB",
+            "previews":[
+                { "name":"OWNER","type": "address","short":"Address requesting job."},
+                { "name":"IMAGE","type": "string","short":"Docker image job will use."},
+                { "name":"INPUT","type": "string","short":"Input command for docker image."},
+                { "name":"CALLBACK","type": "bool","short":"Is there a contract callback required for the job?"},
+                { "name":"GAS LIMIT","type": "uint","short":"Gas limit for running job"},
+                { "name":"UNIFORM RESPONSE","type": "bool","short":"Require all WORKER outputs to match."},
+                { "name":"ARGUMENTS","type": "array","short":"Arguments to provide docker image comma separated."}
+            ],
+            "sufficientGas":"Insufficient DAPP Gas for one or more DAPP Workers",
+            "dappGas":"Estimated DAPP Gas to be used"
+        },
+        "request service": {
+            "title": "REQUEST SERVICE",
+            "subtitle": "Submit a service for the DAPP Workers to provide.",
+            "button": "REQUEST SERVICE",
+            "previews":[
+                { "name":"OWNER","type": "address","short":"Address requesting service."},
+                { "name":"IMAGE","type": "string","short":"Docker image service will use."},
+                { "name":"UP/DOWNLOAD MB","type": "uint","short":"Amount in megabytes of upload/download bandwidth."},
+                { "name":"STORAGE MB","type": "uint","short":"Amount in megabytes of total storage for the service."},
+                { "name":"INPUT","type": "string","short":"Input command for docker image."},
+                { "name":"ARGUMENTS","type": "array","short":"Arguments to provide docker image comma separated."},
+                { "name":"MONTHS","type": "uint","short":"Months to provide service for, covers base cost, DOES NOT multiply upload/download/storage costs."}
+            ],
+            "sufficientGas":"Insufficient DAPP Gas for one or more DAPP Workers",
+            "dappGas":"Estimated DAPP Gas to be used"
+        },
+        "extend service": {
+            "title": "EXTEND SERVICE",
+            "subtitle": "Extend existing service time, upload/download limit, and or storage limit.",
+            "button": "EXTEND SERVICE",
+            "previews":[
+                { "name":"SERVICE ID","type": "uint","short":"ID of service to extend."},
+                { "name":"IMAGE","type": "string","short":"Docker image service used."},
+                { "name":"MONTHS","type": "uint","short":"Months to extend service for, covers base cost, DOES multiply upload/download/storage costs per month."},
+                { "name":"UP/DOWNLOAD MB","type": "uint","short":"Amount in megabytes of upload/download bandwidth."},
+                { "name":"STORAGE MB","type": "uint","short":"Amount in megabytes of additional storage for the service."}
+            ]
+        },
+        "jobs": {
+            "title": "CONSUMER JOBS",
+            "subtitle": "List of all jobs requested by consumer."
+        },
+        "services": {
+            "title": "CONSUMER SERVICES",
+            "subtitle": "List of all services requested by consumer."
+        },
+        "set consumer": {
+            "title": "SET CONSUMER",
+            "subtitle": "Set consumer contract address to use DAPP gas of account.",
+            "button": "SET CONSUMER",
+            "previews":[
+                { "name":"CONSUMER CONTRACT","type": "address","short":"Contract address to consumer DAPP Gas for jobs and services."}
+            ]
+        },
+        "set workers": {
+            "title": "SET WORKERS",
+            "subtitle": "Select DAPP Workers to provide jobs/services.",
+            "button": "SET WORKERS",
+            "previews":[
+                { "name":"WORKERS","type": "array_addresses","short":"List of WORKER addresses to use for jobs/services."}
+            ]
+        }
+    },
+    "worker": {
+        "register": {
+            "title": "REGISTER WORKER",
+            "subtitle": "Register WORKER endpoint and ability to be selected for jobs and services.",
+            "button": "REGISTER WORKER",
+            "previews":[
+                { "name":"endpoint","type": "string","short":"WORKER Endpoint providing WORKER API for services."}
+            ]
+        },
+        "deprecate": {
+            "title": "DEPRECATE WORKER",
+            "subtitle": "Deprecate WORKER, null endpoint, remove ability to be selected for jobs/services.",
+            "button": "DEPRECATE WORKER"
+        },
+        "register image": {
+            "title": "REGISTER IMAGE",
+            "subtitle": "Register image and cost amounts for an existing image.",
+            "button": "REGISTER IMAGE",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Docker image to register."},
+                { "name":"JOB FEE","type": "uint","short":"Fee required to perform job."},
+                { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."},
+                { "name":"STORAGE FEE","type": "uint","short":"Fee per mb of storage used."},
+                { "name":"I/O FEE","type": "uint","short":"Fee per mb of upload/download bandwidth provided."},
+                { "name":"MIN STORAGE MB","type": "uint","short":"Min storage in mb to provide service."},
+                { "name":"MIN I/O MB","type": "uint","short":"Min i/o in mb to provide service."}
+            ]
+        },
+        "update image": {
+            "title": "UPDATE IMAGE",
+            "subtitle": "Update image attributes for consumers whom selected this image.",
+            "button": "UPDATE IMAGE",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Docker image to update."},
+                { "name":"JOB FEE","type": "uint","short":"Fee required to perform job."},
+                { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."},
+                { "name":"STORAGE FEE","type": "uint","short":"Fee per mb of storage used."},
+                { "name":"I/O FEE","type": "uint","short":"Fee per mb of upload/download bandwidth provided."},
+                { "name":"MIN STORAGE MB","type": "uint","short":"Min storage in mb to provide service."},
+                { "name":"MIN I/O MB","type": "uint","short":"Min i/o in mb to provide service."}
+            ]
+        },
+        "jobs": {
+            "title": "DAPP WORKER JOBS",
+            "subtitle": "List WORKER jobs that include this WORKER.",
+            "button": ""
+        },
+        "services": {
+            "title": "DAPP WORKER SERVICES",
+            "subtitle": "List WORKER services that include this WORKER.",
+            "button": ""
+        }
+    },
+    "admin": {
+        "set config": {
+            "title": "SET CONFIG",
+            "subtitle": "Set admin config.",
+            "button": "SET CONFIG",
+            "previews":[
+                { "name":"PAYMENT PREMIUM PPB","type": "uint","short":"Payment premium multiplier in 2 decimal precision."},
+                { "name":"GAS CEILING MULT","type": "uint","short":"Multiplier to be paid above current gas prices."},
+                { "name":"FALLBACK GAS PRICE","type": "uint","short":"Fallback gas price if chainlink fails."},
+                { "name":"STAILNESS SECONDS","type": "uint","short":"Seconds before latest chainlink price feed goes stale."}
+            ]
+        },
+        "approve image": {
+            "title": "APPROVE IMAGE",
+            "subtitle": "Approve image for use by DAPP Workers.",
+            "button": "APPROVE IMAGE",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Docker image to approve."},
+                { "name":"IMAGE HASH","type": "string","short":"Hash of docker image to approve"}
+            ]
+        },
+        "unapprove image": {
+            "title": "UNAPPROVE IMAGE",
+            "subtitle": "Unapprove image for use by DAPP Workers.",
+            "button": "UNAPPROVE IMAGE",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"Docker image to unapprove."}
+            ]
+        }
+    }
+}

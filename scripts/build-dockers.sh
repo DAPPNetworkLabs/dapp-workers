@@ -1,1 +1,1 @@
-COMPOSE_PROFILES=images docker-compose -f compose.yaml build
+# COMPOSE_PROFILES=images docker-compose -f compose.yaml build

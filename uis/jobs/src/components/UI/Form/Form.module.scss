@@ -1,0 +1,70 @@
+@import 'src/App.module.scss';
+
+.form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.formMobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.formInput {
+    border-radius: 4px;
+    border:solid 2px $color-white;    
+    outline:solid 4px $color-grey;
+    font-family: "IBM Plex Mono", monospace;
+    max-width: 200px;
+    min-height: 18px;
+}
+.formInput:focus{
+    outline:solid 4px $color-blue;
+}
+
+.innerForm{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.preview,.previewMobile {
+    text-align:center;
+    justify-content: space-between;
+    display:flex;
+}
+.preview {
+    width: 400px;
+}
+
+.previewMobile {
+    width: 200px;
+}
+
+.flexRow {
+    display:flex;
+}
+
+.keyValue{
+    gap:12px;
+    margin:2px;
+}
+
+input:hover {
+    background:$color-light-blue;
+    border-color:$color-light-blue;
+}
+
+input:hover::placeholder {
+    color: $color-dark-blue;
+}

@@ -1,4 +1,12 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
 **/node_modules
-**/artifacts
 **/cache
 **/abi
+**/artifacts
+**/build
+**/.openzeppelin
+*.config.json
+NOTES.md
+.env

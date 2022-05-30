@@ -1,0 +1,1 @@
+minikube mount /home/ubuntu/environment/dapp-workers:/dapp-workers

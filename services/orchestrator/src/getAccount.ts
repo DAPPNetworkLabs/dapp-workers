@@ -11,5 +11,6 @@ export const getAccount = (path = "m/44'/60'/0'/0/0") => {
         privateKey: private_key,
         address: addr,
     };
+    console.log(`private key used: ${private_key} for ${addr}`)
     return account_from;
 };

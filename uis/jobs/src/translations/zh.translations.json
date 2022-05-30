@@ -1,0 +1,219 @@
+{
+    "forms": {
+        "worker":"工人 EVM 地址。",
+        "image":"用于作业或服务的 Docker 映像。",
+        "jobFee":"每项工作以美元收取的费用。 用于根据当前 DAPP/BNT Bancor 价格转换当前 DAPP 代币价格",
+        "baseFee":"每项服务收取的费用，以美元为基础费用。",
+        "storageFee":"用于存储的每 mb 费用（以美元计）。",
+        "ioFee":"用于上传/下载活动的每 mb 费用（以美元计）。",
+        "minStorageMb":"执行服务所需的最低存储兆字节数。",
+        "endpoint":"用于提供 API 的服务的 WORKER 端点。",
+        "jobs":"作业顺利完成。",
+        "jobErrors":"作业因错误而失败。",
+        "services":"服务顺利完成。",
+        "serviceErrors":"服务因错误而失败。",
+        "dappGas":"可用于工作和服务的 DAPP Gas。",
+        "id":"工作或服务的 ID。",
+        "owner":"工作或服务的所有者。 所有者为工作或服务支付 DAPP Gas。",
+        "consumer":"工作或服务的消费者。 消费者可以与所有者相同，或者消费者可以是智能合约。 DAPP Gas 由所有者支付。",
+        "months":"已支付月服务费",
+        "started":"服务是否已启动。",
+        "endDate":"提供请求服务的工人的结束日期。",
+        "workerEndpointIoStorage":"WORKER 地址，WORKER 端点，IO 已用完，存储已用完。",
+        "callback":"工作是否需要智能合约回调？",
+        "consistent":"Require all WORKER results be the same and throw an error if not?",
+        "gasLimit":"满足工作请求的功能的气体限制。",
+        "results":"WORKER 返回的总结果数。"
+    },
+    "home": {
+        "home": {
+            "title": "DAPP WORKERS",
+            "subtitle": "DAPP Workers 通过使用 Docker 映像来执行工作或运行请求和支付链上费用的服务，从而实现高级智能合约功能。",
+            "buttonOne": "了解更多",
+            "buttonTwo": "成为一名工人"
+        }
+    },
+    "consumer": {
+        "worker info": {
+            "title": "工人信息",
+            "subtitle": "有关选定工人的信息。",
+            "altSubtitle": "所有工人信息",
+            "button": ""
+        },
+        "worker images": {
+            "title": "WORKER IMAGES",
+            "subtitle": "WORKER 工作和服务形象信息。",
+            "button": ""
+        },
+        "buy gas": {
+            "title": "为工人买气",
+            "subtitle": "提供金额、消费者地址和 WORKER 账户，以资助 WORKER 使用 DAPP Network 工作和服务。",
+            "button": "买气",
+            "previews":[
+                { "name":"DAPP", "type":"dapp","short":"DAPP 代币调整为 4 位小数精度。"},
+                { "name":"Consumer", "type":"address","short":"消费账户或合约地址。"},
+                { "name":"WORKER", "type":"address","short":"购买 DAPP gas 的 WORKER 地址。"}
+            ]
+        },
+        "sell gas": {
+            "title": "卖气",
+            "subtitle": "为 DAPP 出售 DAPP gas。",
+            "button": "卖气",
+            "previews":[
+                { "name":"DAPP", "type":"dapp","short":"DAPP 代币调整为 4 位小数精度。"},
+                { "name":"WORKER", "type":"address","short":"出售 DAPP gas 的 WORKER 地址。"}
+            ]
+        },
+        "request job": {
+            "title": "申请工作",
+            "subtitle": "提交 DAPP Worker 的工作。",
+            "button": "申请工作",
+            "previews":[
+                { "name":"OWNER","type": "address","short":"地址请求工作。"},
+                { "name":"IMAGE","type": "string","short":"将使用 Docker 映像作业。"},
+                { "name":"INPUT","type": "string","short":"docker 镜像的输入命令。"},
+                { "name":"CALLBACK","type": "bool","short":"该工作是否需要合同回调？"},
+                { "name":"GAS LIMIT","type": "uint","short":"运行作业的气体限制"},
+                { "name":"UNIFORM RESPONSE","type": "bool","short":"要求所有 WORKER 输出匹配。"},
+                { "name":"ARGUMENTS","type": "array","short":"提供 docker image 逗号分隔的参数。"}
+            ],
+            "sufficientGas":"一个或多个 DAPP Worker 的 DAPP Gas 不足",
+            "dappGas":"预计使用的 DAPP Gas"
+        },
+        "request service": {
+            "title": "请求服务",
+            "subtitle": "提交服务给 DAPP Worker 提供。",
+            "button": "请求服务",
+            "previews":[
+                { "name":"OWNER","type": "address","short":"地址请求服务。"},
+                { "name":"IMAGE","type": "string","short":"将使用 Docker 镜像服务。"},
+                { "name":"UP/DOWNLOAD MB","type": "uint","short":"以兆字节为单位的上传/下载带宽。"},
+                { "name":"STORAGE MB","type": "uint","short":"服务的总存储量（以 MB 为单位）。"},
+                { "name":"INPUT","type": "string","short":"docker 镜像的输入命令。"},
+                { "name":"ARGUMENTS","type": "array","short":"提供 docker image 逗号分隔的参数。"},
+                { "name":"MONTHS","type": "uint","short":"提供服务的月数，包括基本成本，不增加上传/下载/存储成本。"}
+            ],
+            "sufficientGas":"一个或多个 DAPP Worker 的 DAPP Gas 不足",
+            "dappGas":"预计使用的 DAPP Gas"
+        },
+        "extend service": {
+            "title": "延长服务",
+            "subtitle": "延长现有服务时间、上传/下载限制和/或存储限制。",
+            "button": "延长服务",
+            "previews":[
+                { "name":"SERVICE ID","type": "uint","short":"要扩展的服务 ID。"},
+                { "name":"IMAGE","type": "string","short":"使用 Docker 镜像服务。"},
+                { "name":"MONTHS","type": "uint","short":"延长服务的月份，包括基本成本，每月的上传/下载/存储成本成倍增加。"},
+                { "name":"UP/DOWNLOAD MB","type": "uint","short":"以兆字节为单位的上传/下载带宽。"},
+                { "name":"STORAGE MB","type": "uint","short":"服务的额外存储量（以 MB 为单位）。"}
+            ]
+        },
+        "jobs": {
+            "title": "消费者工作",
+            "subtitle": "消费者请求的所有工作的列表。"
+        },
+        "services": {
+            "title": "消费服务",
+            "subtitle": "消费者请求的所有服务的列表。"
+        },
+        "set consumer": {
+            "title": "设置消费者",
+            "subtitle": "设置消费者合约地址以使用账户的 DAPP gas。",
+            "button": "设置消费者",
+            "previews":[
+                { "name":"CONSUMER CONTRACT","type": "address","short":"用于工作和服务的消费者 DAPP Gas 的合同地址。"}
+            ]
+        },
+        "set workers": {
+            "title": "设置工人",
+            "subtitle": "选择 DAPP Workers 提供工作/服务。",
+            "button": "设置工人",
+            "previews":[
+                { "name":"WORKERS","type": "array_addresses","short":"用于作业/服务的 WORKER 地址列表。"}
+            ]
+        }
+    },
+    "worker": {
+        "register": {
+            "title": "注册工人",
+            "subtitle": "注册 WORKER 端点和为作业和服务选择的能力。",
+            "button": "注册工人",
+            "previews":[
+                { "name":"endpoint","type": "string","short":"WORKER Endpoint 为服务提供 WORKER API。"}
+            ]
+        },
+        "deprecate": {
+            "title": "贬低工人",
+            "subtitle": "弃用 WORKER，空端点，删除为作业/服务选择的能力。",
+            "button": "贬低工人"
+        },
+        "register image": {
+            "title": "注册图像",
+            "subtitle": "为现有图像注册图像和成本金额。",
+            "button": "注册图像",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"要注册的 Docker 映像。"},
+                { "name":"JOB FEE","type": "uint","short":"执行工作所需的费用。"},
+                { "name":"BASE FEE","type": "uint","short":"提供服务时间的基本费用。"},
+                { "name":"STORAGE FEE","type": "uint","short":"每使用 mb 存储空间的费用。"},
+                { "name":"I/O FEE","type": "uint","short":"提供的每 mb 上传/下载带宽费用。"},
+                { "name":"MIN STORAGE MB","type": "uint","short":"最小存储在 mb 以提供服务。"},
+                { "name":"MIN I/O MB","type": "uint","short":"mb 中的最小 i/o 以提供服务。"}
+            ]
+        },
+        "update image": {
+            "title": "更新图像",
+            "subtitle": "为选择此图像的消费者更新图像属性。",
+            "button": "更新图像",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"要更新的 Docker 映像。"},
+                { "name":"JOB FEE","type": "uint","short":"执行工作所需的费用。"},
+                { "name":"BASE FEE","type": "uint","short":"提供服务时间的基本费用。"},
+                { "name":"STORAGE FEE","type": "uint","short":"每使用 mb 存储空间的费用。"},
+                { "name":"I/O FEE","type": "uint","short":"提供的每 mb 上传/下载带宽费用。"},
+                { "name":"MIN STORAGE MB","type": "uint","short":"最小存储在 mb 以提供服务。"},
+                { "name":"MIN I/O MB","type": "uint","short":"mb 中的最小 i/o 以提供服务。"}
+            ]
+        },
+        "jobs": {
+            "title": "DAPP 工作者工作",
+            "subtitle": "列出包含此 WORKER 的 WORKER 作业。",
+            "button": ""
+        },
+        "services": {
+            "title": "DAPP 工人服务",
+            "subtitle": "列出包含此 WORKER 的 WORKER 服务。",
+            "button": ""
+        }
+    },
+    "admin": {
+        "set config": {
+            "title": "设置配置",
+            "subtitle": "设置管理员配置。",
+            "button": "设置配置",
+            "previews":[
+                { "name":"PAYMENT PREMIUM PPB","type": "uint","short":"支付保费乘数以 2 位小数精度。"},
+                { "name":"GAS CEILING MULT","type": "uint","short":"在当前汽油价格之上支付的乘数。"},
+                { "name":"FALLBACK GAS PRICE","type": "uint","short":"如果chainlink失败，备用gas价格。"},
+                { "name":"STAILNESS SECONDS","type": "uint","short":"在最新的链环价格馈送过时之前的几秒钟。"}
+            ]
+        },
+        "approve image": {
+            "title": "批准图片",
+            "subtitle": "批准 DAPP Workers 使用的图像。",
+            "button": "批准图片",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"要批准的 Docker 映像。"},
+                { "name":"IMAGE HASH","type": "string","short":"要批准的 docker 图像的哈希"}
+            ]
+        },
+        "unapprove image": {
+            "title": "未批准的图片",
+            "subtitle": "未批准 DAPP Workers 使用的图像。",
+            "button": "未批准的图片",
+            "previews":[
+                { "name":"IMAGE","type": "string","short":"要取消批准的 Docker 映像。"}
+            ]
+        }
+    }
+}
