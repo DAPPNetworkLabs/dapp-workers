@@ -6,23 +6,21 @@ export let provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR,
         delay: 1000,
         onTimeout: false,
     },
-    timeout: 45000,
+    timeout: 30000,
     clientConfig: {
         maxReceivedFrameSize: 50000000000,
         maxReceivedMessageSize: 50000000000,
         keepalive: true,
-        keepaliveInterval: 10000,
-        dropConnectionOnKeepaliveTimeout: true,
-        keepaliveGracePeriod: 30000,
+        keepaliveInterval: 60000,
+        // dropConnectionOnKeepaliveTimeout: true,
+        // keepaliveGracePeriod: 30000,
     }
-});
-provider.on("connect", () => {
-    console.log(`connected!`);
-});
-provider.on("reconnect", () => {
-    console.log(`reconnecting...`);
-});
-provider.on("close", () => {
-    console.log(`disconnected`);
-});
+})
+// .on("connect", () => {
+//     console.log(`connected!`);
+// }).on("reconnect", () => {
+//     console.log(`reconnecting...`);
+// }).on("close", () => {
+//     console.log(`disconnected`);
+// });
 export let web3 = new Web3(provider);

@@ -185,6 +185,24 @@ const run = () => {
 
 run();
 
+provider.on('error', e => console.log('WS Error', e));
+function socketError(e){
+    console.log('WS closed');
+    console.log('Attempting to reconnect...');
+
+    provider.on('connect', function () {
+        console.log('WSS Reconnected');
+    });
+    provider.on('end', socketError);
+    provider.on('close', socketError);
+
+    web3.setProvider(provider);
+    if(theContract)
+        subscribe(theContract);
+}
+provider.on('end', socketError);
+provider.on('close', socketError);
+
 async function isProcessed(jobID, isJob) {
     return await theContract.methods.jobServiceCompleted(jobID, workerAccount.address, isJob).call({ from: workerAccount.address });
 }
@@ -226,7 +244,9 @@ const getInfo = async (jobId, type) => {
 }
 
 const verifyImageHash = async (image, id, isJob) => {
-    let hash:any = await execPromise(`docker images --no-trunc --quiet ${image}`,{});
+    // let hash:any = await execPromise(`docker images --no-trunc --quiet ${image}`,{});
+    // hash = hash.slice(7).replace(/ +/g, "").replace(/[\n\r]/g, '');
+    let hash:any = await execPromise(`docker images --digests --format "{{.Digest}}" ${image}`,{});
     hash = hash.slice(7).replace(/ +/g, "").replace(/[\n\r]/g, '');
     const chainHash = await theContract.methods.approvedImages(image).call({ from: workerAccount.address });
     if(hash != chainHash) {
