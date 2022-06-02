@@ -1,0 +1,1 @@
+kubectl apply -f $PWD/k8s/test/images/rust-compiler.yaml,$PWD/k8s/test/images/git-cloner.yaml,$PWD/k8s/test/images/monte-carlo-dice.yaml,$PWD/k8s/test/images/runner.yaml,$PWD/k8s/test/images/solidity-runner.yaml,$PWD/k8s/test/images/wasi.yaml

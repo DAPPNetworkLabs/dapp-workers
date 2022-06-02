@@ -141,9 +141,7 @@ export async function isServiceDone(jobID: number, workerAccount: { address: str
     return await theContract.methods.isServiceDone(jobID).call({ from: workerAccount.address });
 }
 
-export async function validateJobBalance(consumer, gasLimit, imageName: string, workerAccount: { address: string, privateKey: string }) {
-    console.log('consumer',typeof(consumer));
-    console.log('gasLimit',typeof(gasLimit));
+export async function validateJobBalance(consumer:string, gasLimit:string, imageName: string, workerAccount: { address: string, privateKey: string }) {
     const workerData = await theContract.methods.workerData(consumer, workerAccount.address).call({ from: workerAccount.address });
     const requiredAmount = await theContract.methods.getMaxPaymentForGas(gasLimit, imageName, workerAccount.address).call({ from: workerAccount.address });
 
