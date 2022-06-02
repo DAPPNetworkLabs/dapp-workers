@@ -1,5 +1,4 @@
 import { web3 } from './web3global';
-import { address } from './index'; 
 import { AwsKmsSigner } from "./kms";
 import { ethers } from "ethers";
 
@@ -28,12 +27,12 @@ const signKms = async (unsignedTx, nexusContract, signer) => {
     console.log(nonce);
     
     // const gasLimit = process.env.WORKER_EVM_GAS_LIMIT || 1000000;
-    // const maxPriorityFeePerGas = process.env.WORKER_EVM_MAX_PRIORITY_FEE_PER_GAS || 3000000000;
-    // const maxFeePerGas = process.env.WORKER_EVM_MAX_FEE_PER_GAS || 100000000000;
+    const maxPriorityFeePerGas = process.env.WORKER_EVM_MAX_PRIORITY_FEE_PER_GAS || 3000000000;
+    const maxFeePerGas = process.env.WORKER_EVM_MAX_FEE_PER_GAS || 100000000000;
     
     // utx.gasLimit = numberToHex(gasLimit);
-    // utx.maxPriorityFeePerGas = numberToHex(maxPriorityFeePerGas);
-    // utx.maxFeePerGas = numberToHex(maxFeePerGas);
+    utx.maxPriorityFeePerGas = numberToHex(maxPriorityFeePerGas);
+    utx.maxFeePerGas = numberToHex(maxFeePerGas);
     
     console.log('utx',utx);
     
@@ -56,7 +55,7 @@ const signKms = async (unsignedTx, nexusContract, signer) => {
 }
 
 let abi = require(process.env.NEXUS_PATH || '/nexus/artifacts/contracts/Nexus.sol/Nexus.json');
-export async function postTrx(method, account_from, ...args) {
+export async function postTrx(method, account_from, newNonce = null, ...args) {
     console.log('method',method);
     console.log('args',...args);
     if(process.env.WORKER_AWS_KMS_ENABLED && process.env.WORKER_AWS_KMS_ENABLED.toString() == "true") {
@@ -68,12 +67,12 @@ export async function postTrx(method, account_from, ...args) {
         };
         const signer = new AwsKmsSigner(kmsCredentials);
         const provider = ethers.getDefaultProvider(process.env.ETH_ADDR);
-        const nexusContract = new ethers.Contract(address, abi.abi, provider);
+        const nexusContract = new ethers.Contract(process.env.ADDRESS, abi.abi, provider);
         const unsignedTx = await nexusContract.populateTransaction[method](...args);
         
         return await signKms(unsignedTx, nexusContract, signer);
     } else {
-        const theContract2 = new web3.eth.Contract(abi.abi, address, {
+        const theContract2 = new web3.eth.Contract(abi.abi, process.env.ADDRESS, {
             from: account_from.address
         });
         const nexusTx = theContract2.methods[method](...args);
@@ -82,7 +81,7 @@ export async function postTrx(method, account_from, ...args) {
         if(process.env.WORKER_EIP1559_ENABLED && process.env.WORKER_EIP1559_ENABLED.toString() == "true") {
             trx = {
                 from: account_from.address,
-                to: address,
+                to: process.env.ADDRESS,
                 data: await nexusTx.encodeABI(),
                 gasLimit: process.env.WORKER_EVM_GAS_LIMIT || await nexusTx.estimateGas(),
                 maxPriorityFeePerGas: process.env.WORKER_EVM_MAX_PRIORITY_FEE_PER_GAS || 3000000000,
@@ -91,14 +90,16 @@ export async function postTrx(method, account_from, ...args) {
         } else {
             trx = {
                 from: account_from.address,
-                to: address,
+                to: process.env.ADDRESS,
                 data: await nexusTx.encodeABI(),
                 gas: await nexusTx.estimateGas(),
             }
         }
-        trx.nonce = await web3.eth.getTransactionCount(account_from.address);
+        trx.nonce = newNonce ? newNonce : await web3.eth.getTransactionCount(account_from.address);
+        console.log('createTransaction trx');
         const createTransaction = await web3.eth.accounts.signTransaction(trx, account_from.privateKey);
         try {
+            console.log('re running trx');
             return await web3.eth.sendSignedTransaction(createTransaction.rawTransaction);
         } catch(e) {
             console.log('caught e',e,typeof(e));
@@ -107,12 +108,14 @@ export async function postTrx(method, account_from, ...args) {
                 const first = e.message.indexOf('be');
                 const last = e.message.indexOf(' but');
                 const newNonce = parseInt(e.message.slice(first+3,last));
-                console.log('newNonce',newNonce,typeof(newNonce),first,last);
-                trx.nonce = newNonce;
-                const createTransaction = await web3.eth.accounts.signTransaction(trx, account_from.privateKey);
-                return await web3.eth.sendSignedTransaction(createTransaction.rawTransaction);
+                // console.log('newNonce',newNonce,typeof(newNonce),first,last);
+                // trx.nonce = newNonce;
+                // const createTransaction = await web3.eth.accounts.signTransaction(trx, account_from.privateKey);
+                return await postTrx(method, account_from, newNonce, ...args);
+            } else if(e && e.message && e.message.includes('completed')) {
+                console.log(`caught double completion error`, e);
             } else {
-                console.log(e);
+                throw e;
             }
         }
     }
