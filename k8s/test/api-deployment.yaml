@@ -26,64 +26,12 @@ spec:
     spec:
       containers:
         - args:
-            - /bin/bash
-            - /app/api/wait-for-it.sh
-            - --timeout=15
-            - eth:8545
-            - --
             - node
             - ./dist/index.js
-          env:
-            - name: ADDRESS
-              value: 0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5
-            - name: DATABASE_NODE_ENV
-              value: "production"
-            - name: DATABASE_TIMEOUT
-              value: "10000"
-            - name: DATABASE_URL
-              value: postgres://user:password@postgres:5432/api
-            - name: ETH_ADDR
-              value: ws://eth:8545
-            - name: FROM_BLOCK
-              value: "0"
-            - name: NODE_OPTIONS
-              value: --openssl-legacy-provider
-            - name: SEED
-              value: cruel rebel frown short month love belt weather sense hood cage pact
-            - name: WORKER_AWS_KMS_ENABLED
-              value: "false"
-            - name: WORKER_EVM_GAS_LIMIT
-              value: "1000000"
-            - name: WORKER_EVM_GAS_PRICE
-              value: "2000000000"
-            - name: WORKER_EVM_MAX_FEE_PER_GAS
-              value: "100000000000"
-            - name: WORKER_EVM_MAX_PRIORITY_FEE_PER_GAS
-              value: "3000000000"
-            - name: DAPP_WORKERS_K8S
-              value: "true"
           image: natpdev/api
           name: api
           ports:
             - containerPort: 8050
           resources: {}
-          securityContext:
-            privileged: true
-          volumeMounts:
-            - mountPath: /var/run/docker.sock:ro
-              name: docker-sock
-            - mountPath: /nexus
-              name: api-claim1
-              readOnly: true
       restartPolicy: Always
-      volumes:
-        - name: docker-sock
-          hostPath:
-            path: /var/run/docker.sock
-            # type: Socket
-        - name: api-claim1
-          hostPath:
-            path: /k8s/home/ubuntu/environment/dapp-workers/nexus
-            # path: /dapp-workers/nexus
-            # type: Directory
 status: {}
