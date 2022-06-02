@@ -534,320 +534,167 @@ describe("Nexus", function(done) {
     expect(body).to.equal('foo');
   });
 
-  it("Queue service - poa-evm-network", async function() {
-    // await nexusContract.connect(worker1).regWORKER("http://api:8050/dapp-workers");
-    await nexusContract.approveImage("natpdev/poa-evm-network","6b01d430a76e66c809644c852ef1015859a7e8d51b7a3d22f92068f8165034a5");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/poa-evm-network",100000,100000,100000,100000,1,1);
+  it(  });
+
+  it("Queue job git-cloner", async function() {
+    await nexusContract.approveImage("natpdev/git-cloner","6889517fd553d36ed5743827cd81c8f94438bd2502db57e9bbfbfac73e746f5b");
+    await nexusContract.connect(worker1).setDockerImage("natpdev/git-cloner",100000,100000,100000,100000,100,100);
     
-    await nexusContract.queueService({
-      owner: addr1.address,
-      imageName: "natpdev/poa-evm-network",
-      ioMegaBytes: 1000,
-      storageMegaBytes: 1000,
-      inputFS: "",
-      args: ["a6a0d343688a862cf30ccb478f77986a5e1789b2","PORT:8545"],
-      months: 1
-    });
-    
-    const id1 = await nexusContract.lastJobID();
-
-    const service = await nexusContract.services(id1);
-
-    expect(service.consumer).to.equal(addr1.address);
-    expect(service.imageName).to.equal("natpdev/poa-evm-network");
-    
-    const servicePromise = new Promise((resolve, reject) => {
-        nexusContract.once("ServiceRunning", (
-            consumer, 
-            worker, 
-            serviceId, 
-            port
-          ) => {
-            resolve();
-          }
-        );
-    });
-
-    await servicePromise.then();
-    
-    const port = await nexusContract.getPortForWORKER(id1,worker1.address);
-
-    expect(port).to.equal(globalPort++);
-
-    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
-    
-    console.log('endpoint',`${endpoint}?id=${id1}&image=poa-evm-network&port=8545`);
-
-    expect(endpoint).to.equal(`${endpoint}`);
-    
-    await delay(20);
-
-    // using 8545 because inside docker compose use internal ports
-    const response = await fetch(`${endpoint}?id=${id1}&image=poa-evm-network&port=8545`, {
-      method: 'POST', 
-      body:'{"id":0,"jsonrpc":"2.0","method": "eth_blockNumber", "params": []}',
-      headers: { "Content-Type": "application/json" }
-    });
-    console.log(response,`response`);
-    
-    const body = await response.json();
-    // const body = await response.text();
-    console.log('body',body);
-    console.log('body.jsonrpc',body.jsonrpc,typeof(body.jsonrpc));
-
-    expect(body.jsonrpc).to.equal("2.0");
-    // await nexusContract.connect(worker1).regWORKER("http://api:8050/dapp-workers");
-    
-    // await delay(20000000);
-  });
-
-  it("Queue service with callback", async function() {
-    const dapps = ethers.utils.parseUnits("250000",4);
-    await dappTokenContract.mint(addr2.address, dapps);
-    await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
-    await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, worker1.address);
-    await nexusContract.connect(addr2).setWorkers([worker1.address]);
-
-    await consumerContract.queueService(addr2.address, "QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM");
-    
-    const servicePromise = new Promise((resolve, reject) => {
-        nexusContract.once("ServiceRunning", (
-            consumer, 
-            worker, 
-            serviceId, 
-            port
-          ) => {
-            resolve();
-          }
-        );
-    });
-
-    await servicePromise.then();
-    
-    const id1 = await nexusContract.lastJobID();
-
-    const port = await nexusContract.getPortForWORKER(id1,worker1.address);
-
-    expect(port).to.equal(globalPort++);
-
-    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
-
-    expect(endpoint).to.equal(`${endpoint}`);
-    
-    console.log('endpoint',`${endpoint}?id=${id1}&image=wasi-service&port=${port}&text=true`);
-    
-    await delay(20);
-
-    const response = await fetch(`${endpoint}?id=${id1}&image=wasi-service&port=${port}&text=true`, {method: 'GET'});
-    const body = await response.text();
-
-    expect(body).to.equal("foo");
-  });
-
-  it("Min job balance", async function() {
-    const min = await nexusContract.getMinBalance(2,"job",worker1.address);
-
-    // console.log(min.toString());
-    // 76,349.8769 * 0.00730 $/DAPP = $557.35
-    
-    expect(min).is.above(200000000);
-  });
-
-  it("Min job balance with callback", async function() {
-    const min = await nexusContract.getMinBalance(3,"job",worker1.address);
-
-    // console.log(min.toString());
-    // 76,349.8769 * 0.00730 $/DAPP = $557.35
-    
-    expect(min).is.above(200000000);
-  });
-
-  it("Min service balance", async function() {
-    const min = await nexusContract.getMinBalance(6,"service",worker1.address);
-
-    // console.log(min.toString());
-    // 9,315.0201 * 0.00730 $/DAPP = $68.00
-
-    expect(min).is.above(50000000);
-  });
-
-  it("Set workers", async function() {
-    await nexusContract.connect(worker2).regWORKER("endpoint");
-
-    const dapps = ethers.utils.parseUnits("800000",4);
-    await dappTokenContract.mint(addr1.address, dapps);
-    await dappTokenContract.approve(nexusContract.address, dapps);
-    await nexusContract.buyGasFor(dapps, addr1.address, worker2.address);
-
-    await nexusContract.setWorkers([worker1.address,worker2.address]);
-
-    const workers = await nexusContract.getWorkerAddresses();
-
-    expect(JSON.stringify(workers)).to.equal(JSON.stringify([worker1.address,worker2.address]));
-    
-    await nexusContract.setWorkers([worker1.address]);
-    await nexusContract.connect(worker2).deprecateWORKER();
-  });
-
-  it("Run is job complete", async function() {
-    const isCocmplete1 = await nexusContract.jobServiceCompleted(1,worker1.address,true);
-    const isCocmplete2 = await nexusContract.jobServiceCompleted(2,worker1.address,true);
-
-    expect(isCocmplete1).to.equal(true);
-    expect(isCocmplete2).to.equal(true);
-  });
-
-  it("Try double run service", async function() {let failed = false;
-    try {
-      await nexusContract.connect(worker1).serviceCallback(5,9000);
-    } catch(e) {
-      failed = true;
-    }
-
-    expect(failed).to.equal(true);
-  });
-  
-  it("Run job - error", async function() {
-    const preWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
-
     await nexusContract.queueJob({
       owner: addr1.address,
-      imageName: "natpdev/runner",
-      inputFS: "", // no input error
+      imageName: "natpdev/git-cloner",
+      inputFS: loadfsRoot("solidityRunner"),
       callback: false,
       gasLimit: 1000000,
       requiresConsistent: false,
-      args: ["target/wasm32-wasi/release/test"]
+      args: []
     });
-    
-    const id = await nexusContract.lastJobID();
-    
-    const completePromise = new Promise((resolve, reject) => {
-        nexusContract.on("JobError", (
-            consumer,
-            stdErr, 
+
+    const eventPromise = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            worker, 
             outputFS, 
+            outputHash,
+            dapps,
             jobID
           ) => {
-            if(Number(id) == Number(jobID)) {
-              console.log('hit job error')
-              resolve();
-            }
+            console.log('jobID',jobID)
+            resolve(outputFS);
           }
         );
     });
-    
-    await completePromise.then();
 
-    const postWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
-    
-    // ensure get base payment for job
-    expect(postWorkerBal).is.above(preWorkerBal);
-    
-    const isCocmplete1 = await nexusContract.jobServiceCompleted(id,worker1.address,true);
+    await eventPromise.then(val => {
+      outputFSRes = val;
+    });
 
-    expect(isCocmplete1).to.equal(true);
+    const id = await nexusContract.lastJobID();
+    const job = await nexusContract.jobs(id);
+
+    expect(job.consumer).to.equal(addr1.address);
+    expect(job.callback).to.equal(false);
+    expect(job.resultsCount.toString()).to.equal('1');
+    expect(job.imageName).to.equal("natpdev/git-cloner");
+    expect(outputFSRes).to.equal("QmcREDmdnLtn41V4JGADUA81eQEPeJ86raGETT43ShJqNU");
   });
 
-  it("Run service - error", async function() {
-    const preWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
-
-    await nexusContract.queueService({
+  it("Queue job solidity-runner", async function() {
+    await nexusContract.approveImage("natpdev/solidity-runner","4d31882591628a985c71ff769f61b2d1a6df1d3c089a80231ecd5be7d8e419a1");
+    await nexusContract.connect(worker1).setDockerImage("natpdev/solidity-runner",100000,100000,100000,100000,100,100);
+    
+    await nexusContract.queueJob({
       owner: addr1.address,
-      imageName: "natpdev/wasi-service",
-      ioMegaBytes: 100,
-      storageMegaBytes: 100,
-      inputFS: "",
-      args: ["target/wasm32-wasi/release/test"],
-      months: 1
+      imageName: "natpdev/solidity-runner",
+      inputFS: "QmezhC5XeojouKMuBNEbyP36J8K6HW6mLdUJF5aBeUexKB",
+      callback: false,
+      gasLimit: 1000000,
+      requiresConsistent: false,
+      args: ["example-solidity-runner"]
     });
-    
-    const id = await nexusContract.lastJobID();
-    
-    const completePromise = new Promise((resolve, reject) => {
-        nexusContract.on("ServiceError", (
-            consumer,
-            worker,
-            stdErr, 
+
+    const eventPromise = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            worker, 
             outputFS, 
+            outputHash,
+            dapps,
             jobID
           ) => {
-            if(Number(id) == Number(jobID)) {
-              console.log('hit job error')
-              expect(stdErr).to.equal("error dispatching");
-              resolve();
-            }
+            console.log('jobID',jobID)
+            resolve(outputFS);
           }
         );
     });
-    
-    await completePromise.then();
 
-    const postWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
-    
-    // ensure get base payment for job
-    expect(postWorkerBal).is.above(preWorkerBal);
-    
-    const isCocmplete1 = await nexusContract.jobServiceCompleted(id,worker1.address,false);
+    await eventPromise.then(val => {
+      outputFSRes = val;
+    });
 
-    expect(isCocmplete1).to.equal(true);
+    const id = await nexusContract.lastJobID();
+    const job = await nexusContract.jobs(id);
+
+    expect(job.consumer).to.equal(addr1.address);
+    expect(job.callback).to.equal(false);
+    expect(job.resultsCount.toString()).to.equal('1');
+    expect(job.imageName).to.equal("natpdev/solidity-runner");
+    expect(outputFSRes).to.equal("18");
   });
 
-  it("Extend service", async function() {
-    const preWorkerEnDate = (await nexusContract.services(6)).endDate;
-    const preWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
-    const preWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
-
-    const dapps = ethers.utils.parseUnits("200000",4);
-    await dappTokenContract.approve(nexusContract.address, dapps);
-    await nexusContract.extendService(
-      6,
-      "natpdev/wasi-service",
-      1,
-      100,
-      100
-    );
-
-    const postWorkerEnDate = (await nexusContract.services(6)).endDate;
-    const postWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
-    const postWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
+  it("Queue job monte-carlo-dice", async function() {
+    await nexusContract.approveImage("natpdev/monte-carlo-dice","f2bd618b510a1f12374af6256ca1130187ddfe6b04c7936b5a9924b1ced720d0");
+    await nexusContract.connect(worker1).setDockerImage("natpdev/monte-carlo-dice",100000,100000,100000,100000,100,100);
     
-    expect(postWorkerEnDate).is.above(preWorkerEnDate);
-    expect(postWorkerIoLimit).is.above(preWorkerIoLimit);
-    expect(postWorkerStorageLimit).is.above(preWorkerStorageLimit);
+    await nexusContract.queueJob({
+      owner: addr1.address,
+      imageName: "natpdev/git-cloner",
+      inputFS: loadfsRoot("monteCarlo"),
+      callback: false,
+      gasLimit: 1000000,
+      requiresConsistent: false,
+      args: []
+    });
+
+    const eventPromise = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            worker, 
+            outputFS, 
+            outputHash,
+            dapps,
+            jobID
+          ) => {
+            console.log('jobID',jobID)
+            resolve(outputFS);
+          }
+        );
+    });
+
+    await eventPromise.then(val => {
+      outputFSRes = val;
+    });
+    
+    await nexusContract.queueJob({
+      owner: addr1.address,
+      imageName: "natpdev/monte-carlo-dice",
+      inputFS: outputFSRes,
+      callback: false,
+      gasLimit: 1000000,
+      requiresConsistent: false,
+      args: ["example-monte-carlo-dice"]
+    });
+
+    const eventPromise2 = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            worker, 
+            outputFS, 
+            outputHash,
+            dapps,
+            jobID
+          ) => {
+            resolve(outputFS);
+          }
+        );
+    });
+
+    await eventPromise2.then(val => {
+      outputFSRes = val;
+    });
+
+    const id = await nexusContract.lastJobID();
+    const job = await nexusContract.jobs(id);
+
+    expect(job.consumer).to.equal(addr1.address);
+    expect(job.callback).to.equal(false);
+    expect(job.resultsCount.toString()).to.equal('1');
+    expect(job.imageName).to.equal("natpdev/monte-carlo-dice");
+    expect(Number(outputFSRes)).is.above(3);
   });
 
-  it("Extend service same month", async function() {
-    const preWorkerEnDate = (await nexusContract.services(6)).endDate;
-    const preWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
-    const preWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
-
-    const dapps = ethers.utils.parseUnits("200000",4);
-    await dappTokenContract.approve(nexusContract.address, dapps);
-    await nexusContract.extendService(
-      6,
-      "natpdev/wasi-service",
-      0,
-      1,
-      1
-    );
-
-    const postWorkerEnDate = (await nexusContract.services(6)).endDate;
-    const postWorkerIoLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).ioMegaBytesLimit;
-    const postWorkerStorageLimit = (await nexusContract.getWORKERDataLimits(6,worker1.address)).storageMegaBytesLimit;
-    
-    expect(postWorkerEnDate).to.equal(preWorkerEnDate);
-    expect(postWorkerIoLimit).is.above(preWorkerIoLimit);
-    expect(postWorkerStorageLimit).is.above(preWorkerStorageLimit);
-  });
-
-  it("Get get max payment for gas", async function() {
-    const data = await nexusContract.getMaxPaymentForGas("1000000","natpdev/runner",worker1.address);
-    
-    expect(data).is.above(100000000);
-  });
-
-  it("Run service - io/storage limit", async function() {
+  it("Run service - complete", async function() {
+    console.log('first queue job');
     await nexusContract.queueJob({
       owner: addr1.address,
       imageName: "natpdev/rust-compiler",
@@ -875,18 +722,19 @@ describe("Nexus", function(done) {
     await JobPromise.then(val => {
       outputFSRes = val;
     });
+    
+    const preWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
 
+    console.log('second queue service')
     await nexusContract.queueService({
       owner: addr1.address,
       imageName: "natpdev/wasi-service",
-      ioMegaBytes: 1,
-      storageMegaBytes: 1,
+      ioMegaBytes: 100,
+      storageMegaBytes: 100,
       inputFS: outputFSRes,
       args: ["target/wasm32-wasi/release/test"],
       months: 1
     });
-    
-    const id = await nexusContract.lastJobID();
     
     const servicePromise = new Promise((resolve, reject) => {
         nexusContract.once("ServiceRunning", (
@@ -895,26 +743,43 @@ describe("Nexus", function(done) {
             serviceId, 
             port
           ) => {
-            if(Number(id) == Number(serviceId)) {
-              resolve();
-            }
+            resolve();
           }
         );
     });
     
     await servicePromise.then();
+
+    let failed = false;
+    try {
+      await nexusContract.connect(worker1).serviceComplete({
+        jobID: id,
+        outputFS: "",
+        ioMegaBytesUsed: 100,
+        storageMegaBytesUsed: 100
+      });
+    } catch(e) {
+      failed = true;
+    }
+
+    expect(failed).to.equal(true);
     
+    const timestamp = (await ethers.provider.getBlock(await ethers.provider.getBlockNumber())).timestamp;
+    await ethers.provider.send("evm_mine", [ timestamp + (30 * 1000 * 10 * 10 * 10) ]);
+    
+    const id = await nexusContract.lastJobID();
+    
+    console.log('waiting service complete id:',id)
     const completePromise = new Promise((resolve, reject) => {
-        nexusContract.on("ServiceError", (
+        nexusContract.on("ServiceComplete", (
             consumer,
             worker, 
-            stdErr,
             outputFS, 
             jobID
           ) => {
-            console.log(`Service Error Ids:`,jobID,id,stdErr);
+            console.log('id',Number(id));
+            console.log('jobID',Number(jobID));
             if(Number(id) == Number(jobID)) {
-              expect(stdErr).to.equal("io/storage resource limit reached");
               resolve();
             }
           }
@@ -922,348 +787,89 @@ describe("Nexus", function(done) {
     });
 
     await completePromise.then();
+
+    const postWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
     
-    console.log('service error done')
+    expect(postWorkerBal).is.above(preWorkerBal);
+
+    const port = await nexusContract.getPortForWORKER(id,worker1.address);
+
+    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
+
+    const res = await fetch(`${endpoint}?id=${id}&image=wasi-service&port=${port}&text=true`, {method: 'GET'});
+
+    expect(res.status.toString()).to.equal('500');
     
     const isCocmplete = await nexusContract.jobServiceCompleted(id,worker1.address,false);
     
     expect(isCocmplete).to.equal(true);
   });
 
-  // it("Queue job git-cloner", async function() {
-  //   await nexusContract.approveImage("natpdev/git-cloner","6889517fd553d36ed5743827cd81c8f94438bd2502db57e9bbfbfac73e746f5b");
-  //   await nexusContract.connect(worker1).setDockerImage("natpdev/git-cloner",100000,100000,100000,100000,100,100);
+  // test relies on above increase time to assume the feed is stale
+  it("Get get max payment for gas with fallback time", async function() {
+    const data = await nexusContract.getMaxPaymentForGas("1000000","natpdev/runner",worker1.address);
     
-  //   await nexusContract.queueJob({
-  //     owner: addr1.address,
-  //     imageName: "natpdev/git-cloner",
-  //     inputFS: loadfsRoot("solidityRunner"),
-  //     callback: false,
-  //     gasLimit: 1000000,
-  //     requiresConsistent: false,
-  //     args: []
-  //   });
+    expect(data).is.above(100000000);
+  });
 
-  //   const eventPromise = new Promise((resolve, reject) => {
-  //       nexusContract.once("JobResult", (
-  //           consumer, 
-  //           worker, 
-  //           outputFS, 
-  //           outputHash,
-  //           dapps,
-  //           jobID
-  //         ) => {
-  //           console.log('jobID',jobID)
-  //           resolve(outputFS);
-  //         }
-  //       );
-  //   });
+  it("Claim worker dapp", async function() {
+    const preWorkerBal = await dappTokenContract.balanceOf(worker1.address);
 
-  //   await eventPromise.then(val => {
-  //     outputFSRes = val;
-  //   });
+    await nexusContract.connect(worker1).claim();
 
-  //   const id = await nexusContract.lastJobID();
-  //   const job = await nexusContract.jobs(id);
-
-  //   expect(job.consumer).to.equal(addr1.address);
-  //   expect(job.callback).to.equal(false);
-  //   expect(job.resultsCount.toString()).to.equal('1');
-  //   expect(job.imageName).to.equal("natpdev/git-cloner");
-  //   expect(outputFSRes).to.equal("QmcREDmdnLtn41V4JGADUA81eQEPeJ86raGETT43ShJqNU");
-  // });
-
-  // it("Queue job solidity-runner", async function() {
-  //   await nexusContract.approveImage("natpdev/solidity-runner","4d31882591628a985c71ff769f61b2d1a6df1d3c089a80231ecd5be7d8e419a1");
-  //   await nexusContract.connect(worker1).setDockerImage("natpdev/solidity-runner",100000,100000,100000,100000,100,100);
+    const postWorkerBal = await dappTokenContract.balanceOf(worker1.address);
     
-  //   await nexusContract.queueJob({
-  //     owner: addr1.address,
-  //     imageName: "natpdev/solidity-runner",
-  //     inputFS: "QmezhC5XeojouKMuBNEbyP36J8K6HW6mLdUJF5aBeUexKB",
-  //     callback: false,
-  //     gasLimit: 1000000,
-  //     requiresConsistent: false,
-  //     args: ["example-solidity-runner"]
-  //   });
+    expect(postWorkerBal).is.above(preWorkerBal);
+  });
 
-  //   const eventPromise = new Promise((resolve, reject) => {
-  //       nexusContract.once("JobResult", (
-  //           consumer, 
-  //           worker, 
-  //           outputFS, 
-  //           outputHash,
-  //           dapps,
-  //           jobID
-  //         ) => {
-  //           console.log('jobID',jobID)
-  //           resolve(outputFS);
-  //         }
-  //       );
-  //   });
-
-  //   await eventPromise.then(val => {
-  //     outputFSRes = val;
-  //   });
-
-  //   const id = await nexusContract.lastJobID();
-  //   const job = await nexusContract.jobs(id);
-
-  //   expect(job.consumer).to.equal(addr1.address);
-  //   expect(job.callback).to.equal(false);
-  //   expect(job.resultsCount.toString()).to.equal('1');
-  //   expect(job.imageName).to.equal("natpdev/solidity-runner");
-  //   expect(outputFSRes).to.equal("18");
-  // });
-
-  // it("Queue job monte-carlo-dice", async function() {
-  //   await nexusContract.approveImage("natpdev/monte-carlo-dice","f2bd618b510a1f12374af6256ca1130187ddfe6b04c7936b5a9924b1ced720d0");
-  //   await nexusContract.connect(worker1).setDockerImage("natpdev/monte-carlo-dice",100000,100000,100000,100000,100,100);
+  it("Get worker amount", async function() {
+    const amount = await nexusContract.getWORKERAmount(addr1.address,worker1.address);
     
-  //   await nexusContract.queueJob({
-  //     owner: addr1.address,
-  //     imageName: "natpdev/git-cloner",
-  //     inputFS: loadfsRoot("monteCarlo"),
-  //     callback: false,
-  //     gasLimit: 1000000,
-  //     requiresConsistent: false,
-  //     args: []
-  //   });
+    expect(amount).is.above(0);
+  });
 
-  //   const eventPromise = new Promise((resolve, reject) => {
-  //       nexusContract.once("JobResult", (
-  //           consumer, 
-  //           worker, 
-  //           outputFS, 
-  //           outputHash,
-  //           dapps,
-  //           jobID
-  //         ) => {
-  //           console.log('jobID',jobID)
-  //           resolve(outputFS);
-  //         }
-  //       );
-  //   });
-
-  //   await eventPromise.then(val => {
-  //     outputFSRes = val;
-  //   });
+  it("Get image approved for worker", async function() {
+    const approved = await nexusContract.isImageApprovedForWORKER(worker1.address,"natpdev/runner");
     
-  //   await nexusContract.queueJob({
-  //     owner: addr1.address,
-  //     imageName: "natpdev/monte-carlo-dice",
-  //     inputFS: outputFSRes,
-  //     callback: false,
-  //     gasLimit: 1000000,
-  //     requiresConsistent: false,
-  //     args: ["example-monte-carlo-dice"]
-  //   });
+    expect(approved).to.equal(true);
+  });
 
-  //   const eventPromise2 = new Promise((resolve, reject) => {
-  //       nexusContract.once("JobResult", (
-  //           consumer, 
-  //           worker, 
-  //           outputFS, 
-  //           outputHash,
-  //           dapps,
-  //           jobID
-  //         ) => {
-  //           resolve(outputFS);
-  //         }
-  //       );
-  //   });
+  it("Unapprove image for worker", async function() {
+    await nexusContract.connect(worker1).unapproveDockerForWORKER("natpdev/runner");
 
-  //   await eventPromise2.then(val => {
-  //     outputFSRes = val;
-  //   });
-
-  //   const id = await nexusContract.lastJobID();
-  //   const job = await nexusContract.jobs(id);
-
-  //   expect(job.consumer).to.equal(addr1.address);
-  //   expect(job.callback).to.equal(false);
-  //   expect(job.resultsCount.toString()).to.equal('1');
-  //   expect(job.imageName).to.equal("natpdev/monte-carlo-dice");
-  //   expect(Number(outputFSRes)).is.above(3);
-  // });
-
-  // it("Run service - complete", async function() {
-  //   console.log('first queue job');
-  //   await nexusContract.queueJob({
-  //     owner: addr1.address,
-  //     imageName: "natpdev/rust-compiler",
-  //     inputFS: loadfsRoot("serviceTest"),
-  //     callback: false,
-  //     gasLimit: 1000000,
-  //     requiresConsistent: false,
-  //     args: []
-  //   });
+    const approved = await nexusContract.isImageApprovedForWORKER(worker1.address,"natpdev/runner");
     
-  //   const JobPromise = new Promise((resolve, reject) => {
-  //       nexusContract.once("JobResult", (
-  //           consumer, 
-  //           worker, 
-  //           outputFS, 
-  //           outputHash,
-  //           dapps,
-  //           jobID
-  //         ) => {
-  //           resolve(outputFS);
-  //         }
-  //       );
-  //   });
+    expect(approved).to.equal(false);
+  });
 
-  //   await JobPromise.then(val => {
-  //     outputFSRes = val;
-  //   });
-    
-  //   const preWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
+  it("Get worker port", async function() {
+    const port = await nexusContract.getPortForWORKER(6,worker1.address);
 
-  //   console.log('second queue service')
-  //   await nexusContract.queueService({
-  //     owner: addr1.address,
-  //     imageName: "natpdev/wasi-service",
-  //     ioMegaBytes: 100,
-  //     storageMegaBytes: 100,
-  //     inputFS: outputFSRes,
-  //     args: ["target/wasm32-wasi/release/test"],
-  //     months: 1
-  //   });
-    
-  //   const servicePromise = new Promise((resolve, reject) => {
-  //       nexusContract.once("ServiceRunning", (
-  //           consumer, 
-  //           worker, 
-  //           serviceId, 
-  //           port
-  //         ) => {
-  //           resolve();
-  //         }
-  //       );
-  //   });
-    
-  //   await servicePromise.then();
+    expect(port).to.equal(9000);
+  });
 
-  //   let failed = false;
-  //   try {
-  //     await nexusContract.connect(worker1).serviceComplete({
-  //       jobID: id,
-  //       outputFS: "",
-  //       ioMegaBytesUsed: 100,
-  //       storageMegaBytesUsed: 100
-  //     });
-  //   } catch(e) {
-  //     failed = true;
-  //   }
+  it("Get worker endpoint", async function() {
+    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
-  //   expect(failed).to.equal(true);
-    
-  //   const timestamp = (await ethers.provider.getBlock(await ethers.provider.getBlockNumber())).timestamp;
-  //   await ethers.provider.send("evm_mine", [ timestamp + (30 * 1000 * 10 * 10 * 10) ]);
-    
-  //   const id = await nexusContract.lastJobID();
-    
-  //   console.log('waiting service complete id:',id)
-  //   const completePromise = new Promise((resolve, reject) => {
-  //       nexusContract.on("ServiceComplete", (
-  //           consumer,
-  //           worker, 
-  //           outputFS, 
-  //           jobID
-  //         ) => {
-  //           console.log('id',Number(id));
-  //           console.log('jobID',Number(jobID));
-  //           if(Number(id) == Number(jobID)) {
-  //             resolve();
-  //           }
-  //         }
-  //       );
-  //   });
+    expect(endpoint).to.equal("http://api:8050/dapp-workers");
+  });
 
-  //   await completePromise.then();
+  it("Get worker list", async function() {
+    const workers = await nexusContract.getWorkerAddresses();
 
-  //   const postWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
-    
-  //   expect(postWorkerBal).is.above(preWorkerBal);
+    const expectedResult = [ worker1.address,worker2.address ];
 
-  //   const port = await nexusContract.getPortForWORKER(id,worker1.address);
+    expect(JSON.stringify(workers)).to.equal(JSON.stringify(expectedResult));
+  });
 
-  //   const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
+  it("Get worker data", async function() {
+    const workers = await nexusContract.getWorkerAddresses();
 
-  //   const res = await fetch(`${endpoint}?id=${id}&image=wasi-service&port=${port}&text=true`, {method: 'GET'});
+    let workerData = [];
+    for(let i=0; i<workers.length; i++) {
+      workerData.push(await nexusContract.registeredWORKERs(workers[i]));
+    }
 
-  //   expect(res.status.toString()).to.equal('500');
-    
-  //   const isCocmplete = await nexusContract.jobServiceCompleted(id,worker1.address,false);
-    
-  //   expect(isCocmplete).to.equal(true);
-  // });
-
-  // // test relies on above increase time to assume the feed is stale
-  // it("Get get max payment for gas with fallback time", async function() {
-  //   const data = await nexusContract.getMaxPaymentForGas("1000000","natpdev/runner",worker1.address);
-    
-  //   expect(data).is.above(100000000);
-  // });
-
-  // it("Claim worker dapp", async function() {
-  //   const preWorkerBal = await dappTokenContract.balanceOf(worker1.address);
-
-  //   await nexusContract.connect(worker1).claim();
-
-  //   const postWorkerBal = await dappTokenContract.balanceOf(worker1.address);
-    
-  //   expect(postWorkerBal).is.above(preWorkerBal);
-  // });
-
-  // it("Get worker amount", async function() {
-  //   const amount = await nexusContract.getWORKERAmount(addr1.address,worker1.address);
-    
-  //   expect(amount).is.above(0);
-  // });
-
-  // it("Get image approved for worker", async function() {
-  //   const approved = await nexusContract.isImageApprovedForWORKER(worker1.address,"natpdev/runner");
-    
-  //   expect(approved).to.equal(true);
-  // });
-
-  // it("Unapprove image for worker", async function() {
-  //   await nexusContract.connect(worker1).unapproveDockerForWORKER("natpdev/runner");
-
-  //   const approved = await nexusContract.isImageApprovedForWORKER(worker1.address,"natpdev/runner");
-    
-  //   expect(approved).to.equal(false);
-  // });
-
-  // it("Get worker port", async function() {
-  //   const port = await nexusContract.getPortForWORKER(6,worker1.address);
-
-  //   expect(port).to.equal(9000);
-  // });
-
-  // it("Get worker endpoint", async function() {
-  //   const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
-
-  //   expect(endpoint).to.equal("http://api:8050/dapp-workers");
-  // });
-
-  // it("Get worker list", async function() {
-  //   const workers = await nexusContract.getWorkerAddresses();
-
-  //   const expectedResult = [ worker1.address,worker2.address ];
-
-  //   expect(JSON.stringify(workers)).to.equal(JSON.stringify(expectedResult));
-  // });
-
-  // it("Get worker data", async function() {
-  //   const workers = await nexusContract.getWorkerAddresses();
-
-  //   let workerData = [];
-  //   for(let i=0; i<workers.length; i++) {
-  //     workerData.push(await nexusContract.registeredWORKERs(workers[i]));
-  //   }
-
-  //   expect(workerData[0].endpoint).to.equal('http://api:8050/dapp-workers');
-  // });
+    expect(workerData[0].endpoint).to.equal('http://api:8050/dapp-workers');
+  });
 });

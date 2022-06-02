@@ -6,10 +6,14 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: orchestrator
-  name: orchestrator
+    io.kompose.service: api
+  name: api
 spec:
+  ports:
+    - name: "8050"
+      port: 8050
+      targetPort: 8050
   selector:
-    io.kompose.service: orchestrator
+    io.kompose.service: api
 status:
   loadBalancer: {}

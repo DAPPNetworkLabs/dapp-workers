@@ -137,7 +137,7 @@ services:
     build: services/api
     command: ["node", "./dist/index.js"]
     ports:
-      - "8050:8050" 
+      - "8050:8050"
   # dspportal:
   #   image: dspportal
   #   build: uis/jobs
