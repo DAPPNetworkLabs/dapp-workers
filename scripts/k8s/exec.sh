@@ -1,0 +1,1 @@
+kubectl exec -it deployment/orchestrator /bin/bash
