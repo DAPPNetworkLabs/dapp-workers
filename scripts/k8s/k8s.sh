@@ -11,3 +11,7 @@ done
 for file in $PWD/k8s/test/images/* ; do
     kubectl apply -f $file
 done
+
+sleep 90
+
+$PWD/scripts/k8s/logs.sh
