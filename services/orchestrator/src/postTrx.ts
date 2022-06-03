@@ -1,14 +1,7 @@
 import { web3 } from './web3global';
 import { AwsKmsSigner } from "./kms";
 import { ethers } from "ethers";
-
-const numberToHex = (number) => {
-  if (typeof (number) == 'number')
-    return `0x${number.toString(16)}`;
-  if (typeof (number) == 'string' && !(number.startsWith('0x')))
-    return `0x${parseInt(number).toString(16)}`;
-  return number;
-};
+const { numberToHex } = require('./lib/lib');
 
 const signKms = async (unsignedTx, nexusContract, signer) => {
     console.log('unsignedTx',unsignedTx);
@@ -96,10 +89,8 @@ export async function postTrx(method, account_from, newNonce = null, ...args) {
             }
         }
         trx.nonce = newNonce ? newNonce : await web3.eth.getTransactionCount(account_from.address);
-        console.log('createTransaction trx');
         const createTransaction = await web3.eth.accounts.signTransaction(trx, account_from.privateKey);
         try {
-            console.log('re running trx');
             return await web3.eth.sendSignedTransaction(createTransaction.rawTransaction);
         } catch(e) {
             console.log('caught e',e,typeof(e));
@@ -108,9 +99,6 @@ export async function postTrx(method, account_from, newNonce = null, ...args) {
                 const first = e.message.indexOf('be');
                 const last = e.message.indexOf(' but');
                 const newNonce = parseInt(e.message.slice(first+3,last));
-                // console.log('newNonce',newNonce,typeof(newNonce),first,last);
-                // trx.nonce = newNonce;
-                // const createTransaction = await web3.eth.accounts.signTransaction(trx, account_from.privateKey);
                 return await postTrx(method, account_from, newNonce, ...args);
             } else if(e && e.message && e.message.includes('completed')) {
                 console.log(`caught double completion error`, e);

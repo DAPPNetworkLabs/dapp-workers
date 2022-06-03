@@ -40,6 +40,7 @@ export function subscribe(theContract: any) {
     });
 
     theContract.events["QueueService"]({}, async function (error, result) {
+        console.log('QueueService hit');
         if (error) {
             console.log('we got an error',error);
             return;

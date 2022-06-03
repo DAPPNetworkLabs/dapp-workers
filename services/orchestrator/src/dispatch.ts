@@ -152,12 +152,11 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
       error += chunk.toString();
       next()
   }
-  console.log('before running docker')
 
   let data;
   
   const timeout = setTimeout(() => {
-    console.log('first service timeout');
+    console.log("service timed out", killDelay, dockerImage,ipfsInput, args);
   }, killDelay);
   
   let dockerId, imageName = dockerImage;
@@ -169,10 +168,8 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
   let innerPort = port;
   
   args.forEach(el => {
-    console.log(`el`,el,typeof(el))
     if(typeof(el) === 'string' && el.length > 4 && el.slice(0,4) === 'PORT') {
       innerPort = Number(el.slice(-4))
-      console.log(`innerPort`,innerPort)
     }
   })
   

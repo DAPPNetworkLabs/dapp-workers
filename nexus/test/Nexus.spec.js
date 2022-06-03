@@ -41,7 +41,6 @@ describe("Nexus", function(done) {
     console.log(addr2.address);
     const nexusTokenFactory = await ethers.getContractFactory("Nexus", addr1);
     const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
-    console.log('pre here');
 
     await delay(1);
     dappTokenContract = await dappTokenFactory.deploy();
@@ -168,12 +167,12 @@ describe("Nexus", function(done) {
   });
 
   it("Register WORKER", async function() {
-    await nexusContract.connect(worker1).regWORKER("http://web:80/dapp-workers");
+    await nexusContract.connect(worker1).regWORKER("http://web:8050/dapp-workers");
 
     const registeredWORKERs = await nexusContract.registeredWORKERs(worker1.address);
 
     expect(registeredWORKERs.active).to.equal(true);
-    expect(registeredWORKERs.endpoint).to.equal("http://web:80/dapp-workers");
+    expect(registeredWORKERs.endpoint).to.equal("http://web:8050/dapp-workers");
     expect(registeredWORKERs.claimableDapp.toString()).to.equal('0');
   });
 
@@ -392,149 +391,149 @@ describe("Nexus", function(done) {
     expect(error).to.equal("chain hash mismatch");
   });
 
-  // it("Queue job with callback", async function() {
-  //   const dapps = ethers.utils.parseUnits("250000",4);
-  //   await dappTokenContract.mint(addr2.address, dapps);
-  //   await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
-  //   await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, worker1.address);
-  //   await nexusContract.connect(addr2).setWorkers([worker1.address]);
+  it("Queue job with callback", async function() {
+    const dapps = ethers.utils.parseUnits("250000",4);
+    await dappTokenContract.mint(addr2.address, dapps);
+    await dappTokenContract.connect(addr2).approve(nexusContract.address, dapps);
+    await nexusContract.connect(addr2).buyGasFor(dapps, consumerContract.address, worker1.address);
+    await nexusContract.connect(addr2).setWorkers([worker1.address]);
 
-  //   await consumerContract.queueJob(addr2.address, loadfsRoot("pngWriterTest"));
+    await consumerContract.queueJob(addr2.address, loadfsRoot("pngWriterTest"));
 
-  //   const id1 = await nexusContract.lastJobID();
-  //   const job = await nexusContract.jobs(id1);
+    const id1 = await nexusContract.lastJobID();
+    const job = await nexusContract.jobs(id1);
 
-  //   expect(job.consumer).to.equal(consumerContract.address);
-  //   expect(job.callback).to.equal(true);
-  //   expect(job.resultsCount.toString()).to.equal('0');
-  //   expect(job.imageName).to.equal("natpdev/rust-compiler");
+    expect(job.consumer).to.equal(consumerContract.address);
+    expect(job.callback).to.equal(true);
+    expect(job.resultsCount.toString()).to.equal('0');
+    expect(job.imageName).to.equal("natpdev/rust-compiler");
     
-  //   const eventPromise = new Promise((resolve, reject) => {
-  //       consumerContract.once("UpdatedHash", (
-  //           newHash
-  //         ) => {
-  //           resolve(newHash);
-  //         }
-  //       );
-  //   });
+    const eventPromise = new Promise((resolve, reject) => {
+        consumerContract.once("UpdatedHash", (
+            newHash
+          ) => {
+            resolve(newHash);
+          }
+        );
+    });
 
-  //   await eventPromise.then(val => {
-  //     expect(val).to.equal("QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx");
-  //   });
+    await eventPromise.then(val => {
+      expect(val).to.equal("QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx");
+    });
 
-  //   const lastHash = await consumerContract.lastHash();
+    const lastHash = await consumerContract.lastHash();
 
-  //   expect(lastHash).to.equal("QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx");
-  // });
+    expect(lastHash).to.equal("QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx");
+  });
   
-  // //docker run -v /var/run/docker.sock:/var/run/docker.sock --name wasi-service-5 
-  // // --rm --env WORKER_PORT=9000 -d --net=dapp-workers_default -p 9000:9000 
-  // // natpdev/wasi-service /bin/bash entrypoint.sh QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM 
-  // // target/wasm32-wasi/release/test 9000
-  // it("Queue service - try below min bytes", async function() {
-  //   await nexusContract.approveImage("natpdev/wasi-service","56c0ef41fb0fcb183c2c2976d3255ac0037aa2875e22941296d39d31b701b1d3");
-  //   await nexusContract.connect(worker1).setDockerImage("natpdev/wasi-service",100000,100000,100000,100000,1,1);
+  //docker run -v /var/run/docker.sock:/var/run/docker.sock --name wasi-service-5 
+  // --rm --env WORKER_PORT=9000 -d --net=dapp-workers_default -p 9000:9000 
+  // natpdev/wasi-service /bin/bash entrypoint.sh QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM 
+  // target/wasm32-wasi/release/test 9000
+  it("Queue service - try below min bytes", async function() {
+    await nexusContract.approveImage("natpdev/wasi-service","56c0ef41fb0fcb183c2c2976d3255ac0037aa2875e22941296d39d31b701b1d3");
+    await nexusContract.connect(worker1).setDockerImage("natpdev/wasi-service",100000,100000,100000,100000,1,1);
 
-  //   let failed = false;
-  //   try {
-  //     await nexusContract.queueService({
-  //       owner: addr1.address,
-  //       imageName: "natpdev/wasi-service",
-  //       ioMegaBytes: 0,
-  //       storageMegaBytes: 0,
-  //       inputFS: "",
-  //       args: ["target/wasm32-wasi/release/test"],
-  //       months: 1
-  //     });
-  //   } catch(e) {
-  //     failed = true;
-  //   }
+    let failed = false;
+    try {
+      await nexusContract.queueService({
+        owner: addr1.address,
+        imageName: "natpdev/wasi-service",
+        ioMegaBytes: 0,
+        storageMegaBytes: 0,
+        inputFS: "",
+        args: ["target/wasm32-wasi/release/test"],
+        months: 1
+      });
+    } catch(e) {
+      failed = true;
+    }
 
-  //   expect(failed).to.equal(true);
+    expect(failed).to.equal(true);
     
-  //   await nexusContract.queueJob({
-  //     owner: addr1.address,
-  //     imageName: "natpdev/rust-compiler",
-  //     inputFS: loadfsRoot("serviceTest"),
-  //     callback: false,
-  //     gasLimit: 1000000,
-  //     requiresConsistent: false,
-  //     args: []
-  //   });
+    await nexusContract.queueJob({
+      owner: addr1.address,
+      imageName: "natpdev/rust-compiler",
+      inputFS: loadfsRoot("serviceTest"),
+      callback: false,
+      gasLimit: 1000000,
+      requiresConsistent: false,
+      args: []
+    });
     
-  //   const JobPromise = new Promise((resolve, reject) => {
-  //       nexusContract.once("JobResult", (
-  //           consumer, 
-  //           worker, 
-  //           outputFS, 
-  //           outputHash,
-  //           dapps,
-  //           jobID
-  //         ) => {
-  //           resolve(outputFS);
-  //         }
-  //       );
-  //   });
+    const JobPromise = new Promise((resolve, reject) => {
+        nexusContract.once("JobResult", (
+            consumer, 
+            worker, 
+            outputFS, 
+            outputHash,
+            dapps,
+            jobID
+          ) => {
+            resolve(outputFS);
+          }
+        );
+    });
 
-  //   await JobPromise.then(val => {
-  //     outputFSRes = val;
-  //   });
+    await JobPromise.then(val => {
+      outputFSRes = val;
+    });
 
-  //   await nexusContract.queueService({
-  //     owner: addr1.address,
-  //     imageName: "natpdev/wasi-service",
-  //     ioMegaBytes: 100,
-  //     storageMegaBytes: 100,
-  //     inputFS: outputFSRes,
-  //     // inputFS: "QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx",
-  //     args: ["target/wasm32-wasi/release/test"],
-  //     months: 1
-  //   });
+    await nexusContract.queueService({
+      owner: addr1.address,
+      imageName: "natpdev/wasi-service",
+      ioMegaBytes: 100,
+      storageMegaBytes: 100,
+      inputFS: outputFSRes,
+      // inputFS: "QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx",
+      args: ["target/wasm32-wasi/release/test"],
+      months: 1
+    });
     
-  //   const id1 = await nexusContract.lastJobID();
+    const id1 = await nexusContract.lastJobID();
 
-  //   const service = await nexusContract.services(id1);
+    const service = await nexusContract.services(id1);
 
-  //   expect(service.consumer).to.equal(addr1.address);
-  //   expect(service.imageName).to.equal("natpdev/wasi-service");
+    expect(service.consumer).to.equal(addr1.address);
+    expect(service.imageName).to.equal("natpdev/wasi-service");
     
-  //   const servicePromise = new Promise((resolve, reject) => {
-  //       nexusContract.once("ServiceRunning", (
-  //           consumer, 
-  //           worker, 
-  //           serviceId, 
-  //           port
-  //         ) => {
-  //           resolve();
-  //         }
-  //       );
-  //   });
+    const servicePromise = new Promise((resolve, reject) => {
+        nexusContract.once("ServiceRunning", (
+            consumer, 
+            worker, 
+            serviceId, 
+            port
+          ) => {
+            resolve();
+          }
+        );
+    });
 
-  //   await servicePromise.then();
+    await servicePromise.then();
     
-  //   const port = await nexusContract.getPortForWORKER(id1,worker1.address);
+    const port = await nexusContract.getPortForWORKER(id1,worker1.address);
   
-  //   expect(port).to.equal(globalPort++);
+    expect(port).to.equal(globalPort++);
 
-  //   const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
+    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
-  //   expect(endpoint).to.equal(`${endpoint}`);
+    expect(endpoint).to.equal(`${endpoint}`);
     
-  //   await delay(20);
+    await delay(20);
     
-  //   console.log('endpoint',`${endpoint}?id=${id1}&image=wasi-service&port=${port}&text=true`);
+    console.log('endpoint',`${endpoint}?id=${id1}&image=wasi-service&port=${port}&text=true`);
 
-  //   const response = await fetch(
-  //     `${endpoint}?id=${id1}&image=wasi-service&port=${port}&text=true`, 
-  //     { method: 'GET' }
-  //   );
-  //   const body = await response.text();
+    const response = await fetch(
+      `${endpoint}?id=${id1}&image=wasi-service&port=${port}&text=true`, 
+      { method: 'GET' }
+    );
+    const body = await response.text();
 
-  //   expect(body).to.equal('foo');
-  // });
+    expect(body).to.equal('foo');
+  });
 
   // it("Queue service - poa-evm-network", async function() {
-  //   // await nexusContract.connect(worker1).regWORKER("http://web:80/dapp-workers");
+  //   // await nexusContract.connect(worker1).regWORKER("http://web:8050/dapp-workers");
   //   await nexusContract.approveImage("natpdev/poa-evm-network","6b01d430a76e66c809644c852ef1015859a7e8d51b7a3d22f92068f8165034a5");
   //   await nexusContract.connect(worker1).setDockerImage("natpdev/poa-evm-network",100000,100000,100000,100000,1,1);
     
@@ -595,7 +594,7 @@ describe("Nexus", function(done) {
   //   console.log('body.jsonrpc',body.jsonrpc,typeof(body.jsonrpc));
 
   //   expect(body.jsonrpc).to.equal("2.0");
-  //   // await nexusContract.connect(worker1).regWORKER("http://web:80/dapp-workers");
+  //   // await nexusContract.connect(worker1).regWORKER("http://web:8050/dapp-workers");
     
   //   // await delay(20000000);
   // });
@@ -1244,7 +1243,7 @@ describe("Nexus", function(done) {
   // it("Get worker endpoint", async function() {
   //   const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
-  //   expect(endpoint).to.equal("http://web:80/dapp-workers");
+  //   expect(endpoint).to.equal("http://web:8050/dapp-workers");
   // });
 
   // it("Get worker list", async function() {
@@ -1263,6 +1262,6 @@ describe("Nexus", function(done) {
   //     workerData.push(await nexusContract.registeredWORKERs(workers[i]));
   //   }
 
-  //   expect(workerData[0].endpoint).to.equal('http://web:80/dapp-workers');
+  //   expect(workerData[0].endpoint).to.equal('http://web:8050/dapp-workers');
   // });
 });
