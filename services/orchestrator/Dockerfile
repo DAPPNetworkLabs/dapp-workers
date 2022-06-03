@@ -9,6 +9,10 @@ RUN apt-get -y install nodejs
 RUN curl -fsSL https://get.docker.com -o get-docker.sh
 RUN sh get-docker.sh
 
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl && \
+      chmod +x ./kubectl && \
+      mv ./kubectl /usr/local/bin/kubectl
+
 WORKDIR /app/orchestrator
 COPY package.json .
 RUN npm install\
