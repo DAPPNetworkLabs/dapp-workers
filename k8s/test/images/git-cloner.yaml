@@ -7,13 +7,13 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: git-cloner
+    app: git-cloner
   name: git-cloner
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: git-cloner
+      app: git-cloner
   strategy: {}
   template:
     metadata:
@@ -23,7 +23,7 @@ spec:
         kompose.version: 1.26.0 (40646f47)
       creationTimestamp: null
       labels:
-        io.kompose.service: git-cloner
+        app: git-cloner
     spec:
       containers:
         - env:

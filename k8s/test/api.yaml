@@ -3,6 +3,7 @@ kind: Service
 metadata:
   labels:
     app: api
+    product: dapp-workers
   name: api
 spec:
   ports:
@@ -18,13 +19,14 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: api # has to match .spec.template.metadata.labels
+      app: api
   serviceName: "api"
   replicas: 2
   template:
     metadata:
       labels:
-        app: api # has to match .spec.selector.matchLabels
+        app: api
+        product: dapp-workers
     spec:
       terminationGracePeriodSeconds: 10
       containers:

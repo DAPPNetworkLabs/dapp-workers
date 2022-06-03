@@ -6,13 +6,14 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: nexus
+    app: nexus
+    product: dapp-workers
   name: nexus
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: nexus
+      app: nexus
   strategy:
     type: Recreate
   template:
@@ -22,7 +23,8 @@ spec:
         kompose.version: 1.26.0 (40646f47)
       creationTimestamp: null
       labels:
-        io.kompose.service: nexus
+        app: nexus
+        product: dapp-workers
     spec:
       containers:
         - args:

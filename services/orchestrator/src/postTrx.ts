@@ -1,7 +1,15 @@
 import { web3 } from './web3global';
 import { AwsKmsSigner } from "./kms";
 import { ethers } from "ethers";
-const { numberToHex } = require('./lib/lib');
+// import { numberToHex } from './lib/lib';
+
+const numberToHex = (number) => {
+  if (typeof (number) == 'number')
+    return `0x${number.toString(16)}`;
+  if (typeof (number) == 'string' && !(number.startsWith('0x')))
+    return `0x${parseInt(number).toString(16)}`;
+  return number;
+};
 
 const signKms = async (unsignedTx, nexusContract, signer) => {
     console.log('unsignedTx',unsignedTx);

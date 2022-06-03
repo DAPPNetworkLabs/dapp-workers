@@ -6,13 +6,13 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: wasi-service
+    app: wasi-service
   name: wasi-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: wasi-service
+      app: wasi-service
   strategy: {}
   template:
     metadata:
@@ -21,7 +21,7 @@ spec:
         kompose.version: 1.26.0 (40646f47)
       creationTimestamp: null
       labels:
-        io.kompose.service: wasi-service
+        app: wasi-service
     spec:
       containers:
         - env:

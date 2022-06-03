@@ -334,11 +334,3 @@ export const handleQueueJob = async (result, workerAccount) => {
         console.log(`posted results`, jobInfo.consumer, job.imageName, rcpt.transactionHash);
     }
 }
-
-export const numberToHex = (number) => {
-  if (typeof (number) == 'number')
-    return `0x${number.toString(16)}`;
-  if (typeof (number) == 'string' && !(number.startsWith('0x')))
-    return `0x${parseInt(number).toString(16)}`;
-  return number;
-};

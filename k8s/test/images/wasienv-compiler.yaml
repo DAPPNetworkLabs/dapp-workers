@@ -6,13 +6,13 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: wasienv-compiler
+    app: wasienv-compiler
   name: wasienv-compiler
 spec:
   replicas: 0
   selector:
     matchLabels:
-      io.kompose.service: wasienv-compiler
+      app: wasienv-compiler
   strategy: {}
   template:
     metadata:
@@ -21,7 +21,7 @@ spec:
         kompose.version: 1.26.0 (40646f47)
       creationTimestamp: null
       labels:
-        io.kompose.service: wasienv-compiler
+        app: wasienv-compiler
     spec:
       containers:
         - env:

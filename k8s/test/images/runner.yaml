@@ -6,13 +6,13 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: runner
+    app: runner
   name: runner
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: runner
+      app: runner
   strategy: {}
   template:
     metadata:
@@ -21,7 +21,7 @@ spec:
         kompose.version: 1.26.0 (40646f47)
       creationTimestamp: null
       labels:
-        io.kompose.service: runner
+        app: runner
     spec:
       containers:
         - env:

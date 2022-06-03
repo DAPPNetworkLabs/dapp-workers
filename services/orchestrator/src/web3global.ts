@@ -19,7 +19,7 @@ export let provider = new Web3.providers.WebsocketProvider(process.env.ETH_ADDR,
     }
 })
 .on("connect", () => {
-    console.log(`connected!`);
+    console.log(`WS connected!`);
 }).on("reconnect", () => {
     console.log(`reconnecting...`);
 }).on('end', socketError)

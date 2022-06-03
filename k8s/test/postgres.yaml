@@ -6,13 +6,13 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: postgres
+    app: postgres
   name: postgres
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: postgres
+      app: postgres
   strategy: {}
   template:
     metadata:
@@ -21,7 +21,7 @@ spec:
         kompose.version: 1.26.0 (40646f47)
       creationTimestamp: null
       labels:
-        io.kompose.service: postgres
+        app: postgres
     spec:
       containers:
         - env:
@@ -49,7 +49,7 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: postgres
+    app: postgres
   name: postgres
 spec:
   ports:
@@ -57,6 +57,6 @@ spec:
       port: 5432
       targetPort: 5432
   selector:
-    io.kompose.service: postgres
+    app: postgres
 status:
   loadBalancer: {}

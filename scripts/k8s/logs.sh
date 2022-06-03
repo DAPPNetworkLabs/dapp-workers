@@ -1,0 +1,1 @@
+kubectl logs -f -l product=dapp-workers --all-containers=true --since=10m

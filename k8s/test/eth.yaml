@@ -6,13 +6,13 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: eth
+    app: eth
   name: eth
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: eth
+      app: eth
   strategy: {}
   template:
     metadata:
@@ -21,7 +21,8 @@ spec:
         kompose.version: 1.26.0 (40646f47)
       creationTimestamp: null
       labels:
-        io.kompose.service: eth
+        app: eth
+        product: dapp-workers
     spec:
       containers:
         - env:
@@ -45,7 +46,8 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: eth
+    app: eth
+    product: dapp-workers
   name: eth
 spec:
   ports:
@@ -53,6 +55,6 @@ spec:
       port: 8545
       targetPort: 8545
   selector:
-    io.kompose.service: eth
+    app: eth
 status:
   loadBalancer: {}
