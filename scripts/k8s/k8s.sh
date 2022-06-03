@@ -1,7 +1,8 @@
 $PWD/scripts/deploy-roots.sh 
-kubectl apply -f $PWD/k8s/test/ipfs.yaml
-kubectl apply -f $PWD/k8s/test/postgres.yaml
-kubectl apply -f $PWD/k8s/test/eth.yaml
-kubectl apply -f $PWD/k8s/test/orchestrator.yaml
-kubectl apply -f $PWD/k8s/test/api.yaml
-kubectl apply -f $PWD/k8s/test/nexus.yaml
+for file in $PWD/k8s/test/* ; do
+    kubectl apply -f $file
+done
+
+for file in $PWD/k8s/test/images/* ; do
+    kubectl apply -f $file
+done
