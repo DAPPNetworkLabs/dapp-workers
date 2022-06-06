@@ -5,13 +5,9 @@ $PWD/scripts/k8s/build_deploy.sh
 $PWD/scripts/deploy-roots.sh 
 
 for file in $PWD/k8s/test/* ; do
-    kubectl apply -f $file
+    envsubst < $file | kubectl apply -f -
 done
 
-for file in $PWD/k8s/test/images/* ; do
-    kubectl apply -f $file
-done
-
-sleep 90
+sleep 150
 
 $PWD/scripts/k8s/logs.sh

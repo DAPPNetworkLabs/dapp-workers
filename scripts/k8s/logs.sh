@@ -1,1 +1,1 @@
-kubectl logs -f -l product=dapp-workers --all-containers=true --since=10m --max-log-requests=6
+kubectl logs -f -l product=dapp-workers --all-containers=true --since=10m --max-log-requests=10
