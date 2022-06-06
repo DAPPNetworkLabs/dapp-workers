@@ -64,7 +64,6 @@ export const returnUsage = async (job, workerAccount) => {
     }
 
     if(ioInfo) {
-        console.log('not updating',ioInfo)
         const inputUsage: number = toMegaBytes(ioInfo.split(' / ')[0].replace(/[\n\r]/g, ''));
         const outputUsage: number = toMegaBytes(ioInfo.split(' / ')[1].replace(/[\n\r]/g, ''));
         
@@ -96,8 +95,6 @@ export const intervalCallback = async (workerAccount) => {
     const jobs = await fetchAllUsageInfo();
     for(const index in jobs) {
         let job = jobs[index];
-        console.log(`ids: ${job.key}`);
-        console.log(`docker id: ${job.dockerId}`);
         
         if (await isProcessed(job.key, false, workerAccount)) {
             await removeUsageInfo(job.key);
@@ -129,6 +126,13 @@ export const intervalCallback = async (workerAccount) => {
             await endService(job, "service time exceeded", `service time exceeded: ${job.key} | docker id: ${job.dockerId}`, workerAccount);
         }
         
+        console.log(`job 
+            id: ${job.key}, 
+            docker id: ${job.dockerId}, 
+            io_usage: ${job.io_usage}/${limits.ioMegaBytesLimit}, 
+            storage_usage: ${job.storage_usage}`/${limits.storageMegaBytesLimit}
+        );
+        
         await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
     }
 }
@@ -153,8 +157,7 @@ export async function validateJobBalance(consumer:string, gasLimit:string, image
     }
 }
 
-export async function validateServiceBalance(consumer, serviceId, workerAccount: { address: string, privateKey: string }) {
-    console.log('serviceId',typeof(serviceId));
+export async function validateServiceBalance(consumer, serviceId: number, workerAccount: { address: string, privateKey: string }) {
     const workerData = await theContract.methods.workerData(consumer, workerAccount.address).call({ from: workerAccount.address });
     const requiredAmount = await theContract.methods.getMinBalance(serviceId, "service", workerAccount.address).call({ from: workerAccount.address });
 
