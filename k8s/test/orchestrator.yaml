@@ -1,31 +1,23 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
-    kompose.version: 1.26.0 (40646f47)
-  creationTimestamp: null
   labels:
     app: orchestrator
     product: dapp-workers
   name: orchestrator
 spec:
+  serviceName: "orchestrator"
   replicas: 1
   selector:
     matchLabels:
       app: orchestrator
-  strategy:
-    type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
-        kompose.version: 1.26.0 (40646f47)
-      creationTimestamp: null
       labels:
         app: orchestrator
         product: dapp-workers
     spec:
+      serviceAccountName: orchestrator
       containers:
         - args:
             - /bin/bash
@@ -64,15 +56,18 @@ spec:
               value: "3000000000"
             - name: DAPP_WORKERS_K8S
               value: "true"
+            - name: NEXUS_PATH
+              value: '/dapp-workers/nexus/artifacts/contracts/Nexus.sol/Nexus.json'
+            - name: IPFS_HOST
+              value: $IPFS_HOST
           image: natpdev/orchestrator
           name: orchestrator
-          resources: {}
           securityContext:
             privileged: true
           volumeMounts:
             - mountPath: /var/run/docker.sock:ro
               name: docker-sock
-            - mountPath: /nexus
+            - mountPath: /dapp-workers
               name: orchestrator-claim1
               readOnly: true
       restartPolicy: Always
@@ -80,10 +75,36 @@ spec:
         - name: docker-sock
           hostPath:
             path: /var/run/docker.sock
-            # type: Socket
         - name: orchestrator-claim1
           hostPath:
-            path: /k8s/home/ubuntu/environment/dapp-workers/nexus
-            # path: /dapp-workers/nexus
-            # type: Directory
-status: {}
+            path: /k8s/home/ubuntu/environment/dapp-workers
+            type: Directory
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: orchestrator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: modify-k8s
+rules:
+  - apiGroups: [""]
+    resources: ["pods","services"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete","apply"]
+  - apiGroups: ["apps"]
+    resources: ["deployments","statefulsets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete","apply"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: modify-k8s-to-sa
+subjects:
+  - kind: ServiceAccount
+    name: orchestrator
+roleRef:
+  kind: Role
+  name: modify-k8s
+  apiGroup: rbac.authorization.k8s.io
