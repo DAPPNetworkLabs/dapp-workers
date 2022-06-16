@@ -51,11 +51,10 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
           ]
         }
       }
-      console.log('HostConfig',HostConfig);
 
       const dockerArgs = ipfsInput ? [ipfsInput, ...args] : [...args];
 
-      console.log('dockerArgs',dockerArgs);
+      console.log('docker args',dockerArgs);
       
       // try {
         docker.run(dockerImage,  dockerArgs,  [writableStream, writableStream2],{
@@ -110,11 +109,10 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
         console.log("error",error);
         dockerError = error
     }
-    console.log("output",{stdOut:output,stderr: error,statusCode:data[0].StatusCode, dockerError});
+    console.log("output",output);
+    // console.log("output",{stdOut:output,stderr: error,statusCode:data[0].StatusCode, dockerError});
     const lines = output.split("\n")
-    console.log(1);
     const outputfs = lines[lines.length-2] ? lines[lines.length-2] : "";
-    console.log(2, outputfs);
     return {stdOut:output,stderr: error, outputFS:outputfs,statusCode:data[0].StatusCode, dockerError}
 }
 
@@ -135,36 +133,12 @@ const killIfRunning = async (port) => {
 };
 
 export async function dispatchService(id, dockerImage, ipfsInput, args): Promise<any> {
-  const docker = new Docker();
-  args = [...args,port]
-  console.log("running service", dockerImage,ipfsInput, args);
-
-  const writableStream = new Stream.Writable()
-  let output = "";
-  writableStream._write = (chunk, encoding, next) => {
-      output += chunk.toString();
-      next()
-  }
-  
-  const writableStream2 = new Stream.Writable()
-  let error = "";
-  writableStream2._write = (chunk, encoding, next) => {
-      error += chunk.toString();
-      next()
-  }
-
-  let data;
-  
-  const timeout = setTimeout(() => {
-    console.log("service timed out", killDelay, dockerImage,ipfsInput, args);
-  }, killDelay);
-  
   let dockerId, imageName = dockerImage;
   
   if(imageName.indexOf('/')) {
     imageName = imageName.slice(imageName.indexOf('/')+1);
   }
-  
+    
   let innerPort = port;
   
   args.forEach(el => {
@@ -172,31 +146,96 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
       innerPort = Number(el.slice(-4))
     }
   })
+    
+  const timeout = setTimeout(() => {
+    console.log("service timed out", killDelay, dockerImage,ipfsInput, args);
+  }, killDelay);
+  // take template service yaml
+  // customize with io/storage limits
+  // customize with service name
+  // apply
   
-  imageName = `${imageName}-${id}`
   
-  try {
-    if(process.env.DAPP_WORKERS_K8S) {
-      dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
-    } else {
-      console.log(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`)
-      dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+  // for interval
+  // delete service if time is up
+  // run service complete
+  // not worry if service hits max storage / io as should prevent more
+  
+  if(process.env.DAPP_WORKERS_K8S) {
+    let generatedArgs = [];
+    args = ipfsInput?[ipfsInput, ...args]:[...args];
+    console.log('args',args);
+    args.forEach((el,i) => {
+        console.log(`adding`,el);
+        generatedArgs.push(`ARG_${i}=${el}`);
+    });
+    // envsubst < deployment.yaml | kubectl apply -f -
+    const cmd = `${generatedArgs.join(' ')} WORKERS_SERVICE_NAME=${imageName}-${id} IPFS_HOST=${process.env.IPFS_HOST} envsubst < /dapp-workers/k8s/test/images/${imageName}.yaml | kubectl apply -f -`
+    try {
+      console.log(cmd);
+      await execPromise(cmd,{});
+    } catch(e) {
+      console.log(`docker error:`,e);
+      return { error:e };
     }
-  } catch(e) {
-    console.log(`docker error:`,e);
-    return { error:e };
+    dockerMap[id] = {
+      dockerId,
+      ioUsed: 0,
+      storageUsed: 0
+    };
+    
+    await createUsageInfo(id, dockerId);
+    
+    clearTimeout(timeout);
+    
+    // remove
+    return { port:port++ }
+  } else {
+    const docker = new Docker();
+    args = [...args,port]
+    console.log("running service", dockerImage,ipfsInput, args);
+  
+    const writableStream = new Stream.Writable()
+    let output = "";
+    writableStream._write = (chunk, encoding, next) => {
+        output += chunk.toString();
+        next()
+    }
+    
+    const writableStream2 = new Stream.Writable()
+    let error = "";
+    writableStream2._write = (chunk, encoding, next) => {
+        error += chunk.toString();
+        next()
+    }
+  
+    let data;
+    
+    imageName = `${imageName}-${id}`
+    
+    try {
+      // if(process.env.DAPP_WORKERS_K8S) {
+      //   dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+      // } else {
+        console.log(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`)
+        dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+      // }
+    } catch(e) {
+      console.log(`docker error:`,e);
+      return { error:e };
+    }
+    console.log(`exec Promise res: ${dockerId}`);
+    dockerMap[id] = {
+      dockerId,
+      ioUsed: 0,
+      storageUsed: 0
+    };
+    
+    await createUsageInfo(id, dockerId);
+    
+    clearTimeout(timeout);
+    console.log('end dispatch service');
+    
+    return { port:port++ }
   }
-  console.log(`exec Promise res: ${dockerId}`);
-  dockerMap[id] = {
-    dockerId,
-    ioUsed: 0,
-    storageUsed: 0
-  };
-  
-  await createUsageInfo(id, dockerId);
-  
-  clearTimeout(timeout);
-  console.log('end dispatch service');
-  
-  return { port:port++ }
 }
