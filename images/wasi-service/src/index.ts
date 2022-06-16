@@ -90,8 +90,8 @@ createMiddleware(swaggerFile, app, (err, middleware) => {
       app.get('/', function (req, res) {
           res.send('foo');
       });
-      app.listen(process.env.WORKER_PORT, '0.0.0.0', () => {
-        console.log(`running at http://0.0.0.0:${process.env.WORKER_PORT}`);
+      app.listen(process.env.WORKER_PORT || 9000, '0.0.0.0', () => {
+        console.log(`running at http://0.0.0.0:${process.env.WORKER_PORT || 9000}`);
       });
     })
 });
