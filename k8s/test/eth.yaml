@@ -22,7 +22,7 @@ spec:
       creationTimestamp: null
       labels:
         app: eth
-        product: dapp-workers
+        # product: dapp-workers
     spec:
       containers:
         - env:
@@ -47,7 +47,7 @@ metadata:
   creationTimestamp: null
   labels:
     app: eth
-    product: dapp-workers
+    # product: dapp-workers
   name: eth
 spec:
   ports:
