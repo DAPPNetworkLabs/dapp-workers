@@ -4,13 +4,13 @@ metadata:
   labels:
     app: $WORKERS_SERVICE_NAME
     product: dapp-workers
-    image: wasi-service
+    image: poa-evm
   name: $WORKERS_SERVICE_NAME
 spec:
   ports:
     - name: $WORKERS_SERVICE_NAME
       port: 80
-      targetPort: 9000
+      targetPort: 8545
   selector:
     app: $WORKERS_SERVICE_NAME
 ---
@@ -29,19 +29,17 @@ spec:
       labels:
         app: $WORKERS_SERVICE_NAME
         product: dapp-workers
-        image: wasi-service
+        image: poa-evm
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - image: natpdev/wasi-service
+      - image: natpdev/poa-evm
         name: $WORKERS_SERVICE_NAME
         ports:
-          - containerPort: 9000
+          - containerPort: 8545
             name: $WORKERS_SERVICE_NAME
         env:
           - name: IPFS_HOST
             value: $IPFS_HOST
           - name: ARG_0
             value: $ARG_0
-          - name: ARG_1
-            value: $ARG_1

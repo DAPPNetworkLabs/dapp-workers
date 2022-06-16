@@ -7,13 +7,15 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    app: solidity-runner
-  name: solidity-runner
+    app: $WORKERS_SERVICE_NAME
+    product: dapp-workers
+    image: sol-runner
+  name: $WORKERS_SERVICE_NAME
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: solidity-runner
+      app: $WORKERS_SERVICE_NAME
   strategy: {}
   template:
     metadata:
@@ -23,13 +25,15 @@ spec:
         kompose.version: 1.26.0 (40646f47)
       creationTimestamp: null
       labels:
-        app: solidity-runner
+        app: $WORKERS_SERVICE_NAME
+        product: dapp-workers
+        image: sol-runner
     spec:
       containers:
         - env:
             - name: IPFS_HOST
-          image: natpdev/solidity-runner
-          name: solidity-runner
+          image: natpdev/sol-runner
+          name: $WORKERS_SERVICE_NAME
           resources: {}
       restartPolicy: Always
 status: {}

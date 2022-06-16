@@ -7,13 +7,15 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    app: rust-compiler
-  name: rust-compiler
+    app: $WORKERS_SERVICE_NAME
+    product: dapp-workers
+    image: rust-compiler
+  name: $WORKERS_SERVICE_NAME
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rust-compiler
+      app: $WORKERS_SERVICE_NAME
   strategy: {}
   template:
     metadata:
@@ -23,13 +25,15 @@ spec:
         kompose.version: 1.26.0 (40646f47)
       creationTimestamp: null
       labels:
-        app: rust-compiler
+        app: $WORKERS_SERVICE_NAME
+        product: dapp-workers
+        image: rust-compiler
     spec:
       containers:
         - env:
             - name: IPFS_HOST
           image: natpdev/rust-compiler
-          name: rust-compiler
+          name: $WORKERS_SERVICE_NAME
           resources: {}
       restartPolicy: Always
 status: {}

@@ -6,13 +6,15 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    app: runner
-  name: runner
+    app: $WORKERS_SERVICE_NAME
+    product: dapp-workers
+    image: runner
+  name: $WORKERS_SERVICE_NAME
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: runner
+      app: $WORKERS_SERVICE_NAME
   strategy: {}
   template:
     metadata:
@@ -21,13 +23,15 @@ spec:
         kompose.version: 1.26.0 (40646f47)
       creationTimestamp: null
       labels:
-        app: runner
+        app: $WORKERS_SERVICE_NAME
+        product: dapp-workers
+        image: runner
     spec:
       containers:
         - env:
             - name: IPFS_HOST
           image: natpdev/runner
-          name: runner
+          name: $WORKERS_SERVICE_NAME
           resources: {}
       restartPolicy: Always
 status: {}
