@@ -92,48 +92,52 @@ export const returnUsage = async (job, workerAccount) => {
 }
 
 export const intervalCallback = async (workerAccount) => {
-    const jobs = await fetchAllUsageInfo();
-    for(const index in jobs) {
-        let job = jobs[index];
-        
-        if (await isProcessed(job.key, false, workerAccount)) {
-            await removeUsageInfo(job.key);
-            return;
-            // throw new Error(`already processed job or worker not selected: ${job.key}`)
+    if(process.env.DAPP_WORKERS_K8S) {
+        // console.log('k8s enabled')
+    } else {
+        const jobs = await fetchAllUsageInfo();
+        for(const index in jobs) {
+            let job = jobs[index];
+            
+            if (await isProcessed(job.key, false, workerAccount)) {
+                await removeUsageInfo(job.key);
+                return;
+                // throw new Error(`already processed job or worker not selected: ${job.key}`)
+            }
+            
+            job = await returnUsage(job, workerAccount);
+            
+            const limits = await validateDataLimits(job.key, workerAccount);
+            
+            if(job.io_usage > limits.ioMegaBytesLimit || job.storage_usage > limits.storageMegaBytesLimit) {
+                await endServiceError(job, 
+                "io/storage resource limit reached", `max io/storage limit reached for job id: ${job.key} | docker id: ${job.dockerId} | io usage: ${job.io_usage} | io limit: ${limits.ioMegaBytesLimit} | storage usage: ${job.storage_usage} | storage limit: ${limits.storageMegaBytesLimit}`
+                ,workerAccount)
+            }
+            
+            const serviceInfo = await getInfo(job.key,"service", workerAccount);
+            const valid = await validateServiceBalance(serviceInfo.consumer, job.key, workerAccount);
+            if (valid == false) {
+                await endServiceError(
+                    job, 
+                    "dapp gas limit reached", `dapp gas ran out for job id: ${job.key} | docker id: ${job.dockerId}`,
+                    workerAccount
+                )
+            }
+            
+            if(await isServiceDone(job.key, workerAccount)) {
+                await endService(job, "service time exceeded", `service time exceeded: ${job.key} | docker id: ${job.dockerId}`, workerAccount);
+            }
+            
+            console.log(`job 
+                id: ${job.key}, 
+                docker id: ${job.dockerId}, 
+                io_usage: ${job.io_usage}/${limits.ioMegaBytesLimit}, 
+                storage_usage: ${job.storage_usage}/${limits.storageMegaBytesLimit}`
+            );
+            
+            await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
         }
-        
-        job = await returnUsage(job, workerAccount);
-        
-        const limits = await validateDataLimits(job.key, workerAccount);
-        
-        if(job.io_usage > limits.ioMegaBytesLimit || job.storage_usage > limits.storageMegaBytesLimit) {
-            await endServiceError(job, 
-            "io/storage resource limit reached", `max io/storage limit reached for job id: ${job.key} | docker id: ${job.dockerId} | io usage: ${job.io_usage} | io limit: ${limits.ioMegaBytesLimit} | storage usage: ${job.storage_usage} | storage limit: ${limits.storageMegaBytesLimit}`
-            ,workerAccount)
-        }
-        
-        const serviceInfo = await getInfo(job.key,"service", workerAccount);
-        const valid = await validateServiceBalance(serviceInfo.consumer, job.key, workerAccount);
-        if (valid == false) {
-            await endServiceError(
-                job, 
-                "dapp gas limit reached", `dapp gas ran out for job id: ${job.key} | docker id: ${job.dockerId}`,
-                workerAccount
-            )
-        }
-        
-        if(await isServiceDone(job.key, workerAccount)) {
-            await endService(job, "service time exceeded", `service time exceeded: ${job.key} | docker id: ${job.dockerId}`, workerAccount);
-        }
-        
-        console.log(`job 
-            id: ${job.key}, 
-            docker id: ${job.dockerId}, 
-            io_usage: ${job.io_usage}/${limits.ioMegaBytesLimit}, 
-            storage_usage: ${job.storage_usage}`/${limits.storageMegaBytesLimit}
-        );
-        
-        await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
     }
 }
 
@@ -179,6 +183,13 @@ export const getInfo = async (jobId: number, type: string, workerAccount: { addr
 
 export const verifyImageHash = async (image: string, id: number, isJob: boolean, workerAccount: { address: string, privateKey: string }) => {
     let hash:any = await execPromise(`docker images --digests --format "{{.Digest}}" ${image}`,{});
+    console.log('hit hash',hash,await execPromise(`docker images --digests --format "{{.Digest}}" ${image}`,{}))
+    let tries = 3;
+    while(!hash && tries--) {
+        await execPromise(`docker pull ${image}`,{});
+        hash = await execPromise(`docker images --digests --format "{{.Digest}}" ${image}`,{});
+        console.log('retried pulling image for hash',hash);
+    }
     hash = hash.slice(7).replace(/ +/g, "").replace(/[\n\r]/g, '');
     const chainHash = await theContract.methods.approvedImages(image).call({ from: workerAccount.address });
     if(hash != chainHash) {
@@ -327,13 +338,11 @@ export const handleQueueJob = async (result, workerAccount) => {
         await postTrx("jobError", workerAccount, null, jobInfo.jobID, "error dispatching", "");
     } else {
         const { outputFS } = dispatchResult;
-        console.log("outputFS", outputFS);
 
         const rcpt = await postTrx("jobCallback", workerAccount, null, {
             jobID: jobInfo.jobID,
             outputFS: outputFS,
             outputHash: "hash"
         });
-        console.log(`posted results`, jobInfo.consumer, job.imageName, rcpt.transactionHash);
     }
 }
