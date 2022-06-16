@@ -12,11 +12,11 @@ const numberToHex = (number) => {
 };
 
 const signKms = async (unsignedTx, nexusContract, signer) => {
-    console.log('unsignedTx',unsignedTx);
+    // console.log('unsignedTx',unsignedTx);
     const voidSigner = nexusContract.provider.getSigner(process.env.WORKER_AWS_KMS_ADDRESS);
     const txPop = await voidSigner.populateTransaction(unsignedTx);
     
-    console.log('txPop',txPop);
+    // console.log('txPop',txPop);
     const txPopCopy = {
       ...txPop
     };
@@ -35,19 +35,19 @@ const signKms = async (unsignedTx, nexusContract, signer) => {
     utx.maxPriorityFeePerGas = numberToHex(maxPriorityFeePerGas);
     utx.maxFeePerGas = numberToHex(maxFeePerGas);
     
-    console.log('utx',utx);
+    // console.log('utx',utx);
     
     const txSign = await signer.signTransaction(utx);
     
     try {
         const res = await nexusContract.provider.sendTransaction(txSign);
         
-        console.log('res',res);
+        // console.log('res',res);
         
         const wait_res = await res.wait()
         
-        console.log('wait_res',wait_res);
-        console.log('next nonce',await web3.eth.getTransactionCount(process.env.WORKER_AWS_KMS_ADDRESS))
+        // console.log('wait_res',wait_res);
+        // console.log('next nonce',await web3.eth.getTransactionCount(process.env.WORKER_AWS_KMS_ADDRESS))
       
         return wait_res;
     } catch(e) {
@@ -101,7 +101,7 @@ export async function postTrx(method, account_from, newNonce = null, ...args) {
         try {
             return await web3.eth.sendSignedTransaction(createTransaction.rawTransaction);
         } catch(e) {
-            console.log('caught e',e,typeof(e));
+            // console.log('caught e',e,typeof(e));
             console.log('e.message',e.message,typeof(e.message));
             if(e && e.message && e.message.includes('Nonce')) {
                 const first = e.message.indexOf('be');
