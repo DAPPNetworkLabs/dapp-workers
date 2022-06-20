@@ -74,7 +74,7 @@ spec:
       volumes:
         - name: docker-sock
           hostPath:
-            path: /var/run/docker.sock
+            path: /k8s/var/run/docker.sock
         - name: orchestrator-claim1
           hostPath:
             path: /k8s/home/ubuntu/environment/dapp-workers
@@ -96,6 +96,10 @@ rules:
   - apiGroups: ["apps"]
     resources: ["deployments","statefulsets"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete","apply"]
+  # - nonResourceURLs:
+  #     - "/metrics"
+  #   verbs:
+  #     - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
