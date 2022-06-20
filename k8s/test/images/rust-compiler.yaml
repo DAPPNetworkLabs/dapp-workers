@@ -8,7 +8,7 @@ metadata:
   creationTimestamp: null
   labels:
     app: $WORKERS_SERVICE_NAME
-    product: dapp-workers
+    product: dapp-workers-images
     image: rust-compiler
   name: $WORKERS_SERVICE_NAME
 spec:
@@ -26,7 +26,7 @@ spec:
       creationTimestamp: null
       labels:
         app: $WORKERS_SERVICE_NAME
-        product: dapp-workers
+        product: dapp-workers-images
         image: rust-compiler
     spec:
       containers:

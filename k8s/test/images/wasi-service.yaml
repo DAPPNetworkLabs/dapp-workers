@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     app: $WORKERS_SERVICE_NAME
-    product: dapp-workers
+    product: dapp-workers-images
     image: wasi-service
   name: $WORKERS_SERVICE_NAME
 spec:
@@ -28,7 +28,7 @@ spec:
     metadata:
       labels:
         app: $WORKERS_SERVICE_NAME
-        product: dapp-workers
+        product: dapp-workers-images
         image: wasi-service
     spec:
       terminationGracePeriodSeconds: 10

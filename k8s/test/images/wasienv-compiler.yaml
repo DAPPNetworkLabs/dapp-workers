@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     app: $WORKERS_SERVICE_NAME
-    product: dapp-workers
+    product: dapp-workers-images
     image: wasienv-compiler
   name: $WORKERS_SERVICE_NAME
 spec:
@@ -18,7 +18,7 @@ spec:
       creationTimestamp: null
       labels:
         app: $WORKERS_SERVICE_NAME
-        product: dapp-workers
+        product: dapp-workers-images
         image: wasienv-compiler
     spec:
       containers:
@@ -28,4 +28,5 @@ spec:
           name: $WORKERS_SERVICE_NAME
           resources: {}
       restartPolicy: Always
+      # priorityClassName: $PRIORITY_CLASS
 status: {}
