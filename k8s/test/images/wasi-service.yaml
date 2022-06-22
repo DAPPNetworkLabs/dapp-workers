@@ -18,6 +18,9 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: $WORKERS_SERVICE_NAME
+  annotations:
+    kubernetes.io/ingress-bandwidth: 10M
+    kubernetes.io/egress-bandwidth: 10M
 spec:
   selector:
     matchLabels:
