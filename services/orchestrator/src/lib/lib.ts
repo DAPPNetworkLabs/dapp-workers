@@ -120,7 +120,7 @@ export const intervalCallback = async (workerAccount) => {
         for(const index in jobs) {
             let job = jobs[index];
             
-            console.log(`interval callback hit: ${job.key}, ${job.imageName}`)
+            // console.log(`interval callback hit: ${job.key}, ${job.imageName}`)
             
             if (await isProcessed(job.key, false, workerAccount)) {
                 await removeUsageInfo(job.key);
@@ -291,7 +291,7 @@ export const runService = async (returnValues, workerAccount: { address: string,
     const serviceResults = await dispatchService(id, imageName, inputFS, args);
     
     if(serviceResults.error) {
-        console.log("jobError", serviceResults.error);
+        console.log("serviceError", serviceResults.error);
         await postTrx("serviceError", workerAccount, null, {
             jobID: id,
             stdErr: "service error",

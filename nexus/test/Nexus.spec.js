@@ -115,7 +115,7 @@ const runEvent = async (event, nexusContract) => {
 }
 
 describe("Nexus", function(done) {
-  this.timeout(500000);
+  this.timeout(200000);
   let owner, addr1, addr2, addr3, worker1, worker2, addrs, consumer1, consumer2, consumer3;
   let dappTokenContract, nexusContract, consumerContract;
 
@@ -943,7 +943,7 @@ describe("Nexus", function(done) {
     expect(outputFSRes).to.equal("QmcREDmdnLtn41V4JGADUA81eQEPeJ86raGETT43ShJqNU");
   });
 
-  it.skip("Queue job sol-runner", async function() {
+  it("Queue job sol-runner", async function() {
     await nexusContract.approveImage("natpdev/sol-runner","8ca452c2da09d8383e29b6774812f2ddb8a3c04f693b4292ab2887540c37e8f9");
     await nexusContract.connect(worker1).setDockerImage("natpdev/sol-runner",100000,100000,100000,100000,100,100);
     
@@ -957,14 +957,14 @@ describe("Nexus", function(done) {
       args: ["example-solidity-runner"]
     });
     
-    const id = await runEvent("JobResult",nexusContract);
+    const { id } = await runEvent("JobResult",nexusContract);
     const job = await nexusContract.jobs(id);
 
     expect(job.consumer).to.equal(addr1.address);
     expect(job.callback).to.equal(false);
     expect(job.resultsCount.toString()).to.equal('1');
     expect(job.imageName).to.equal("natpdev/sol-runner");
-    expect(outputFSRes).to.equal("18");
+    expect(Number(outputFSRes)).to.equal(18);
   });
 
   it.skip("Queue job monte-carlo", async function() {
@@ -993,9 +993,7 @@ describe("Nexus", function(done) {
       args: ["example-monte-carlo"]
     });
     
-    await runEvent("JobResult",nexusContract);
-
-    const id = await nexusContract.lastJobID();
+    const { id } = await runEvent("JobResult",nexusContract);
     const job = await nexusContract.jobs(id);
 
     expect(job.consumer).to.equal(addr1.address);
@@ -1006,7 +1004,6 @@ describe("Nexus", function(done) {
   });
 
   it("Run service - complete", async function() {
-    console.log('first queue job');
     await nexusContract.queueJob({
       owner: addr1.address,
       imageName: "natpdev/rust-compiler",
