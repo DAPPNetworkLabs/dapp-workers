@@ -182,14 +182,14 @@ describe("Nexus", function(done) {
 
       // preload frontend
       if(process.env.RUN_LOCAL) {
-        await nexusContract.approveImage("natpdev/runner","5c509c873494bd84ae305abde112c3e40a0bd38a843c515521808ea45569a706");
-        await nexusContract.approveImage("natpdev/rust-compiler","1f32477afb5605c9e4aa68ea0cd7d69c6dfd9596a740c5d318583deeeae2171d");
-        await nexusContract.approveImage("natpdev/wasi-service","e8904a392a36f5459fbe8c6820ba1e7d9d446a555b7dd0021a92858a22c36f38");
-        await nexusContract.approveImage("natpdev/git-cloner","6889517fd553d36ed5743827cd81c8f94438bd2502db57e9bbfbfac73e746f5b");
-        await nexusContract.approveImage("natpdev/sol-runner","3314fef67d799110273b78694ec4a71d4cb8efad60055c8bbe3c4f9a67a6dc43");
-        await nexusContract.approveImage("natpdev/monte-carlo","3c0990b2caffba708d444624cff854ae8e54b55ac22eb154a526aed5717cb503");
-        await nexusContract.approveImage("natpdev/poa-evm","19342da1c1d3c7d7e01c055f61bf517b2e6d65126aa6dcd92f0273c97ebf3c1f");
-        await nexusContract.approveImage("natpdev/nvidia-docker","efc89d07a8f2364f8c0e188d2b00748f73282122486dcc2cee71e5f31883beec");
+        await nexusContract.approveImage("natpdev/runner","a0316f77b73dfae03a9883ee4f43bb3d028fb3aaac8e66c50f75463a7b1f3c8a");
+        await nexusContract.approveImage("natpdev/rust-compiler","a8f2431d91174f0c1aa6d370ec8c14bf7f2b415aa1dc387fed9a63c8c87b9dff");
+        await nexusContract.approveImage("natpdev/wasi-service","d5d411e991be6041a19433b612110429ac73af13f3cd8f946a2b0676c42b547e");
+        await nexusContract.approveImage("natpdev/git-cloner","f1d732afadb639a712ad1c52fc552a825af8567dcd761910d51bf78512fb3d8e");
+        await nexusContract.approveImage("natpdev/sol-runner","8ca452c2da09d8383e29b6774812f2ddb8a3c04f693b4292ab2887540c37e8f9");
+        await nexusContract.approveImage("natpdev/monte-carlo","8fb8040f39dbaeca6657694f6b4c82bb1729da1a6be9b300edf83029072c292b");
+        await nexusContract.approveImage("natpdev/poa-evm","65db6ad7237c811c290f9ccc4861b88b9162b7a06a18a231f9abd1853aba09e1");
+        await nexusContract.approveImage("natpdev/nvidia-docker","ffa73e5696f90d9b0cb7e2d102bf572ac2bb023bedd46951f01675c780d76883");
         await nexusContract.connect(worker1).regWORKER(process.env.WORKER_ENDPOINT || "http://localhost");
         await nexusContract.setWorkers([worker1.address]);
         dapps = ethers.utils.parseUnits("80000000",4);
@@ -280,11 +280,11 @@ describe("Nexus", function(done) {
   });
 
   it("Approve image", async function() {
-    await nexusContract.approveImage("natpdev/runner","5c509c873494bd84ae305abde112c3e40a0bd38a843c515521808ea45569a706");
+    await nexusContract.approveImage("natpdev/runner","a0316f77b73dfae03a9883ee4f43bb3d028fb3aaac8e66c50f75463a7b1f3c8a");
 
     const hash = await nexusContract.approvedImages("natpdev/runner");
 
-    expect(hash).to.equal("5c509c873494bd84ae305abde112c3e40a0bd38a843c515521808ea45569a706");
+    expect(hash).to.equal("a0316f77b73dfae03a9883ee4f43bb3d028fb3aaac8e66c50f75463a7b1f3c8a");
   });
 
   it("Register image", async function() {
@@ -331,7 +331,7 @@ describe("Nexus", function(done) {
 
   it("Queue job", async function() {
     const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
-    await nexusContract.approveImage("natpdev/rust-compiler","1f32477afb5605c9e4aa68ea0cd7d69c6dfd9596a740c5d318583deeeae2171d");
+    await nexusContract.approveImage("natpdev/rust-compiler","a8f2431d91174f0c1aa6d370ec8c14bf7f2b415aa1dc387fed9a63c8c87b9dff");
     await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
@@ -379,7 +379,7 @@ describe("Nexus", function(done) {
 
   it.skip("Queue job - nvidia-docker", async function() {
     const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
-    await nexusContract.approveImage("natpdev/nvidia-docker","efc89d07a8f2364f8c0e188d2b00748f73282122486dcc2cee71e5f31883beec");
+    await nexusContract.approveImage("natpdev/nvidia-docker","ffa73e5696f90d9b0cb7e2d102bf572ac2bb023bedd46951f01675c780d76883");
     await nexusContract.connect(worker1).setDockerImage("natpdev/nvidia-docker",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
@@ -396,7 +396,7 @@ describe("Nexus", function(done) {
   });
 
   it("Queue job hash mismatch", async function() {
-    await nexusContract.unapproveImage("natpdev/rust-compiler","1f32477afb5605c9e4aa68ea0cd7d69c6dfd9596a740c5d318583deeeae2171d");
+    await nexusContract.unapproveImage("natpdev/rust-compiler","a8f2431d91174f0c1aa6d370ec8c14bf7f2b415aa1dc387fed9a63c8c87b9dff");
     await nexusContract.approveImage("natpdev/rust-compiler","hash");
     
     await nexusContract.queueJob({
@@ -434,7 +434,7 @@ describe("Nexus", function(done) {
     await nexusContract.removeAllListeners("JobError");
 
     await nexusContract.unapproveImage("natpdev/rust-compiler","hash");
-    await nexusContract.approveImage("natpdev/rust-compiler","1f32477afb5605c9e4aa68ea0cd7d69c6dfd9596a740c5d318583deeeae2171d");
+    await nexusContract.approveImage("natpdev/rust-compiler","a8f2431d91174f0c1aa6d370ec8c14bf7f2b415aa1dc387fed9a63c8c87b9dff");
 
     expect(error).to.equal("chain hash mismatch");
   });
@@ -477,9 +477,9 @@ describe("Nexus", function(done) {
   });
   
   it("Queue service - try below min bytes", async function() {
-    await nexusContract.approveImage("natpdev/rust-compiler","1f32477afb5605c9e4aa68ea0cd7d69c6dfd9596a740c5d318583deeeae2171d");
+    await nexusContract.approveImage("natpdev/rust-compiler","a8f2431d91174f0c1aa6d370ec8c14bf7f2b415aa1dc387fed9a63c8c87b9dff");
     await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,100000,100000,100000,100,100);
-    await nexusContract.approveImage("natpdev/wasi-service","e8904a392a36f5459fbe8c6820ba1e7d9d446a555b7dd0021a92858a22c36f38");
+    await nexusContract.approveImage("natpdev/wasi-service","d5d411e991be6041a19433b612110429ac73af13f3cd8f946a2b0676c42b547e");
     await nexusContract.connect(worker1).setDockerImage("natpdev/wasi-service",100000,100000,100000,100000,1,1);
 
     let failed = false;
@@ -554,7 +554,7 @@ describe("Nexus", function(done) {
 
   it("Queue service - poa-evm", async function() {
     // await nexusContract.connect(worker1).regWORKER("http://api:80/dapp-workers");
-    await nexusContract.approveImage("natpdev/poa-evm","19342da1c1d3c7d7e01c055f61bf517b2e6d65126aa6dcd92f0273c97ebf3c1f");
+    await nexusContract.approveImage("natpdev/poa-evm","65db6ad7237c811c290f9ccc4861b88b9162b7a06a18a231f9abd1853aba09e1");
     await nexusContract.connect(worker1).setDockerImage("natpdev/poa-evm",100000,100000,100000,100000,1,1);
     
     await nexusContract.queueService({
@@ -920,7 +920,7 @@ describe("Nexus", function(done) {
   });
 
   it("Queue job git-cloner", async function() {
-    await nexusContract.approveImage("natpdev/git-cloner","6889517fd553d36ed5743827cd81c8f94438bd2502db57e9bbfbfac73e746f5b");
+    await nexusContract.approveImage("natpdev/git-cloner","f1d732afadb639a712ad1c52fc552a825af8567dcd761910d51bf78512fb3d8e");
     await nexusContract.connect(worker1).setDockerImage("natpdev/git-cloner",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
@@ -945,7 +945,7 @@ describe("Nexus", function(done) {
   });
 
   it.skip("Queue job sol-runner", async function() {
-    await nexusContract.approveImage("natpdev/sol-runner","3314fef67d799110273b78694ec4a71d4cb8efad60055c8bbe3c4f9a67a6dc43");
+    await nexusContract.approveImage("natpdev/sol-runner","8ca452c2da09d8383e29b6774812f2ddb8a3c04f693b4292ab2887540c37e8f9");
     await nexusContract.connect(worker1).setDockerImage("natpdev/sol-runner",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
@@ -969,7 +969,7 @@ describe("Nexus", function(done) {
   });
 
   it.skip("Queue job monte-carlo", async function() {
-    await nexusContract.approveImage("natpdev/monte-carlo","3c0990b2caffba708d444624cff854ae8e54b55ac22eb154a526aed5717cb503");
+    await nexusContract.approveImage("natpdev/monte-carlo","8fb8040f39dbaeca6657694f6b4c82bb1729da1a6be9b300edf83029072c292b");
     await nexusContract.connect(worker1).setDockerImage("natpdev/monte-carlo",100000,100000,100000,100000,100,100);
     
     await nexusContract.queueJob({
