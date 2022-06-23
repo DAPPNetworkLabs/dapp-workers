@@ -54,7 +54,7 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
 
       const dockerArgs = ipfsInput ? [ipfsInput, ...args] : [...args];
 
-      console.log('docker args',dockerArgs);
+      // console.log('docker args',dockerArgs);
       
       // try {
         docker.run(dockerImage,  dockerArgs,  [writableStream, writableStream2],{
@@ -165,9 +165,7 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
   if(process.env.DAPP_WORKERS_K8S) {
     let generatedArgs = [];
     args = ipfsInput?[ipfsInput, ...args]:[...args];
-    console.log('args',args);
     args.forEach((el,i) => {
-        console.log(`adding`,el);
         generatedArgs.push(`ARG_${i}=${el}`);
     });
     // envsubst < deployment.yaml | kubectl apply -f -
@@ -185,7 +183,7 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
       storageUsed: 0
     };
     
-    await createUsageInfo(id, dockerId);
+    await createUsageInfo(id, imageName);
     
     clearTimeout(timeout);
     
@@ -232,7 +230,7 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
       storageUsed: 0
     };
     
-    await createUsageInfo(id, dockerId);
+    await createUsageInfo(id, imageName);
     
     clearTimeout(timeout);
     console.log('end dispatch service');

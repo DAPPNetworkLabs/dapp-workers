@@ -3,7 +3,8 @@ const { web3, provider } = require('../web3global');
 const { postTrx } = require('../postTrx');
 const { execPromise } = require('../exec');
 const { dispatch, dispatchService } = require('../dispatch');
-const { fetchAllUsageInfo, getUsageInfo, updateUsageInfo, removeUsageInfo } = require('../dal/dal')
+const { fetchAllUsageInfo, removeUsageInfo } = require('../dal/dal')
+// const { fetchAllUsageInfo, getUsageInfo, updateUsageInfo, removeUsageInfo } = require('../dal/dal')
 
 let startup: boolean = true;
 
@@ -26,20 +27,34 @@ export const completeService = async (jobID, outputFS, ioMegaBytesUsed, storageM
     });
 }
 
+export const deleteService = async (imageName: string, id: number) => {
+    // try {
+        const cmd = `PRIORITY_CLASS=${"high"} WORKERS_SERVICE_NAME=${imageName}-${id} IPFS_HOST=${process.env.IPFS_HOST} envsubst < /dapp-workers/k8s/test/images/${imageName}.yaml | kubectl delete -f -`
+        console.log(cmd);
+        await execPromise(cmd,{});
+    // } catch(e) {
+    //     console.log(`error deleting service`,e);
+    // }
+}
+
 export const endService = async (job, msg, log, workerAccount: { address: string, privateKey: string }) => {
     await removeUsageInfo(job.key);
-    await execPromise(`docker stop ${job.dockerId}`,{});
+    // await execPromise(`docker stop ${job.dockerId}`,{});
+    await deleteService(job.imageName,job.key);
     await completeService(
         job.key,
         msg, 
-        job.io_usage, 
-        job.storage_usage,
+        // job.io_usage, 
+        // job.storage_usage,
+        0, 
+        0,
         workerAccount
     );
 }
 
 export const endServiceError = async (job, msg, log, workerAccount: { address: string, privateKey: string }) => {
-    await execPromise(`docker stop ${job.dockerId}`,{});
+    // await execPromise(`docker stop ${job.dockerId}`,{});
+    await deleteService(job.imageName,job.key);
     await postTrx("serviceError", workerAccount, null, {
         jobID: job.key,
         stdErr: msg,
@@ -50,95 +65,119 @@ export const endServiceError = async (job, msg, log, workerAccount: { address: s
     await removeUsageInfo(job.key);
 }
 
-export const returnUsage = async (job, workerAccount) => {
-    let storageUsed: string, ioInfo: any, failedCheck = false;
+// export const returnUsage = async (job, workerAccount) => {
+//     let storageUsed: string, ioInfo: any, failedCheck = false;
     
-    try {
-        storageUsed = await execPromise(`docker ps --size --filter "id=${job.dockerId}" --format "{{.Size}}"`,{});
+//     try {
+//         storageUsed = await execPromise(`docker ps --size --filter "id=${job.dockerId}" --format "{{.Size}}"`,{});
         
-        const cmd = `docker stats --no-stream --format "{{.NetIO}}" ${job.dockerId}`;
+//         const cmd = `docker stats --no-stream --format "{{.NetIO}}" ${job.dockerId}`;
 
-        ioInfo = await execPromise(cmd,{});
-    } catch(e) {
-        failedCheck = true;
-    }
+//         ioInfo = await execPromise(cmd,{});
+//     } catch(e) {
+//         failedCheck = true;
+//     }
 
-    if(ioInfo) {
-        const inputUsage: number = toMegaBytes(ioInfo.split(' / ')[0].replace(/[\n\r]/g, ''));
-        const outputUsage: number = toMegaBytes(ioInfo.split(' / ')[1].replace(/[\n\r]/g, ''));
+//     if(ioInfo) {
+//         const inputUsage: number = toMegaBytes(ioInfo.split(' / ')[0].replace(/[\n\r]/g, ''));
+//         const outputUsage: number = toMegaBytes(ioInfo.split(' / ')[1].replace(/[\n\r]/g, ''));
         
-        if(startup == true) {
-            job.last_io_usage = Math.floor(job.io_usage);
-            startup = false;
-        }
+//         if(startup == true) {
+//             job.last_io_usage = Math.floor(job.io_usage);
+//             startup = false;
+//         }
         
-        job.io_usage = Math.floor((inputUsage + outputUsage) + job.last_io_usage);
-        job.storage_usage = Math.floor(toMegaBytes(storageUsed.split(' ')[0]));
-    } else {
-        if(failedCheck) {
-            console.log(`container not found: ${job.dockerId}, removing ${job.key}`);
-            await removeUsageInfo(job.key);
-            await postTrx("serviceError", workerAccount, null, {
-                jobID: job.key,
-                stdErr: "error dispatching",
-                outputFS: "",
-                ioMegaBytesUsed:job.io_usage,
-                storageMegaBytesUsed:job.storage_usage
-            });
-        }
-    }
+//         job.io_usage = Math.floor((inputUsage + outputUsage) + job.last_io_usage);
+//         job.storage_usage = Math.floor(toMegaBytes(storageUsed.split(' ')[0]));
+//     } else {
+//         if(failedCheck) {
+//             console.log(`container not found: ${job.dockerId}, removing ${job.key}`);
+//             await removeUsageInfo(job.key);
+//             await postTrx("serviceError", workerAccount, null, {
+//                 jobID: job.key,
+//                 stdErr: "error dispatching",
+//                 outputFS: "",
+//                 ioMegaBytesUsed:job.io_usage,
+//                 storageMegaBytesUsed:job.storage_usage
+//             });
+//         }
+//     }
     
-    return job;
-}
+//     return job;
+// }
 
 export const intervalCallback = async (workerAccount) => {
-    if(process.env.DAPP_WORKERS_K8S) {
+    // if(process.env.DAPP_WORKERS_K8S) {
         // console.log('k8s enabled')
-    } else {
+        // check if service finished on chain, remove from db, delete if not deleted
+        // check if service time finished, complete, remove from db, delete if not deleted
+        // check output usage, if exceeds
+        // io - $0.00 for 1150 Mbps per r5.xlarge instance-hour (or partial hour)
+            // All data transfer in	$0.00 per GB
+            // First 10 TB / Month	$0.09 per GB
+            // how to monitor output
         const jobs = await fetchAllUsageInfo();
         for(const index in jobs) {
             let job = jobs[index];
             
+            console.log(`interval callback hit: ${job.key}, ${job.imageName}`)
+            
             if (await isProcessed(job.key, false, workerAccount)) {
                 await removeUsageInfo(job.key);
+                await deleteService(job.imageName, job.key);
                 return;
                 // throw new Error(`already processed job or worker not selected: ${job.key}`)
             }
             
-            job = await returnUsage(job, workerAccount);
-            
-            const limits = await validateDataLimits(job.key, workerAccount);
-            
-            if(job.io_usage > limits.ioMegaBytesLimit || job.storage_usage > limits.storageMegaBytesLimit) {
-                await endServiceError(job, 
-                "io/storage resource limit reached", `max io/storage limit reached for job id: ${job.key} | docker id: ${job.dockerId} | io usage: ${job.io_usage} | io limit: ${limits.ioMegaBytesLimit} | storage usage: ${job.storage_usage} | storage limit: ${limits.storageMegaBytesLimit}`
-                ,workerAccount)
-            }
-            
-            const serviceInfo = await getInfo(job.key,"service", workerAccount);
-            const valid = await validateServiceBalance(serviceInfo.consumer, job.key, workerAccount);
-            if (valid == false) {
-                await endServiceError(
-                    job, 
-                    "dapp gas limit reached", `dapp gas ran out for job id: ${job.key} | docker id: ${job.dockerId}`,
-                    workerAccount
-                )
-            }
-            
             if(await isServiceDone(job.key, workerAccount)) {
-                await endService(job, "service time exceeded", `service time exceeded: ${job.key} | docker id: ${job.dockerId}`, workerAccount);
+                await endService(job, "service time exceeded", `service time exceeded: ${job.key} | image: ${job.imageName}`, workerAccount);
             }
-            
-            console.log(`job 
-                id: ${job.key}, 
-                docker id: ${job.dockerId}, 
-                io_usage: ${job.io_usage}/${limits.ioMegaBytesLimit}, 
-                storage_usage: ${job.storage_usage}/${limits.storageMegaBytesLimit}`
-            );
-            
-            await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
         }
-    }
+    // } else {
+    //     const jobs = await fetchAllUsageInfo();
+    //     for(const index in jobs) {
+    //         let job = jobs[index];
+            
+    //         if (await isProcessed(job.key, false, workerAccount)) {
+    //             await removeUsageInfo(job.key);
+    //             return;
+    //             // throw new Error(`already processed job or worker not selected: ${job.key}`)
+    //         }
+            
+    //         job = await returnUsage(job, workerAccount);
+            
+    //         const limits = await validateDataLimits(job.key, workerAccount);
+            
+    //         if(job.io_usage > limits.ioMegaBytesLimit || job.storage_usage > limits.storageMegaBytesLimit) {
+    //             await endServiceError(job, 
+    //             "io/storage resource limit reached", `max io/storage limit reached for job id: ${job.key} | docker id: ${job.dockerId} | io usage: ${job.io_usage} | io limit: ${limits.ioMegaBytesLimit} | storage usage: ${job.storage_usage} | storage limit: ${limits.storageMegaBytesLimit}`
+    //             ,workerAccount)
+    //         }
+            
+    //         const serviceInfo = await getInfo(job.key,"service", workerAccount);
+    //         const valid = await validateServiceBalance(serviceInfo.consumer, job.key, workerAccount);
+    //         if (valid == false) {
+    //             await endServiceError(
+    //                 job, 
+    //                 "dapp gas limit reached", `dapp gas ran out for job id: ${job.key} | docker id: ${job.dockerId}`,
+    //                 workerAccount
+    //             )
+    //         }
+            
+    //         if(await isServiceDone(job.key, workerAccount)) {
+    //             await endService(job, "service time exceeded", `service time exceeded: ${job.key} | docker id: ${job.dockerId}`, workerAccount);
+    //         }
+            
+    //         console.log(`job 
+    //             id: ${job.key}, 
+    //             docker id: ${job.dockerId}, 
+    //             io_usage: ${job.io_usage}/${limits.ioMegaBytesLimit}, 
+    //             storage_usage: ${job.storage_usage}/${limits.storageMegaBytesLimit}`
+    //         );
+            
+    //         await updateUsageInfo(job.key, job.io_usage, job.storage_usage, job.last_io_usage);
+    //     }
+    // }
 }
 
 export async function isProcessed(jobID: number, isJob, workerAccount: { address: string, privateKey: string }) {
@@ -183,7 +222,7 @@ export const getInfo = async (jobId: number, type: string, workerAccount: { addr
 
 export const verifyImageHash = async (image: string, id: number, isJob: boolean, workerAccount: { address: string, privateKey: string }) => {
     let hash:any = await execPromise(`docker images --digests --format "{{.Digest}}" ${image}`,{});
-    console.log('hit hash',hash,await execPromise(`docker images --digests --format "{{.Digest}}" ${image}`,{}))
+    // console.log('hit hash',hash,await execPromise(`docker images --digests --format "{{.Digest}}" ${image}`,{}))
     let tries = 3;
     while(!hash && tries--) {
         await execPromise(`docker pull ${image}`,{});
