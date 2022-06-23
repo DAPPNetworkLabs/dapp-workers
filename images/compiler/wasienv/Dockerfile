@@ -1,4 +1,1 @@
 FROM wasienv/wasienv:latest
-
-ARG IPFS_HOST=$IPFS_HOST
-ENV IPFS_HOST=$IPFS_HOST

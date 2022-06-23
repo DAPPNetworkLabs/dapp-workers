@@ -61,7 +61,8 @@ export async function dispatch(dockerImage, ipfsInput, args): Promise<any> {
           Tty:false,
           AttachStdout: true,
           AttachStderr: true,
-          HostConfig 
+          HostConfig,
+          Env: [`IPFS_HOST=${process.env.IPFS_HOST}`]
         }).then((data) => {
           clearTimeout(timeout);
           res(data);
@@ -217,8 +218,8 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
       // if(process.env.DAPP_WORKERS_K8S) {
       //   dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
       // } else {
-        console.log(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`)
-        dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} -d --net=dapp-workers_default -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
+        console.log(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} --env IPFS_HOST=${process.env.IPFS_HOST} -d --net=dapp-workers_default -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`)
+        dockerId = await execPromise(`docker run -v /var/run/docker.sock:/var/run/docker.sock --name ${imageName} --rm --env WORKER_PORT=${port} --env IPFS_HOST=${process.env.IPFS_HOST} -d --net=dapp-workers_default -p ${port}:${innerPort} ${dockerImage} /bin/bash entrypoint.sh ${[ipfsInput, ...args].join(' ')}`,{});
       // }
     } catch(e) {
       console.log(`docker error:`,e);
