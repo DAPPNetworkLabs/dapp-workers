@@ -61,6 +61,7 @@ spec:
             - name: IPFS_HOST
               value: $IPFS_HOST
           image: natpdev/orchestrator
+          # imagePullPolicy: Never
           name: orchestrator
           securityContext:
             privileged: true
