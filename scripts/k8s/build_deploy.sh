@@ -1,3 +1,4 @@
+# eval $(minikube docker-env)
 docker build -t natpdev/nexus ./nexus
 docker push natpdev/nexus
 docker build -t natpdev/orchestrator ./services/orchestrator
