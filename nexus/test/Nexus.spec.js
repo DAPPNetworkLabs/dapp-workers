@@ -33,7 +33,6 @@ const runEvent = async (event, nexusContract) => {
   let error,hash,output;
 
   const eventPromise = new Promise((resolve, reject) => {
-    console.log('hit promise');
     if(event === "JobResult") {
       nexusContract.on(event, (
         consumer, 
@@ -258,7 +257,7 @@ describe("Nexus", function(done) {
   });
 
   it("Buy dapp gas", async function() {
-    const dapps = ethers.utils.parseUnits("800000",4);
+    const dapps = ethers.utils.parseUnits("8000000",4);
     await dappTokenContract.mint(addr1.address, dapps);
     await dappTokenContract.approve(nexusContract.address, dapps);
     await nexusContract.buyGasFor(dapps, addr1.address, worker1.address);
@@ -269,8 +268,8 @@ describe("Nexus", function(done) {
   });
 
   it("Sell dapp gas", async function() {
-    const dapps = ethers.utils.parseUnits("100000",4);
-    const dappsLeft = ethers.utils.parseUnits("700000",4);
+    const dapps = ethers.utils.parseUnits("1000000",4);
+    const dappsLeft = ethers.utils.parseUnits("7000000",4);
 
     await nexusContract.sellGas(dapps, worker1.address);
 
@@ -1006,7 +1005,7 @@ describe("Nexus", function(done) {
     expect(Number(outputFSRes)).is.above(3);
   });
 
-  it.skip("Run service - complete", async function() {
+  it("Run service - complete", async function() {
     console.log('first queue job');
     await nexusContract.queueJob({
       owner: addr1.address,

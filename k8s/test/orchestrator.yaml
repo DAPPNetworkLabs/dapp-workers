@@ -47,7 +47,7 @@ spec:
             - name: WORKER_AWS_KMS_ENABLED
               value: "false"
             - name: WORKER_EVM_GAS_LIMIT
-              value: "1000000"
+              value: "10000000"
             - name: WORKER_EVM_GAS_PRICE
               value: "2000000000"
             - name: WORKER_EVM_MAX_FEE_PER_GAS
