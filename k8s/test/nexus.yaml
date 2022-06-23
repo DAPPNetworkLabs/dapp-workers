@@ -53,7 +53,7 @@ spec:
             - mountPath: /services/orchestrator
               name: nexus-claim0
               readOnly: true
-      restartPolicy: Always
+      restartPolicy: Never
       volumes:
         - name: nexus-claim0
           hostPath:
