@@ -918,7 +918,7 @@ describe("Nexus", function(done) {
     expect(isCocmplete).to.equal(true);
   });
 
-  it("Queue job git-cloner", async function() {
+  it.skip("Queue job git-cloner", async function() {
     await nexusContract.approveImage("natpdev/git-cloner","f1d732afadb639a712ad1c52fc552a825af8567dcd761910d51bf78512fb3d8e");
     await nexusContract.connect(worker1).setDockerImage("natpdev/git-cloner",100000,100000,100000,100000,100,100);
     
@@ -943,7 +943,7 @@ describe("Nexus", function(done) {
     expect(outputFSRes).to.equal("QmcREDmdnLtn41V4JGADUA81eQEPeJ86raGETT43ShJqNU");
   });
 
-  it("Queue job sol-runner", async function() {
+  it.skip("Queue job sol-runner", async function() {
     await nexusContract.approveImage("natpdev/sol-runner","8ca452c2da09d8383e29b6774812f2ddb8a3c04f693b4292ab2887540c37e8f9");
     await nexusContract.connect(worker1).setDockerImage("natpdev/sol-runner",100000,100000,100000,100000,100,100);
     
@@ -968,6 +968,9 @@ describe("Nexus", function(done) {
   });
 
   it.skip("Queue job monte-carlo", async function() {
+    await nexusContract.approveImage("natpdev/git-cloner","f1d732afadb639a712ad1c52fc552a825af8567dcd761910d51bf78512fb3d8e");
+    await nexusContract.connect(worker1).setDockerImage("natpdev/git-cloner",100000,100000,100000,100000,100,100);
+    
     await nexusContract.approveImage("natpdev/monte-carlo","8fb8040f39dbaeca6657694f6b4c82bb1729da1a6be9b300edf83029072c292b");
     await nexusContract.connect(worker1).setDockerImage("natpdev/monte-carlo",100000,100000,100000,100000,100,100);
     
