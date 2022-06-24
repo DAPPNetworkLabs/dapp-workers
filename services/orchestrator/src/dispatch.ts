@@ -171,7 +171,7 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
     // envsubst < deployment.yaml | kubectl apply -f -
     const cmd = `${generatedArgs.join(' ')} PRIORITY_CLASS=${"high"} WORKERS_SERVICE_NAME=${imageName}-${id} IPFS_HOST=${process.env.IPFS_HOST} envsubst < /dapp-workers/k8s/test/images/${imageName}.yaml | kubectl apply -f -`
     try {
-      console.log(cmd);
+      // console.log(cmd);
       await execPromise(cmd,{});
     } catch(e) {
       console.log(`docker error:`,e);

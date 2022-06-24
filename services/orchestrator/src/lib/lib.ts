@@ -30,7 +30,7 @@ export const completeService = async (jobID, outputFS, ioMegaBytesUsed, storageM
 export const deleteService = async (imageName: string, id: number) => {
     // try {
         const cmd = `PRIORITY_CLASS=${"high"} WORKERS_SERVICE_NAME=${imageName}-${id} IPFS_HOST=${process.env.IPFS_HOST} envsubst < /dapp-workers/k8s/test/images/${imageName}.yaml | kubectl delete -f -`
-        console.log(cmd);
+        // console.log(cmd);
         await execPromise(cmd,{});
     // } catch(e) {
     //     console.log(`error deleting service`,e);
