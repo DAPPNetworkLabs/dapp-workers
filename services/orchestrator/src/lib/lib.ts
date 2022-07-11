@@ -18,11 +18,11 @@ export async function validateDataLimits(id, workerAccount: { address: string, p
     return await theContract.methods.getWORKERDataLimits(id, workerAccount.address).call({ from: workerAccount.address });
 }
 
-export const completeService = async (jobID, outputFS, ioMegaBytesUsed, storageMegaBytesUsed, workerAccount: { address: string, privateKey: string }) => {
+export const completeService = async (jobID, outputFS, storageMegaBytesUsed, workerAccount: { address: string, privateKey: string }) => {
     await postTrx("serviceComplete", workerAccount, null, {
         jobID,
         outputFS,
-        ioMegaBytesUsed,
+        // ioMegaBytesUsed,
         storageMegaBytesUsed
     });
 }
@@ -47,7 +47,6 @@ export const endService = async (job, msg, log, workerAccount: { address: string
         // job.io_usage, 
         // job.storage_usage,
         0, 
-        0,
         workerAccount
     );
 }
@@ -59,7 +58,7 @@ export const endServiceError = async (job, msg, log, workerAccount: { address: s
         jobID: job.key,
         stdErr: msg,
         outputFS: "",
-        ioMegaBytesUsed:0,
+        // ioMegaBytesUsed:0,
         storageMegaBytesUsed:0
     });
     await removeUsageInfo(job.key);
@@ -241,7 +240,7 @@ export const verifyImageHash = async (image: string, id: number, isJob: boolean,
                 jobID: id,
                 stdErr: "chain hash mismatch",
                 outputFS: "",
-                ioMegaBytesUsed:0,
+                // ioMegaBytesUsed:0,
                 storageMegaBytesUsed:0
             });
         }
@@ -254,7 +253,7 @@ export const runService = async (returnValues, workerAccount: { address: string,
     const consumer = returnValues[fidx++];
     const owner = returnValues[fidx++];
     const imageName = returnValues[fidx++];
-    const ioMegaBytes = returnValues[fidx++];
+    // const ioMegaBytes = returnValues[fidx++];
     const storageMegaBytes = returnValues[fidx++];
     const id = returnValues[fidx++];
     const inputFS = returnValues[fidx++];
@@ -262,7 +261,7 @@ export const runService = async (returnValues, workerAccount: { address: string,
 
     await verifyImageHash(imageName, id, false, workerAccount);
     
-    const ioMegaBytesUsed = 0;
+    // const ioMegaBytesUsed = 0;
     const storageMegaBytesUsed = 0;
 
     const jobType = "service";
@@ -282,7 +281,7 @@ export const runService = async (returnValues, workerAccount: { address: string,
             jobID: id,
             stdErr: "min balance not met",
             outputFS: "",
-            ioMegaBytesUsed,
+            // ioMegaBytesUsed,
             storageMegaBytesUsed
         });
         return;
@@ -296,7 +295,7 @@ export const runService = async (returnValues, workerAccount: { address: string,
             jobID: id,
             stdErr: "service error",
             outputFS: "service error",
-            ioMegaBytesUsed,
+            // ioMegaBytesUsed,
             storageMegaBytesUsed
         });
         await removeUsageInfo(id);

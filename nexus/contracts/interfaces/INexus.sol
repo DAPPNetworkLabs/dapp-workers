@@ -16,7 +16,7 @@ interface INexus {
   struct queueServiceArgs {
       address owner;
       string imageName;
-      uint ioMegaBytes;
+      // uint ioMegaBytes;
       uint storageMegaBytes;
       string inputFS;
       string[] args;
