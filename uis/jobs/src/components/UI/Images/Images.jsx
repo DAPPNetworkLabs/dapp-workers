@@ -22,7 +22,7 @@ const Images = (props) => {
                     <td onClick={() => {navigator.clipboard.writeText(`${el.baseFee/1e6}`)}}>{el.baseFee/1e6}</td>
                     <td onClick={() => {navigator.clipboard.writeText(`${el.storageFee/1e6}`)}}>{el.storageFee/1e6}</td>
                     <td onClick={() => {navigator.clipboard.writeText(`${el.ioFee/1e6}`)}}>{el.ioFee/1e6}</td>
-                    <td onClick={() => {navigator.clipboard.writeText(`${el.minIoMegaBytes}`)}}>{el.minIoMegaBytes}</td>
+                    {/* <td onClick={() => {navigator.clipboard.writeText(`${el.minIoMegaBytes}`)}}>{el.minIoMegaBytes}</td> */}
                     <td onClick={() => {navigator.clipboard.writeText(`${el.minStorageMegaBytes}`)}}>{el.minStorageMegaBytes}</td>
                 </tr>
             )

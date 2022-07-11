@@ -1,5 +1,5 @@
 import Web3 from 'web3';
-import NexusJSON from process.env.WORKER_PRIVATE_CHAIN ? '../../abi/NexusPrivate.json' : '../../abi/Nexus.json';
+import NexusJSON from '../../abi/Nexus.json';
 
 // const provider = new Web3.providers.WebsocketProvider(process.env.REACT_APP_ETH_ADDR || 'ws://localhost:8545');
 // const web3 = new Web3(provider);
@@ -65,7 +65,7 @@ const fetchServiceDapps = async (thisObject,stateSpecifier) => {
     for(const worker of workers) {
         const dapps = await contract.methods.calcServiceDapps(
             thisObject.state[stateSpecifier].imageName,
-            thisObject.state[stateSpecifier].ioMegaBytes,
+            // thisObject.state[stateSpecifier].ioMegaBytes,
             thisObject.state[stateSpecifier].storageMegaBytes,
             worker,
             true
@@ -480,7 +480,7 @@ const extendService = async (thisObject) => {
         thisObject.state.extendService.serviceId,
         thisObject.state.extendService.imageName,
         thisObject.state.extendService.months,
-        thisObject.state.extendService.ioMb,
+        // thisObject.state.extendService.ioMb,
         thisObject.state.extendService.storageMb
 
     ]);
@@ -539,7 +539,7 @@ const queueService = async (thisObject) => {
         {
             owner: thisObject.state.queueService.owner,
             imageName: thisObject.state.queueService.imageName,
-            ioMegaBytes: thisObject.state.queueService.ioMegaBytes,
+            // ioMegaBytes: thisObject.state.queueService.ioMegaBytes,
             storageMegaBytes: thisObject.state.queueService.storageMegaBytes,
             inputFS: thisObject.state.queueService.inputFS,
             args: thisObject.state.queueService.args,
@@ -558,7 +558,7 @@ const setDockerImage = async (thisObject) => {
         thisObject.state.setDockerImage.storageFee,
         thisObject.state.setDockerImage.ioFee,
         thisObject.state.setDockerImage.minStorageMegaBytes,
-        thisObject.state.setDockerImage.minIoMegaBytes,
+        // thisObject.state.setDockerImage.minIoMegaBytes,
     ]);
     await runTrx(data,["DockerSet"],thisObject);
 }
@@ -572,7 +572,7 @@ const updateDockerImage = async (thisObject) => {
         thisObject.state.updateDockerImage.storageFee,
         thisObject.state.updateDockerImage.ioFee,
         thisObject.state.updateDockerImage.minStorageMegaBytes,
-        thisObject.state.updateDockerImage.minIoMegaBytes,
+        // thisObject.state.updateDockerImage.minIoMegaBytes,
     ]);
     await runTrx(data,["updateDockerImage"],thisObject);
 }

@@ -88,7 +88,7 @@ class ExtendService extends Component {
                 { name:"serviceId",placeholder: "uint serviceId"},
                 { name:"imageName",placeholder: "string calldata imageName"},
                 { name:"months",placeholder: "uint months"},
-                { name:"ioMb",placeholder: "uint ioMb"},
+                // { name:"ioMb",placeholder: "uint ioMb"},
                 { name:"storageMb",placeholder: "uint storageMb"}
             ]
         },

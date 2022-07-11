@@ -34,7 +34,7 @@ class RequestService extends Component {
             [stateSelector]: {
                 owner: '0x21dfA04241ca05320E9dCd529F15f6F55115bbC3',
                 imageName: 'wasi-service',
-                ioMegaBytes: 100,
+                // ioMegaBytes: 100,
                 storageMegaBytes: 100,
                 inputFS: 'QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM',
                 args: ["target/wasm32-wasi/release/test"],
@@ -97,7 +97,7 @@ class RequestService extends Component {
             inputs:[
                 { name:"owner",placeholder: "address owner"},
                 { name:"imageName",placeholder: "string imageName"},
-                { name:"ioMegaBytes",placeholder: "uint ioMegaBytes"},
+                // { name:"ioMegaBytes",placeholder: "uint ioMegaBytes"},
                 { name:"storageMegaBytes",placeholder: "uint storageMegaBytes"},
                 { name:"inputFS",placeholder: "string inputFS"},
                 { name:"args",placeholder: "string[] args"},

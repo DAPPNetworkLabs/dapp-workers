@@ -38,7 +38,7 @@ class UpdateImage extends Component {
                 storageFee:null,
                 ioFee:null,
                 minStorageMegaBytes:null,
-                minIoMegaBytes:null
+                // minIoMegaBytes:null
             },
             show: false
         }
@@ -100,7 +100,7 @@ class UpdateImage extends Component {
                 { name:"storageFee",placeholder: "uint storageFee"},
                 { name:"ioFee",placeholder: "uint ioFee"},
                 { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
-                { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
+                // { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
             ]
         },
     ]

@@ -13,7 +13,7 @@ const Services = (props) => {
                 if(worker && !props.isWorker) {
                     return (
                         <div>
-                            <td onClick={() => {navigator.clipboard.writeText(`${worker.worker} | ${worker.endpoint} | ${worker.ioUsed}/${el.ioMegaBytes} | ${worker.storageUsed}/${el.storageMegaBytes}`)}}>{`${worker.worker.slice(0,4)}..${worker.worker.slice(-4)} | ${worker.endpoint} | ${worker.ioUsed}/${el.ioMegaBytes} | ${worker.storageUsed}/${el.storageMegaBytes}`}</td>
+                            <td onClick={() => {navigator.clipboard.writeText(`${worker.worker} | ${worker.endpoint} | ${worker.storageUsed}/${el.storageMegaBytes}`)}}>{`${worker.worker.slice(0,4)}..${worker.worker.slice(-4)} | ${worker.endpoint} | ${worker.storageUsed}/${el.storageMegaBytes}`}</td>
                         </div>
                     );
                 }
