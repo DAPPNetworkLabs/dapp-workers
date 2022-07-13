@@ -2,27 +2,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kompose.cmd: kompose convert -f local_compose.yaml
+    kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: postgres
+    app: postgres
   name: postgres
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: postgres
+      app: postgres
   strategy: {}
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert -f local_compose.yaml
+        kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
         kompose.version: 1.26.0 (40646f47)
       creationTimestamp: null
       labels:
-        io.kompose.network/: "true"
-        io.kompose.service: postgres
+        app: postgres
     spec:
       containers:
         - env:
@@ -41,3 +40,23 @@ spec:
           resources: {}
       restartPolicy: Always
 status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    app: postgres
+  name: postgres
+spec:
+  ports:
+    - name: "5432"
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: postgres
+status:
+  loadBalancer: {}
