@@ -46,10 +46,6 @@ spec:
               value: 0x278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d
             - name: SEED
               value: cruel rebel frown short month love belt weather sense hood cage pact
-            - name: RUN_LOCAL
-              value: "true"
-            - name: ONLY_CONTRACTS
-              value: "true"
           image: natpdev/nexus
           name: nexus
           resources: {}
@@ -61,6 +57,6 @@ spec:
         - name: nexus-claim0
           hostPath:
             # path: /dapp-workers/services/orchestrator
-            path: /k8s/home/ubuntu/dapp-workers/services/orchestrator
+            path: /k8s/home/ubuntu/environment/dapp-workers/services/orchestrator
             # type: Directory
 status: {}
