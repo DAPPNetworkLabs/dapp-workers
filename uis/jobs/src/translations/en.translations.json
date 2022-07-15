@@ -156,9 +156,7 @@
                 { "name":"JOB FEE","type": "uint","short":"Fee required to perform job."},
                 { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."},
                 { "name":"STORAGE FEE","type": "uint","short":"Fee per mb of storage used."},
-                { "name":"I/O FEE","type": "uint","short":"Fee per mb of upload/download bandwidth provided."},
-                { "name":"MIN STORAGE MB","type": "uint","short":"Min storage in mb to provide service."},
-                { "name":"MIN I/O MB","type": "uint","short":"Min i/o in mb to provide service."}
+                { "name":"MIN STORAGE MB","type": "uint","short":"Min storage in mb to provide service."}
             ]
         },
         "update image": {
@@ -170,9 +168,7 @@
                 { "name":"JOB FEE","type": "uint","short":"Fee required to perform job."},
                 { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."},
                 { "name":"STORAGE FEE","type": "uint","short":"Fee per mb of storage used."},
-                { "name":"I/O FEE","type": "uint","short":"Fee per mb of upload/download bandwidth provided."},
-                { "name":"MIN STORAGE MB","type": "uint","short":"Min storage in mb to provide service."},
-                { "name":"MIN I/O MB","type": "uint","short":"Min i/o in mb to provide service."}
+                { "name":"MIN STORAGE MB","type": "uint","short":"Min storage in mb to provide service."}
             ]
         },
         "jobs": {

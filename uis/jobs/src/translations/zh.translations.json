@@ -156,9 +156,7 @@
                 { "name":"JOB FEE","type": "uint","short":"执行工作所需的费用。"},
                 { "name":"BASE FEE","type": "uint","short":"提供服务时间的基本费用。"},
                 { "name":"STORAGE FEE","type": "uint","short":"每使用 mb 存储空间的费用。"},
-                { "name":"I/O FEE","type": "uint","short":"提供的每 mb 上传/下载带宽费用。"},
-                { "name":"MIN STORAGE MB","type": "uint","short":"最小存储在 mb 以提供服务。"},
-                { "name":"MIN I/O MB","type": "uint","short":"mb 中的最小 i/o 以提供服务。"}
+                { "name":"MIN STORAGE MB","type": "uint","short":"最小存储在 mb 以提供服务。"}
             ]
         },
         "update image": {
@@ -170,9 +168,7 @@
                 { "name":"JOB FEE","type": "uint","short":"执行工作所需的费用。"},
                 { "name":"BASE FEE","type": "uint","short":"提供服务时间的基本费用。"},
                 { "name":"STORAGE FEE","type": "uint","short":"每使用 mb 存储空间的费用。"},
-                { "name":"I/O FEE","type": "uint","short":"提供的每 mb 上传/下载带宽费用。"},
-                { "name":"MIN STORAGE MB","type": "uint","short":"最小存储在 mb 以提供服务。"},
-                { "name":"MIN I/O MB","type": "uint","short":"mb 中的最小 i/o 以提供服务。"}
+                { "name":"MIN STORAGE MB","type": "uint","short":"最小存储在 mb 以提供服务。"}
             ]
         },
         "jobs": {

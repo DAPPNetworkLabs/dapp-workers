@@ -156,9 +156,7 @@
                 { "name":"JOB FEE","type": "uint","short":"Tarifa requerida para realizar el trabajo."},
                 { "name":"BASE FEE","type": "uint","short":"Tarifa base por tiempo de prestación del servicio."},
                 { "name":"STORAGE FEE","type": "uint","short":"Tarifa por mb de almacenamiento utilizado."},
-                { "name":"I/O FEE","type": "uint","short":"Tarifa por mb de ancho de banda de carga/descarga proporcionado."},
-                { "name":"MIN STORAGE MB","type": "uint","short":"Almacenamiento mínimo en mb para dar servicio."},
-                { "name":"MIN I/O MB","type": "uint","short":"Mini i/o en mb para dar servicio."}
+                { "name":"MIN STORAGE MB","type": "uint","short":"Almacenamiento mínimo en mb para dar servicio."}
             ]
         },
         "update image": {
@@ -170,9 +168,7 @@
                 { "name":"JOB FEE","type": "uint","short":"Tarifa requerida para realizar el trabajo."},
                 { "name":"BASE FEE","type": "uint","short":"Tarifa base por tiempo de prestación del servicio."},
                 { "name":"STORAGE FEE","type": "uint","short":"Tarifa por mb de almacenamiento utilizado."},
-                { "name":"I/O FEE","type": "uint","short":"Tarifa por mb de ancho de banda de carga/descarga proporcionado."},
-                { "name":"MIN STORAGE MB","type": "uint","short":"Almacenamiento mínimo en mb para dar servicio."},
-                { "name":"MIN I/O MB","type": "uint","short":"Mini i/o en mb para dar servicio."}
+                { "name":"MIN STORAGE MB","type": "uint","short":"Almacenamiento mínimo en mb para dar servicio."}
             ]
         },
         "jobs": {

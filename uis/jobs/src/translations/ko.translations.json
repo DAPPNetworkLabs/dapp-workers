@@ -156,9 +156,7 @@
                 { "name":"JOB FEE","type": "uint","short":"작업을 수행하는 데 필요한 수수료."},
                 { "name":"BASE FEE","type": "uint","short":"서비스 제공 시간에 대한 기본 요금."},
                 { "name":"STORAGE FEE","type": "uint","short":"사용된 스토리지의 MB당 요금입니다."},
-                { "name":"I/O FEE","type": "uint","short":"업로드/다운로드 대역폭의 MB당 요금이 제공됩니다."},
-                { "name":"MIN STORAGE MB","type": "uint","short":"서비스를 제공하기 위한 최소 저장용량(MB)입니다."},
-                { "name":"MIN I/O MB","type": "uint","short":"서비스를 제공하기 위한 최소 I/O(MB)."}
+                { "name":"MIN STORAGE MB","type": "uint","short":"서비스를 제공하기 위한 최소 저장용량(MB)입니다."}
             ]
         },
         "update image": {
@@ -170,9 +168,7 @@
                 { "name":"JOB FEE","type": "uint","short":"작업을 수행하는 데 필요한 수수료."},
                 { "name":"BASE FEE","type": "uint","short":"서비스 제공 시간에 대한 기본 요금."},
                 { "name":"STORAGE FEE","type": "uint","short":"사용된 스토리지의 MB당 요금입니다."},
-                { "name":"I/O FEE","type": "uint","short":"업로드/다운로드 대역폭의 MB당 요금이 제공됩니다."},
-                { "name":"MIN STORAGE MB","type": "uint","short":"서비스를 제공하기 위한 최소 저장용량(MB)입니다."},
-                { "name":"MIN I/O MB","type": "uint","short":"서비스를 제공하기 위한 최소 I/O(MB)."}
+                { "name":"MIN STORAGE MB","type": "uint","short":"서비스를 제공하기 위한 최소 저장용량(MB)입니다."}
             ]
         },
         "jobs": {
