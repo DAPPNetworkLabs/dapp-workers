@@ -160,6 +160,7 @@ describe("Nexus", function(done) {
     consumerContract = await consumerTokenFactory.deploy(nexusContract.address, "hash");
 
     if(process.env.PRIVATE_KEY) {
+      console.log('hit private key');
       worker1 = new ethers.Wallet("278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d",worker1.provider);
       consumer1 = new ethers.Wallet("0xc327bdb598a257632f48e4368ebe7be66a40daff34569c2f2ba36ee96e893674",worker1.provider);
       consumer2 = new ethers.Wallet("0xa62d3d80840579bf62183c2c3ad2344aebeccec44b1ba719aa06f39ab47d7d5c",worker1.provider);
@@ -202,6 +203,7 @@ describe("Nexus", function(done) {
         await nexusContract.connect(worker1).setDockerImage("natpdev/sol-runner",100000,100000,100000,100000,1);
         await nexusContract.connect(worker1).setDockerImage("natpdev/monte-carlo",100000,100000,100000,100000,1);
         await dappTokenContract.approve(nexusContract.address, ethers.utils.parseUnits("80000000",4));
+	console.log('ran local');
       }
     }
 
@@ -210,6 +212,7 @@ describe("Nexus", function(done) {
     // console.log(`consumer contract: ${consumerContract.address}`);
 
     if(process.env.ONLY_CONTRACTS) {
+      console.log('hit done');
       done()
     }
   });

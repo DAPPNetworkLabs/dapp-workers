@@ -2,6 +2,8 @@ docker image prune -f
 
 minikube start --memory='8000MB' --mount --mount-string='/:/k8s' --cpus='4'
 
+$PWD/scripts/build_deploy.sh
+
 $PWD/scripts/deploy-roots.sh 
 
 sudo kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
