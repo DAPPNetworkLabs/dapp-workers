@@ -297,7 +297,7 @@ describe("Nexus", function(done) {
     expect(dockerImage.jobFee.toString()).to.equal('200000');
     expect(dockerImage.baseFee.toString()).to.equal('200000');
     expect(dockerImage.storageFee.toString()).to.equal('200000');
-    expect(dockerImage.ioFee.toString()).to.equal('200000');
+    // expect(dockerImage.ioFee.toString()).to.equal('200000');
     expect(dockerImage.minStorageMegaBytes.toString()).to.equal('2');
     // expect(dockerImage.minIoMegaBytes.toString()).to.equal('2');
   });
@@ -310,7 +310,7 @@ describe("Nexus", function(done) {
     expect(dockerImage.jobFee.toString()).to.equal('100000');
     expect(dockerImage.baseFee.toString()).to.equal('100000');
     expect(dockerImage.storageFee.toString()).to.equal('100000');
-    expect(dockerImage.ioFee.toString()).to.equal('100000');
+    // expect(dockerImage.ioFee.toString()).to.equal('100000');
     expect(dockerImage.minStorageMegaBytes.toString()).to.equal('100');
     // expect(dockerImage.minIoMegaBytes.toString()).to.equal('100');
   });

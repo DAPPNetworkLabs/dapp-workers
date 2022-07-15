@@ -1,31 +1,18 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
-    kompose.version: 1.26.0 (40646f47)
-  creationTimestamp: null
   labels:
     app: nexus
     product: dapp-workers
   name: nexus
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: nexus
-  strategy:
-    type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
-        kompose.version: 1.26.0 (40646f47)
-      creationTimestamp: null
       labels:
         app: nexus
         product: dapp-workers
     spec:
+      restartPolicy: Never
       containers:
         - args:
             - /bin/bash
