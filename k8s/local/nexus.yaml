@@ -6,6 +6,7 @@ metadata:
     product: dapp-workers
   name: nexus
 spec:
+  backoffLimit: 0
   template:
     metadata:
       labels:
