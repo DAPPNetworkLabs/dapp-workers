@@ -926,7 +926,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         require(
             jobFee > 0 && 
             baseFee > 0 && 
-            storageFee > 0 && 
+            storageFee > 0
             // ioFee > 0
             // minIoMegaBytes > 0
         , "invalid fee");
