@@ -556,7 +556,7 @@ const setDockerImage = async (thisObject) => {
         thisObject.state.setDockerImage.jobFee,
         thisObject.state.setDockerImage.baseFee,
         thisObject.state.setDockerImage.storageFee,
-        thisObject.state.setDockerImage.ioFee,
+        // thisObject.state.setDockerImage.ioFee,
         thisObject.state.setDockerImage.minStorageMegaBytes,
         // thisObject.state.setDockerImage.minIoMegaBytes,
     ]);
@@ -570,7 +570,7 @@ const updateDockerImage = async (thisObject) => {
         thisObject.state.updateDockerImage.jobFee,
         thisObject.state.updateDockerImage.baseFee,
         thisObject.state.updateDockerImage.storageFee,
-        thisObject.state.updateDockerImage.ioFee,
+        // thisObject.state.updateDockerImage.ioFee,
         thisObject.state.updateDockerImage.minStorageMegaBytes,
         // thisObject.state.updateDockerImage.minIoMegaBytes,
     ]);

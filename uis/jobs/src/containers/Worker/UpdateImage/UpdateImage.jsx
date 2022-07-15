@@ -36,7 +36,7 @@ class UpdateImage extends Component {
                 jobFee:null,
                 baseFee:null,
                 storageFee:null,
-                ioFee:null,
+                // ioFee:null,
                 minStorageMegaBytes:null,
                 // minIoMegaBytes:null
             },
@@ -98,7 +98,7 @@ class UpdateImage extends Component {
                 { name:"jobFee",placeholder: "uint jobFee"},
                 { name:"baseFee",placeholder: "uint baseFee"},
                 { name:"storageFee",placeholder: "uint storageFee"},
-                { name:"ioFee",placeholder: "uint ioFee"},
+                // { name:"ioFee",placeholder: "uint ioFee"},
                 { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
                 // { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
             ]

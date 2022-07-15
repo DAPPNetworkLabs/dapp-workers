@@ -209,7 +209,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint jobFee;
         uint baseFee;
         uint storageFee;
-        uint ioFee;
+        // uint ioFee;
         uint minStorageMegaBytes;
         // uint minIoMegaBytes;
     }
@@ -916,7 +916,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint jobFee,
         uint baseFee,
         uint storageFee,
-        uint ioFee,
+        // uint ioFee,
         uint minStorageMegaBytes
         // uint minIoMegaBytes
     ) public {
@@ -927,7 +927,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             jobFee > 0 && 
             baseFee > 0 && 
             storageFee > 0 && 
-            ioFee > 0
+            // ioFee > 0
             // minIoMegaBytes > 0
         , "invalid fee");
 
@@ -937,7 +937,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         // service related
         workerApprovedImages[owner][imageName].baseFee = baseFee;
         workerApprovedImages[owner][imageName].storageFee = storageFee;
-        workerApprovedImages[owner][imageName].ioFee = ioFee;
+        // workerApprovedImages[owner][imageName].ioFee = ioFee;
         workerApprovedImages[owner][imageName].minStorageMegaBytes = minStorageMegaBytes;
         // workerApprovedImages[owner][imageName].minIoMegaBytes = minIoMegaBytes;
     }
@@ -950,7 +950,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint jobFee,
         uint baseFee,
         uint storageFee,
-        uint ioFee,
+        // uint ioFee,
         uint minStorageMegaBytes
         // uint minIoMegaBytes
     ) external {
@@ -959,7 +959,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         if(workerApprovedImages[msg.sender][imageName].jobFee != jobFee) diff = true;
         if(workerApprovedImages[msg.sender][imageName].baseFee != baseFee) diff = true;
         if(workerApprovedImages[msg.sender][imageName].storageFee != storageFee) diff = true;
-        if(workerApprovedImages[msg.sender][imageName].ioFee != ioFee) diff = true;
+        // if(workerApprovedImages[msg.sender][imageName].ioFee != ioFee) diff = true;
         if(workerApprovedImages[msg.sender][imageName].minStorageMegaBytes != minStorageMegaBytes) diff = true;
         // if(workerApprovedImages[msg.sender][imageName].minIoMegaBytes != minIoMegaBytes) diff = true;
 
@@ -970,7 +970,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             jobFee,
             baseFee,
             storageFee,
-            ioFee,
+            // ioFee,
             minStorageMegaBytes
             // minIoMegaBytes
         );
