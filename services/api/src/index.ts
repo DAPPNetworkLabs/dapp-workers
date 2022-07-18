@@ -30,36 +30,6 @@ const responseHandler = async (response, text) =>  {
     }
 }
 
-app.get('/dapp-workers/io', async function(req, res, next) {
-    try {
-        const job = await getUsageInfo(req.query.id);
-        const cmd = `docker stats --no-stream --format "{{.NetIO}}" ${job.dockerId}`;
-        const ioInfo: any = await execPromise(cmd,{});
-    
-        const inputUsage = toMegaBytes(ioInfo.split(' / ')[0].replace(/[\n\r]/g, ''));
-        const outputUsage = toMegaBytes(ioInfo.split(' / ')[1].replace(/[\n\r]/g, ''));
-                
-        res.send({
-            io_usage: Math.floor((inputUsage + outputUsage) + job.last_io_usage)
-        })
-    } catch(e) {
-        next(e);
-    }
-});
-
-app.get('/dapp-workers/storage', async function(req, res, next) {
-    try {
-        const job = await getUsageInfo(req.query.id);
-        const storageUsed: any = await execPromise(`docker ps --size --filter "id=${job.dockerId}" --format "{{.Size}}"`,{});
-                
-        res.send({
-            storage_usage: Math.floor(toMegaBytes(storageUsed.split(' ')[0]))
-        })
-    } catch(e) {
-        next(e);
-    }
-});
-
 app.get('/dapp-workers', async function(req, res, next) {
     const port = req.query.port ? req.query.port : 80; 
     preCheck(approvedServices,req.query.image,res);
