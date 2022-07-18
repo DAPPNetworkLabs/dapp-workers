@@ -1,9 +1,24 @@
 export const approvedImages = [{
-    name:'job',
-    type:'service'
-},{
     name:'wasi-service',
     type:'service'
+},{
+    name:'poa-evm',
+    type:'service'
+},{
+    name:'runner',
+    type:'job'
+},{
+    name:'nvidia-docker',
+    type:'job'
+},{
+    name:'git-cloner',
+    type:'job'
+},{
+    name:'sol-runner',
+    type:'job'
+},{
+    name:'monte-carlo',
+    type:'job'
 },{
     name:'rust-compiler',
     type:'job'
