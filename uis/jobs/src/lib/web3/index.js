@@ -1,7 +1,7 @@
 import Web3 from 'web3';
 import NexusJSON from '../../abi/Nexus.json';
 
-// const provider = new Web3.providers.WebsocketProvider(process.env.REACT_APP_ETH_ADDR || 'ws://localhost:8545');
+// const provider = new Web3.providers.WebsocketProvider(process.env.REACT_APP_ETH_ADDR || 'ws://dapp-workers.liquidapps.io');
 // const web3 = new Web3(provider);
 const web3 = new Web3(process.env.REACT_APP_ETH_ADDR || 'http://dapp-workers.liquidapps.io');
 const contractAddress = process.env.REACT_APP_ADDRESS || '0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5';
