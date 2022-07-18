@@ -78,8 +78,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address indexed consumer,
         address indexed worker,
         uint id,
-        // uint ioMegaBytes, 
-        uint storageMegaBytes,
         uint endDate
     );
 
@@ -102,8 +100,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address indexed consumer,
         address indexed owner,
         string imageName,
-        // uint ioMegaBytes,
-        uint storageMegaBytes,
         uint id,
         string inputFS,
         string[] args
@@ -186,8 +182,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     struct WorkerServiceData {
         uint port;
-        // uint ioMegaBytesLimit;
-        uint storageMegaBytesLimit;
     }
 
     struct ServiceData {
@@ -198,8 +192,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         bool started;
         uint endDate;
         uint months;
-        // uint ioMegaBytes;
-        uint storageMegaBytes;
         mapping(address => WorkerServiceData) workerServiceData;
         mapping(address => bytes32) dataHash;
         mapping(uint => bool) done;
@@ -208,10 +200,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     struct WorkerDockerImage {
         uint jobFee;
         uint baseFee;
-        uint storageFee;
-        // uint ioFee;
-        uint minStorageMegaBytes;
-        // uint minIoMegaBytes;
     }
 
     struct queueJobArgs {
@@ -227,8 +215,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     struct queueServiceArgs {
         address owner;
         string imageName;
-        // uint ioMegaBytes;
-        uint storageMegaBytes;
         string inputFS;
         string[] args;
         uint months;
@@ -238,20 +224,11 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint jobID;
         string stdErr;
         string outputFS;
-        // uint ioMegaBytesUsed;
-        uint storageMegaBytesUsed;
     }
 
     struct serviceCompleteArgs {
         uint jobID;
         string outputFS;
-        // uint ioMegaBytesUsed;
-        uint storageMegaBytesUsed;
-    }
-
-    struct WorkerLimits {
-        // uint ioMegaBytesLimit;
-        uint storageMegaBytesLimit;
     }
 
     struct Config {
@@ -461,8 +438,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         } else if(compareStrings(jobType, "service")) {
             return calcServiceDapps(
                 services[id].imageName, 
-                // services[id].ioMegaBytes, 
-                services[id].storageMegaBytes, 
                 worker, 
                 true
             );
@@ -524,13 +499,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         for(uint i=0;i<workers.length;i++) {
             require(isImageApprovedForWORKER(workers[i], args.imageName), "not approved");
-            validateMin(
-                // args.ioMegaBytes, 
-                args.storageMegaBytes, 
-                args.imageName, 
-                args.months, 
-                workers[i]
-            );
         }
 
         lastJobID = lastJobID + 1;
@@ -540,16 +508,12 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         sd.consumer = msg.sender;
         sd.owner = args.owner;
         sd.imageName = args.imageName;
-        // sd.ioMegaBytes = args.ioMegaBytes;
-        sd.storageMegaBytes = args.storageMegaBytes;
         sd.months = args.months;
 
         emit QueueService(
             msg.sender,
             args.owner,
             args.imageName,
-            // args.ioMegaBytes,
-            args.storageMegaBytes,
             lastJobID,
             args.inputFS,
             args.args
@@ -643,13 +607,9 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address _consumer = sd.consumer;
 
         sd.workerServiceData[msg.sender].port = port;
-        // sd.workerServiceData[msg.sender].ioMegaBytesLimit += sd.ioMegaBytes;
-        sd.workerServiceData[msg.sender].storageMegaBytesLimit += sd.storageMegaBytes;
         
         uint dapps = calcServiceDapps(
             sd.imageName,
-            // sd.ioMegaBytes,
-            sd.storageMegaBytes,
             msg.sender,
             true
         );
@@ -713,8 +673,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         
         uint dapps = calcServiceDapps(
             sd.imageName,
-            // args.ioMegaBytesUsed,
-            args.storageMegaBytesUsed,
             msg.sender,
             true
         );
@@ -763,8 +721,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         
         uint dapps = calcServiceDapps(
             sd.imageName,
-            // args.ioMegaBytesUsed,
-            args.storageMegaBytesUsed,
             msg.sender,
             true
         );
@@ -791,9 +747,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function extendService(
         uint serviceId, 
         string calldata imageName, 
-        uint months, 
-        // uint ioMb, 
-        uint storageMb 
+        uint months
     ) external {
         validateConsumer(msg.sender);
         
@@ -805,23 +759,17 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address[] storage workers = providers[msg.sender];
         require(workers.length > 0,"no workers");
 
-        // require service not completed
-        // if service completed by worker, do not charge
-
         for(uint i=0;i<workers.length;i++) {
             bool include_base = months == 0 ? false : true;
             
             uint dapps = calcServiceDapps(
                 imageName,
-                // ioMb,
-                storageMb,
                 workers[i],
                 include_base
             );
 
             if(include_base) {
                 dapps *= months;
-                validateMin(storageMb, imageName, months, workers[i]);
                 sd.endDate = sd.endDate + ( months * 30 days );
             }
 
@@ -831,15 +779,10 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
                 workers[i]
             );
 
-            // sd.workerServiceData[workers[i]].ioMegaBytesLimit += ioMb;
-            sd.workerServiceData[workers[i]].storageMegaBytesLimit += storageMb;
-
             emit ServiceExtended(
                 msg.sender, 
                 workers[i], 
                 serviceId, 
-                // sd.workerServiceData[workers[i]].ioMegaBytesLimit, 
-                sd.workerServiceData[workers[i]].storageMegaBytesLimit, 
                 sd.endDate
             );
         }
@@ -914,21 +857,14 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function setDockerImage(
         string calldata imageName,
         uint jobFee,
-        uint baseFee,
-        uint storageFee,
-        // uint ioFee,
-        uint minStorageMegaBytes
-        // uint minIoMegaBytes
+        uint baseFee
     ) public {
         address owner = msg.sender;
 
         require(bytes(approvedImages[imageName]).length != 0, "image not approved");
         require(
             jobFee > 0 && 
-            baseFee > 0 && 
-            storageFee > 0
-            // ioFee > 0
-            // minIoMegaBytes > 0
+            baseFee > 0
         , "invalid fee");
 
         // job related
@@ -936,10 +872,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         // service related
         workerApprovedImages[owner][imageName].baseFee = baseFee;
-        workerApprovedImages[owner][imageName].storageFee = storageFee;
-        // workerApprovedImages[owner][imageName].ioFee = ioFee;
-        workerApprovedImages[owner][imageName].minStorageMegaBytes = minStorageMegaBytes;
-        // workerApprovedImages[owner][imageName].minIoMegaBytes = minIoMegaBytes;
     }
     
     /**
@@ -948,31 +880,19 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function updateDockerImage(
         string calldata imageName,
         uint jobFee,
-        uint baseFee,
-        uint storageFee,
-        // uint ioFee,
-        uint minStorageMegaBytes
-        // uint minIoMegaBytes
+        uint baseFee
     ) external {
         bool diff = false;
 
         if(workerApprovedImages[msg.sender][imageName].jobFee != jobFee) diff = true;
         if(workerApprovedImages[msg.sender][imageName].baseFee != baseFee) diff = true;
-        if(workerApprovedImages[msg.sender][imageName].storageFee != storageFee) diff = true;
-        // if(workerApprovedImages[msg.sender][imageName].ioFee != ioFee) diff = true;
-        if(workerApprovedImages[msg.sender][imageName].minStorageMegaBytes != minStorageMegaBytes) diff = true;
-        // if(workerApprovedImages[msg.sender][imageName].minIoMegaBytes != minIoMegaBytes) diff = true;
 
         require(diff, "no diff");
 
         setDockerImage(
             imageName,
             jobFee,
-            baseFee,
-            storageFee,
-            // ioFee,
-            minStorageMegaBytes
-            // minIoMegaBytes
+            baseFee
         );
     }
     
@@ -1060,23 +980,16 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      */
     function calcServiceDapps(
         string memory imageName, 
-        // uint ioMegaBytes, 
-        uint storageMegaBytes, 
         address worker, 
         bool include_base
     ) public view returns (uint) {
-        // base fee per hour * 24 hours * 30 days for monthly rate
         uint dappUsd = getDappUsd();
 
         uint baseFee = workerApprovedImages[worker][imageName].baseFee;
-        uint storageFee = workerApprovedImages[worker][imageName].storageFee;
-        // uint ioFee = workerApprovedImages[worker][imageName].ioFee;
 
         baseFee = include_base ? baseFee * 24 * 30 * dappUsd : 0;
-        storageFee = storageFee * storageMegaBytes * dappUsd;
-        // ioFee = ioFee * ioMegaBytes * dappUsd;
-        // ((100000 * 24 * 30) / 1e6) * 1249348) = 89,953,056 -> 4 dec adjusted -> 8,995.3056 DAPP ~ $72
-        return ( baseFee + storageFee ) / usdtPrecision;
+
+        return ( baseFee ) / usdtPrecision;
     }
 
     /**
@@ -1089,49 +1002,25 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         bytes memory data
     ) private returns (bool success) {
         assembly {
-        let g := gas()
-        // Compute g -= CUSHION and check for underflow
-        if lt(g, CUSHION) {
-            revert(0, 0)
-        }
-        g := sub(g, CUSHION)
-        // if g - g//64 <= gasAmount, revert
-        // (we subtract g//64 because of EIP-150)
-        if iszero(gt(sub(g, div(g, 64)), gasAmount)) {
-            revert(0, 0)
-        }
-        // solidity calls check that a contract actually exists at the destination, so we do the same
-        if iszero(extcodesize(target)) {
-            revert(0, 0)
-        }
-        // call and return whether we succeeded. ignore return data
-        success := call(gasAmount, target, 0, add(data, 0x20), mload(data), 0, 0)
+            let g := gas()
+            // Compute g -= CUSHION and check for underflow
+            if lt(g, CUSHION) {
+                revert(0, 0)
+            }
+            g := sub(g, CUSHION)
+            // if g - g//64 <= gasAmount, revert
+            // (we subtract g//64 because of EIP-150)
+            if iszero(gt(sub(g, div(g, 64)), gasAmount)) {
+                revert(0, 0)
+            }
+            // solidity calls check that a contract actually exists at the destination, so we do the same
+            if iszero(extcodesize(target)) {
+                revert(0, 0)
+            }
+            // call and return whether we succeeded. ignore return data
+            success := call(gasAmount, target, 0, add(data, 0x20), mload(data), 0, 0)
         }
         return success;
-    }
-
-    /**
-     * @dev require min io/storage met
-     */
-    function validateMin(
-        // uint ioMegaBytes, 
-        uint storageMegaBytes, 
-        string calldata imageName, 
-        uint months, 
-        address worker
-    ) public view {
-        // require(
-            // ioMegaBytes 
-            // >= 
-            // workerApprovedImages[worker][imageName].minIoMegaBytes * months
-            // ,"min io"
-        // );
-        require(
-            storageMegaBytes 
-            >= 
-            workerApprovedImages[worker][imageName].minStorageMegaBytes * months
-            ,"min storage"
-        );
     }
 
     /**
@@ -1278,16 +1167,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      */
     function getWORKEREndpoint(address worker) public view returns (string memory) {
         return registeredWORKERs[worker].endpoint;
-    }
-    
-    /**
-     * @dev returns worker data limits
-     */
-    function getWORKERDataLimits(uint id, address worker) public view returns (WorkerLimits memory) {
-        return WorkerLimits(
-            // services[id].workerServiceData[worker].ioMegaBytesLimit,
-            services[id].workerServiceData[worker].storageMegaBytesLimit
-        );
     }
     
     /**

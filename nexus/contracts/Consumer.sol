@@ -30,7 +30,7 @@ contract Consumer {
     function queueService(address owner, string calldata inputFS) external {
         string[] memory arr = new string[](1);
         arr[0] = "target/wasm32-wasi/release/test";
-        nexus.queueService(INexus.queueServiceArgs(owner,"natpdev/wasi-service",100,inputFS,arr,1));
+        nexus.queueService(INexus.queueServiceArgs(owner,"natpdev/wasi-service",inputFS,arr,1));
     }
 
     function _workercallback(string calldata outputFS, string  calldata outputHash) external {
