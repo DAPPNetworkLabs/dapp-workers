@@ -38,7 +38,7 @@ const Images = (props) => {
         <tr>
             <th class={classes.tooltip}>WORKER<span class={classes.tooltiptextForm}>{loc(`forms.worker`,props.lang)}</span></th> 
             <th class={classes.tooltip}>IMAGE<span class={classes.tooltiptextForm}>{loc(`forms.image`,props.lang)}</span></th> 
-            <th class={classes.tooltip}>BASE FEE<span class={classes.tooltiptextForm}>{loc(`forms.baseFee`,props.lang)}</span></th> 
+            <th class={classes.tooltip}>SERVICE FEE<span class={classes.tooltiptextForm}>{loc(`forms.baseFee`,props.lang)}</span></th> 
         </tr>
     )
     return (
