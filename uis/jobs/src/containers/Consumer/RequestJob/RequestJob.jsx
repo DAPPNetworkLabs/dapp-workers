@@ -33,7 +33,7 @@ class RequestJob extends Component {
             // update
             [stateSelector]: {
                 owner: '0x21dfA04241ca05320E9dCd529F15f6F55115bbC3',
-                imageName: 'rust-compiler',
+                imageName: 'natpdev/rust-compiler',
                 inputFS: 'QmSvEfc84PKhxgguqwP8NQn2VN2yJhSHxek4AyVd1STKvu',
                 callback: false,
                 gasLimit: 1000000,

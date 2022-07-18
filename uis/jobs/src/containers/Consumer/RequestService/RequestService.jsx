@@ -33,7 +33,7 @@ class RequestService extends Component {
             // update
             [stateSelector]: {
                 owner: '0x21dfA04241ca05320E9dCd529F15f6F55115bbC3',
-                imageName: 'wasi-service',
+                imageName: 'natpdev/wasi-service',
                 inputFS: 'QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM',
                 args: ["target/wasm32-wasi/release/test"],
                 months: 1,
