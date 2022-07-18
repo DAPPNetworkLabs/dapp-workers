@@ -43,7 +43,7 @@ const Services = (props) => {
                     <th class={classes.tooltip}>MONTHS<span class={classes.tooltiptextForm}>{loc(`forms.months`,props.lang)}</span></th> 
                     <th class={classes.tooltip}>STARTED<span class={classes.tooltiptextForm}>{loc(`forms.started`,props.lang)}</span></th> 
                     <th class={classes.tooltip}>END DATE<span class={classes.tooltiptextForm}>{loc(`forms.endDate`,props.lang)}</span></th> 
-                    {!props.isWorker ? <th class={classes.tooltip}>WORKER | ENDPOINT | IO | STORAGE<span class={classes.tooltiptextForm}>{loc(`forms.workerEndpointIoStorage`,props.lang)}</span></th> : ''}
+                    {!props.isWorker ? <th class={classes.tooltip}>WORKER | ENDPOINT<span class={classes.tooltiptextForm}>{loc(`forms.workerEndpointIoStorage`,props.lang)}</span></th> : ''}
                 </tr>
                 {services}
             </table>

@@ -34,11 +34,7 @@ class RegisterImage extends Component {
             setDockerImage: {
                 imageName: null,
                 jobFee:null,
-                baseFee:null,
-                storageFee:null,
-                // ioFee:null,
-                minStorageMegaBytes:null,
-                // minIoMegaBytes:null
+                baseFee:null
             },
             show: false
         }
@@ -96,11 +92,7 @@ class RegisterImage extends Component {
             inputs:[
                 { name:"imageName",placeholder: "string imageName"},
                 { name:"jobFee",placeholder: "uint jobFee"},
-                { name:"baseFee",placeholder: "uint baseFee"},
-                { name:"storageFee",placeholder: "uint storageFee"},
-                // { name:"ioFee",placeholder: "uint ioFee"},
-                { name:"minStorageMegaBytes",placeholder: "uint minStorageMegaBytes"},
-                // { name:"minIoMegaBytes",placeholder: "uint minIoMegaBytes"},
+                { name:"baseFee",placeholder: "uint baseFee"}
             ]
         },
     ]
