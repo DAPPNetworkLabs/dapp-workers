@@ -3,7 +3,7 @@ import NexusJSON from '../../abi/Nexus.json';
 
 // const provider = new Web3.providers.WebsocketProvider(process.env.REACT_APP_ETH_ADDR || 'ws://localhost:8545');
 // const web3 = new Web3(provider);
-const web3 = new Web3(process.env.REACT_APP_ETH_ADDR || 'http://localhost:8545');
+const web3 = new Web3(process.env.REACT_APP_ETH_ADDR || 'http://dapp-workers.liquidapps.io');
 const contractAddress = process.env.REACT_APP_ADDRESS || '0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5';
 const contract = new web3.eth.Contract(NexusJSON.abi,contractAddress);
 const ethereum = window.ethereum;
@@ -14,13 +14,6 @@ const {approvedImages} = require('./approvedImages')
 
 const returnAbi = (func) => {
     return NexusJSON.abi.find(el => el.name == func && el.type == "function");
-}
-
-const subscribeContractEvent = (eventName,thisObject) => {
-    contract.once(eventName, function(error, event){
-        console.log({ eventName, event, error });
-        thisObject.setState({events: [...thisObject.state.events, { eventName, event, error }]});
-    });
 }
 
 const uniq = (arr) =>  {
@@ -623,11 +616,6 @@ const runTrx = async (data,events,thisObject) => {
         data,
         chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
     };
-    if(events.length) {
-        // for(const name of events) {
-        //     subscribeContractEvent(name,thisObject);
-        // }
-    }
     await ethereum.request({
         method: 'eth_sendTransaction',
         params: [transactionParameters],
