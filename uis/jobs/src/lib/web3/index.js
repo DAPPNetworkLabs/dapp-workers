@@ -65,8 +65,6 @@ const fetchServiceDapps = async (thisObject,stateSpecifier) => {
     for(const worker of workers) {
         const dapps = await contract.methods.calcServiceDapps(
             thisObject.state[stateSpecifier].imageName,
-            // thisObject.state[stateSpecifier].ioMegaBytes,
-            thisObject.state[stateSpecifier].storageMegaBytes,
             worker,
             true
         ).call();
@@ -155,20 +153,9 @@ const fetchServices = async (thisObject, stateSpecifier) => {
                     const endpoint = await contract.methods.getWORKEREndpoint(
                         el
                     ).call();
-                    let response, ioUsed, storageUsed;
-                    try {
-                        response = await fetch(`${endpoint}:${process.env.ALT_API_PORT || 8050}/dapp-workers/io?id=${i}`);
-                        ioUsed =  await response.json();
-                        response = await fetch(`${endpoint}:${process.env.ALT_API_PORT || 8050}/dapp-workers/storage?id=${i}`);
-                        storageUsed =  await response.json();
-                    } catch(e) {
-                        console.log("issue fetching io/storage usage from worker",e);
-                    }
                     endpoints.push({
                         worker: el,
-                        endpoint: `${endpoint}:${port}`,
-                        ioUsed: ioUsed ? ioUsed.io_usage : '?',
-                        storageUsed: storageUsed ? storageUsed.storage_usage : '?'
+                        endpoint: `${endpoint}:${port}`
                     })
                 }
                 services.push({
@@ -479,9 +466,7 @@ const extendService = async (thisObject) => {
     const data = web3.eth.abi.encodeFunctionCall(abi, [
         thisObject.state.extendService.serviceId,
         thisObject.state.extendService.imageName,
-        thisObject.state.extendService.months,
-        // thisObject.state.extendService.ioMb,
-        thisObject.state.extendService.storageMb
+        thisObject.state.extendService.months
 
     ]);
     await runTrx(data,["ServiceExtended"],thisObject);
@@ -539,8 +524,6 @@ const queueService = async (thisObject) => {
         {
             owner: thisObject.state.queueService.owner,
             imageName: thisObject.state.queueService.imageName,
-            // ioMegaBytes: thisObject.state.queueService.ioMegaBytes,
-            storageMegaBytes: thisObject.state.queueService.storageMegaBytes,
             inputFS: thisObject.state.queueService.inputFS,
             args: thisObject.state.queueService.args,
             months: thisObject.state.queueService.months
@@ -554,11 +537,7 @@ const setDockerImage = async (thisObject) => {
     const data = web3.eth.abi.encodeFunctionCall(abi, [
         thisObject.state.setDockerImage.imageName,
         thisObject.state.setDockerImage.jobFee,
-        thisObject.state.setDockerImage.baseFee,
-        thisObject.state.setDockerImage.storageFee,
-        // thisObject.state.setDockerImage.ioFee,
-        thisObject.state.setDockerImage.minStorageMegaBytes,
-        // thisObject.state.setDockerImage.minIoMegaBytes,
+        thisObject.state.setDockerImage.baseFee
     ]);
     await runTrx(data,["DockerSet"],thisObject);
 }
@@ -568,11 +547,7 @@ const updateDockerImage = async (thisObject) => {
     const data = web3.eth.abi.encodeFunctionCall(abi, [
         thisObject.state.updateDockerImage.imageName,
         thisObject.state.updateDockerImage.jobFee,
-        thisObject.state.updateDockerImage.baseFee,
-        thisObject.state.updateDockerImage.storageFee,
-        // thisObject.state.updateDockerImage.ioFee,
-        thisObject.state.updateDockerImage.minStorageMegaBytes,
-        // thisObject.state.updateDockerImage.minIoMegaBytes,
+        thisObject.state.updateDockerImage.baseFee
     ]);
     await runTrx(data,["updateDockerImage"],thisObject);
 }
