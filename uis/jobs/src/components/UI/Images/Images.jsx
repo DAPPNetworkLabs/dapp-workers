@@ -39,10 +39,6 @@ const Images = (props) => {
             <th class={classes.tooltip}>WORKER<span class={classes.tooltiptextForm}>{loc(`forms.worker`,props.lang)}</span></th> 
             <th class={classes.tooltip}>IMAGE<span class={classes.tooltiptextForm}>{loc(`forms.image`,props.lang)}</span></th> 
             <th class={classes.tooltip}>BASE FEE<span class={classes.tooltiptextForm}>{loc(`forms.baseFee`,props.lang)}</span></th> 
-            <th class={classes.tooltip}>STORAGE FEE<span class={classes.tooltiptextForm}>{loc(`forms.storageFee`,props.lang)}</span></th> 
-            <th class={classes.tooltip}>IO FEE<span class={classes.tooltiptextForm}>{loc(`forms.ioFee`,props.lang)}</span></th> 
-            <th class={classes.tooltip}>MIN STORAGE MB<span class={classes.tooltiptextForm}>{loc(`forms.minStorageMb`,props.lang)}</span></th> 
-            <th class={classes.tooltip}>MIN IO MB<span class={classes.tooltiptextForm}>{loc(`forms.minIoMb`,props.lang)}</span></th> 
         </tr>
     )
     return (
