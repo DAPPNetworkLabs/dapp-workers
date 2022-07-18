@@ -28,5 +28,4 @@ spec:
           name: $WORKERS_SERVICE_NAME
           resources: {}
       restartPolicy: Always
-      # priorityClassName: $PRIORITY_CLASS
 status: {}

@@ -26,7 +26,7 @@ export const completeService = async (jobID, outputFS, workerAccount: { address:
 }
 
 export const deleteService = async (imageName: string, id: number) => {
-    const cmd = `PRIORITY_CLASS=${"high"} WORKERS_SERVICE_NAME=${imageName}-${id} IPFS_HOST=${process.env.IPFS_HOST} envsubst < /dapp-workers/k8s/test/images/${imageName}.yaml | kubectl delete -f -`
+    const cmd = `WORKERS_SERVICE_NAME=${imageName}-${id} IPFS_HOST=${process.env.IPFS_HOST} envsubst < /dapp-workers/k8s/test/images/${imageName}.yaml | kubectl delete -f -`
     await execPromise(cmd,{});
 }
 
