@@ -4,9 +4,6 @@
         "image":"Docker image for job or service.",
         "jobFee":"Fee charged in USD per job. Used to convert current DAPP token price based on current DAPP/BNT Bancor price",
         "baseFee":"Fee charged per service performed as a base fee in USD.",
-        "storageFee":"Fee charged per mb used for storage in USD.",
-        "ioFee":"Fee charged per mb used for upload/download activity in USD.",
-        "minStorageMb":"Minimum required storage megabytes to perform service.",
         "endpoint":"WORKER endpoint used for services that provide an API.",
         "jobs":"Jobs successfully completed.",
         "jobErrors":"Jobs failed by error.",
@@ -19,7 +16,7 @@
         "months":"Months service has been paid for.",
         "started":"Service has started or not.",
         "endDate":"End date of WORKER providing requested service.",
-        "workerEndpointIoStorage":"WORKER address, WORKER endpoint, IO used out of total, storage used out of total.",
+        "workerEndpointIoStorage":"WORKER address, WORKER endpoint.",
         "callback":"Does job require a smart contract callback?",
         "consistent":"Require all WORKER results be the same and throw an error if not?",
         "gasLimit":"Gas limit on functiong fulfilling job request.",
@@ -87,25 +84,21 @@
             "previews":[
                 { "name":"OWNER","type": "address","short":"Address requesting service."},
                 { "name":"IMAGE","type": "string","short":"Docker image service will use."},
-                { "name":"UP/DOWNLOAD MB","type": "uint","short":"Amount in megabytes of upload/download bandwidth."},
-                { "name":"STORAGE MB","type": "uint","short":"Amount in megabytes of total storage for the service."},
                 { "name":"INPUT","type": "string","short":"Input command for docker image."},
                 { "name":"ARGUMENTS","type": "array","short":"Arguments to provide docker image comma separated."},
-                { "name":"MONTHS","type": "uint","short":"Months to provide service for, covers base cost, DOES NOT multiply upload/download/storage costs."}
+                { "name":"MONTHS","type": "uint","short":"Months to provide service for, covers base cost."}
             ],
             "sufficientGas":"Insufficient DAPP Gas for one or more DAPP Workers",
             "dappGas":"Estimated DAPP Gas to be used"
         },
         "extend service": {
             "title": "EXTEND SERVICE",
-            "subtitle": "Extend existing service time, upload/download limit, and or storage limit.",
+            "subtitle": "Extend existing service time.",
             "button": "EXTEND SERVICE",
             "previews":[
                 { "name":"SERVICE ID","type": "uint","short":"ID of service to extend."},
                 { "name":"IMAGE","type": "string","short":"Docker image service used."},
-                { "name":"MONTHS","type": "uint","short":"Months to extend service for, covers base cost, DOES multiply upload/download/storage costs per month."},
-                { "name":"UP/DOWNLOAD MB","type": "uint","short":"Amount in megabytes of upload/download bandwidth."},
-                { "name":"STORAGE MB","type": "uint","short":"Amount in megabytes of additional storage for the service."}
+                { "name":"MONTHS","type": "uint","short":"Months to extend service for, covers base cost."}
             ]
         },
         "jobs": {
@@ -154,9 +147,7 @@
             "previews":[
                 { "name":"IMAGE","type": "string","short":"Docker image to register."},
                 { "name":"JOB FEE","type": "uint","short":"Fee required to perform job."},
-                { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."},
-                { "name":"STORAGE FEE","type": "uint","short":"Fee per mb of storage used."},
-                { "name":"MIN STORAGE MB","type": "uint","short":"Min storage in mb to provide service."}
+                { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."}
             ]
         },
         "update image": {
@@ -166,9 +157,7 @@
             "previews":[
                 { "name":"IMAGE","type": "string","short":"Docker image to update."},
                 { "name":"JOB FEE","type": "uint","short":"Fee required to perform job."},
-                { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."},
-                { "name":"STORAGE FEE","type": "uint","short":"Fee per mb of storage used."},
-                { "name":"MIN STORAGE MB","type": "uint","short":"Min storage in mb to provide service."}
+                { "name":"BASE FEE","type": "uint","short":"Base fee for time providing service."}
             ]
         },
         "jobs": {

@@ -4,9 +4,6 @@
         "image":"用于作业或服务的 Docker 映像。",
         "jobFee":"每项工作以美元收取的费用。 用于根据当前 DAPP/BNT Bancor 价格转换当前 DAPP 代币价格",
         "baseFee":"每项服务收取的费用，以美元为基础费用。",
-        "storageFee":"用于存储的每 mb 费用（以美元计）。",
-        "ioFee":"用于上传/下载活动的每 mb 费用（以美元计）。",
-        "minStorageMb":"执行服务所需的最低存储兆字节数。",
         "endpoint":"用于提供 API 的服务的 WORKER 端点。",
         "jobs":"作业顺利完成。",
         "jobErrors":"作业因错误而失败。",
@@ -19,7 +16,7 @@
         "months":"已支付月服务费",
         "started":"服务是否已启动。",
         "endDate":"提供请求服务的工人的结束日期。",
-        "workerEndpointIoStorage":"WORKER 地址，WORKER 端点，IO 已用完，存储已用完。",
+        "workerEndpointIoStorage":"WORKER地址，WORKER端點",
         "callback":"工作是否需要智能合约回调？",
         "consistent":"Require all WORKER results be the same and throw an error if not?",
         "gasLimit":"满足工作请求的功能的气体限制。",
@@ -87,25 +84,21 @@
             "previews":[
                 { "name":"OWNER","type": "address","short":"地址请求服务。"},
                 { "name":"IMAGE","type": "string","short":"将使用 Docker 镜像服务。"},
-                { "name":"UP/DOWNLOAD MB","type": "uint","short":"以兆字节为单位的上传/下载带宽。"},
-                { "name":"STORAGE MB","type": "uint","short":"服务的总存储量（以 MB 为单位）。"},
                 { "name":"INPUT","type": "string","short":"docker 镜像的输入命令。"},
                 { "name":"ARGUMENTS","type": "array","short":"提供 docker image 逗号分隔的参数。"},
-                { "name":"MONTHS","type": "uint","short":"提供服务的月数，包括基本成本，不增加上传/下载/存储成本。"}
+                { "name":"MONTHS","type": "uint","short":"提供服務的月數，包括基本費用"}
             ],
             "sufficientGas":"一个或多个 DAPP Worker 的 DAPP Gas 不足",
             "dappGas":"预计使用的 DAPP Gas"
         },
         "extend service": {
             "title": "延长服务",
-            "subtitle": "延长现有服务时间、上传/下载限制和/或存储限制。",
+            "subtitle": "延長現有服務時間",
             "button": "延长服务",
             "previews":[
                 { "name":"SERVICE ID","type": "uint","short":"要扩展的服务 ID。"},
                 { "name":"IMAGE","type": "string","short":"使用 Docker 镜像服务。"},
-                { "name":"MONTHS","type": "uint","short":"延长服务的月份，包括基本成本，每月的上传/下载/存储成本成倍增加。"},
-                { "name":"UP/DOWNLOAD MB","type": "uint","short":"以兆字节为单位的上传/下载带宽。"},
-                { "name":"STORAGE MB","type": "uint","short":"服务的额外存储量（以 MB 为单位）。"}
+                { "name":"MONTHS","type": "uint","short":"提供服務的月數，包括基本費用"}
             ]
         },
         "jobs": {
@@ -154,9 +147,7 @@
             "previews":[
                 { "name":"IMAGE","type": "string","short":"要注册的 Docker 映像。"},
                 { "name":"JOB FEE","type": "uint","short":"执行工作所需的费用。"},
-                { "name":"BASE FEE","type": "uint","short":"提供服务时间的基本费用。"},
-                { "name":"STORAGE FEE","type": "uint","short":"每使用 mb 存储空间的费用。"},
-                { "name":"MIN STORAGE MB","type": "uint","short":"最小存储在 mb 以提供服务。"}
+                { "name":"BASE FEE","type": "uint","short":"提供服务时间的基本费用。"}
             ]
         },
         "update image": {
@@ -166,9 +157,7 @@
             "previews":[
                 { "name":"IMAGE","type": "string","short":"要更新的 Docker 映像。"},
                 { "name":"JOB FEE","type": "uint","short":"执行工作所需的费用。"},
-                { "name":"BASE FEE","type": "uint","short":"提供服务时间的基本费用。"},
-                { "name":"STORAGE FEE","type": "uint","short":"每使用 mb 存储空间的费用。"},
-                { "name":"MIN STORAGE MB","type": "uint","short":"最小存储在 mb 以提供服务。"}
+                { "name":"BASE FEE","type": "uint","short":"提供服务时间的基本费用。"}
             ]
         },
         "jobs": {

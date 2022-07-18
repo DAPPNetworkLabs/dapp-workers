@@ -4,9 +4,6 @@
         "image":"Imagen de Docker para trabajo o servicio.",
         "jobFee":"Tarifa cobrada en USD por trabajo. Se utiliza para convertir el precio actual del token DAPP en función del precio actual de DAPP/BNT Bancor",
         "baseFee":"Tarifa cobrada por servicio realizado como tarifa base en USD.",
-        "storageFee":"Tarifa cobrada por mb utilizado para el almacenamiento en USD.",
-        "ioFee":"Tarifa cobrada por mb utilizado para la actividad de carga/descarga en USD..",
-        "minStorageMb":"Megabytes de almacenamiento mínimo requerido para realizar el servicio.",
         "endpoint":"Punto final WORKER utilizado para servicios que proporcionan una API.",
         "jobs":"Trabajos completados con éxito.",
         "jobErrors":"Los trabajos fallaron por error.",
@@ -19,7 +16,7 @@
         "months":"Meses de servicio pagados",
         "started":"El servicio ha comenzado o no.",
         "endDate":"Fecha de finalización del TRABAJADOR prestando el servicio solicitado.",
-        "workerEndpointIoStorage":"Dirección WORKER, punto final WORKER, IO utilizado del total, almacenamiento utilizado del total.",
+        "workerEndpointIoStorage":"Dirección WORKER, punto final WORKER.",
         "callback":"Does job require a smart contract callback?",
         "consistent":"¿El trabajo requiere una devolución de llamada de contrato inteligente?",
         "gasLimit":"Límite de gas en funcionamiento cumpliendo pedido de trabajo.",
@@ -87,25 +84,21 @@
             "previews":[
                 { "name":"OWNER","type": "address","short":"Dirección que solicita el servicio."},
                 { "name":"IMAGE","type": "string","short":"Se utilizará el servicio de imágenes de Docker."},
-                { "name":"UP/DOWNLOAD MB","type": "uint","short":"Cantidad en megabytes de ancho de banda de carga/descarga."},
-                { "name":"STORAGE MB","type": "uint","short":"Cantidad en megabytes de almacenamiento total para el servicio."},
                 { "name":"INPUT","type": "string","short":"Comando de entrada para la imagen de la ventana acoplable."},
                 { "name":"ARGUMENTS","type": "array","short":"Argumentos para proporcionar una imagen acoplable separada por comas."},
-                { "name":"MONTHS","type": "uint","short":"Meses para brindar el servicio, cubre el costo base, NO multiplica los costos de carga/descarga/almacenamiento."}
+                { "name":"MONTHS","type": "uint","short":"Meses para brindar el servicio, cubre el costo base."}
             ],
             "sufficientGas":"Gas DAPP insuficiente para uno o más trabajadores DAPP",
             "dappGas":"Gas DAPP estimado a utilizar"
         },
         "extend service": {
             "title": "AMPLIAR SERVICIO",
-            "subtitle": "Amplíe el tiempo de servicio existente, el límite de carga/descarga y el límite de almacenamiento.",
+            "subtitle": "Amplíe el tiempo de servicio existente.",
             "button": "AMPLIAR SERVICIO",
             "previews":[
                 { "name":"SERVICE ID","type": "uint","short":"ID del servicio a extender."},
                 { "name":"IMAGE","type": "string","short":"Servicio de imágenes de Docker utilizado."},
-                { "name":"MONTHS","type": "uint","short":"Meses para extender el servicio, cubre el costo base, SÍ multiplica los costos de carga/descarga/almacenamiento por mes."},
-                { "name":"UP/DOWNLOAD MB","type": "uint","short":"Cantidad en megabytes de ancho de banda de carga/descarga."},
-                { "name":"STORAGE MB","type": "uint","short":"Cantidad en megas de almacenamiento adicional para el servicio."}
+                { "name":"MONTHS","type": "uint","short":"Meses para extender el servicio, cubre el costo base."}
             ]
         },
         "jobs": {
@@ -154,9 +147,7 @@
             "previews":[
                 { "name":"IMAGE","type": "string","short":"Imagen de Docker para registrarse."},
                 { "name":"JOB FEE","type": "uint","short":"Tarifa requerida para realizar el trabajo."},
-                { "name":"BASE FEE","type": "uint","short":"Tarifa base por tiempo de prestación del servicio."},
-                { "name":"STORAGE FEE","type": "uint","short":"Tarifa por mb de almacenamiento utilizado."},
-                { "name":"MIN STORAGE MB","type": "uint","short":"Almacenamiento mínimo en mb para dar servicio."}
+                { "name":"BASE FEE","type": "uint","short":"Tarifa base por tiempo de prestación del servicio."}
             ]
         },
         "update image": {
@@ -166,9 +157,7 @@
             "previews":[
                 { "name":"IMAGE","type": "string","short":"Imagen de Docker para actualizar."},
                 { "name":"JOB FEE","type": "uint","short":"Tarifa requerida para realizar el trabajo."},
-                { "name":"BASE FEE","type": "uint","short":"Tarifa base por tiempo de prestación del servicio."},
-                { "name":"STORAGE FEE","type": "uint","short":"Tarifa por mb de almacenamiento utilizado."},
-                { "name":"MIN STORAGE MB","type": "uint","short":"Almacenamiento mínimo en mb para dar servicio."}
+                { "name":"BASE FEE","type": "uint","short":"Tarifa base por tiempo de prestación del servicio."}
             ]
         },
         "jobs": {
