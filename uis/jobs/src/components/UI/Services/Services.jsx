@@ -5,7 +5,6 @@ import { loc } from '@loc';
 
 const Services = (props) => {
     let services;
-    console.log(props.services)
     if(props.services) {
         services = props.services.map((el,i) => {
             if(el.endpoints) el.endpoints[1] = el.endpoints[0]
