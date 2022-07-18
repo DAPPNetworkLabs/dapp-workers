@@ -1,25 +1,25 @@
 export const approvedImages = [{
-    name:'wasi-service',
+    name:'natpdev/wasi-service',
     type:'service'
 },{
-    name:'poa-evm',
+    name:'natpdev/poa-evm',
     type:'service'
 },{
-    name:'runner',
+    name:'natpdev/runner',
     type:'job'
 },{
-    name:'nvidia-docker',
+    name:'natpdev/nvidia-docker',
     type:'job'
 },{
-    name:'git-cloner',
+    name:'natpdev/git-cloner',
     type:'job'
 },{
-    name:'sol-runner',
+    name:'natpdev/sol-runner',
     type:'job'
 },{
-    name:'monte-carlo',
+    name:'natpdev/monte-carlo',
     type:'job'
 },{
-    name:'rust-compiler',
+    name:'natpdev/rust-compiler',
     type:'job'
 }]
