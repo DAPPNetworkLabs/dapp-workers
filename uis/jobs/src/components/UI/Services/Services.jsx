@@ -25,7 +25,7 @@ const Services = (props) => {
                     <td onClick={() => {navigator.clipboard.writeText(`${el.imageName}`)}}>{el.imageName}</td>
                     <td onClick={() => {navigator.clipboard.writeText(`${el.months}`)}}>{el.months}</td>
                     <td onClick={() => {navigator.clipboard.writeText(`${el.started.toString()}`)}}>{el.started.toString()}</td>
-                    <td onClick={() => {navigator.clipboard.writeText(new Date(Number(el.endDate)*1000).toLocaleDateString())}}>{new Date(Number(el.endDate)*1000).toLocaleDateString()}</td>
+                    <td onClick={() => {navigator.clipboard.writeText(new Date(Number(el.endDate)*1000).toLocaleDateString())}}>{el.started ? new Date(Number(el.endDate)*1000).toLocaleDateString() : "TBD"}</td>
                     {workers}
                 </tr>
             )
