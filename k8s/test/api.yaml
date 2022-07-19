@@ -12,6 +12,7 @@ spec:
       targetPort: 8050
   selector:
     app: api
+  type: LoadBalancer
 ---
 apiVersion: apps/v1
 kind: StatefulSet
