@@ -2,7 +2,7 @@ docker image prune -f
 
 minikube start --memory='8000MB' --mount --mount-string='/:/k8s' --cpus='4'
 
-$PWD/scripts/build_deploy.sh
+$PWD/scripts/k8s/build_deploy.sh
 
 $PWD/scripts/deploy-roots.sh 
 
