@@ -181,8 +181,8 @@ export const runService = async (returnValues, workerAccount: { address: string,
         await removeUsageInfo(id);
     } else {
         // post results
-        await postTrx("serviceCallback", workerAccount, null, id, serviceResults.port);
-        console.log(`posted service results`,consumer,imageName, serviceResults.port);
+        await postTrx("serviceCallback", workerAccount, null, id);
+        console.log(`posted service results`,consumer,imageName);
     }
 }
 

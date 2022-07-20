@@ -514,10 +514,6 @@ describe("Nexus", function(done) {
     expect(service.imageName).to.equal("natpdev/wasi-service");
     
     await runEvent("ServiceRunning",nexusContract);
-    
-    // const port = await nexusContract.getPortForWORKER(id1,worker1.address);
-  
-    // expect(port).to.equal(globalPort++);
 
     const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
@@ -572,10 +568,6 @@ describe("Nexus", function(done) {
     await servicePromise.then();
   
     await nexusContract.removeAllListeners("ServiceRunning");
-    
-    // const port = await nexusContract.getPortForWORKER(id1,worker1.address);
-
-    // expect(port).to.equal(globalPort++);
 
     const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
     
@@ -609,10 +601,6 @@ describe("Nexus", function(done) {
     const id1 = await nexusContract.lastJobID();
     
     await runEvent("ServiceRunning",nexusContract);
-
-    // const port = await nexusContract.getPortForWORKER(id1,worker1.address);
-
-    // expect(port).to.equal(globalPort++);
 
     const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
@@ -683,7 +671,7 @@ describe("Nexus", function(done) {
 
   it("Try double run service", async function() {let failed = false;
     try {
-      await nexusContract.connect(worker1).serviceCallback(5,9000);
+      await nexusContract.connect(worker1).serviceCallback(5);
     } catch(e) {
       failed = true;
     }
@@ -935,8 +923,6 @@ describe("Nexus", function(done) {
     
     expect(postWorkerBal).is.above(preWorkerBal);
 
-    // const port = await nexusContract.getPortForWORKER(id2,worker1.address);
-
     const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
     const res = await fetch(`${endpoint}?id=${id2}&image=wasi-service&text=true`, {method: 'GET'});
@@ -984,12 +970,6 @@ describe("Nexus", function(done) {
     
     expect(approved).to.equal(false);
   });
-
-  // it("Get worker port", async function() {
-  //   const port = await nexusContract.getPortForWORKER(6,worker1.address);
-
-  //   expect(port).to.equal(9000);
-  // });
 
   it("Get worker endpoint", async function() {
     const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);

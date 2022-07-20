@@ -70,8 +70,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     event ServiceRunning(
         address indexed consumer,
         address indexed worker,
-        uint id,
-        uint port
+        uint id
     );
 
     event ServiceExtended(
@@ -180,10 +179,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         mapping(uint => bytes32) dataHash;
     }
 
-    struct WorkerServiceData {
-        uint port;
-    }
-
     struct ServiceData {
         address consumer;
         address owner;
@@ -192,7 +187,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         bool started;
         uint endDate;
         uint months;
-        mapping(address => WorkerServiceData) workerServiceData;
         mapping(address => bytes32) dataHash;
         mapping(uint => bool) done;
     }
@@ -589,9 +583,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev worker run service
      */
     // add check for not conflicting with WORKER frontend default ports
-    function serviceCallback(uint serviceId, uint port) public {
-        require(port != 8888,"overlap");
-
+    function serviceCallback(uint serviceId) public {
         ServiceData storage sd = services[serviceId];
 
         address[] storage workers = providers[sd.owner];
@@ -605,8 +597,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         sd.endDate = block.timestamp + ( sd.months * 30 days );
         
         address _consumer = sd.consumer;
-
-        sd.workerServiceData[msg.sender].port = port;
         
         uint dapps = calcServiceDapps(
             sd.imageName,
@@ -623,8 +613,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         emit ServiceRunning(
             _consumer, 
             msg.sender, 
-            serviceId, 
-            port
+            serviceId
         );
     }
     
@@ -1151,15 +1140,6 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         }
 
         return addresses;
-    }
-    
-    /**
-     * @dev returns port for worker and job id
-     */
-    function getPortForWORKER(uint jobID, address worker) public view returns (uint) {        
-        ServiceData storage sd = services[jobID];
-
-        return sd.workerServiceData[worker].port;
     }
     
     /**
