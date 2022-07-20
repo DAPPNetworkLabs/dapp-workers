@@ -194,7 +194,7 @@ describe("Nexus", function(done) {
         await nexusContract.approveImage("natpdev/monte-carlo","8fb8040f39dbaeca6657694f6b4c82bb1729da1a6be9b300edf83029072c292b");
         await nexusContract.approveImage("natpdev/poa-evm","65db6ad7237c811c290f9ccc4861b88b9162b7a06a18a231f9abd1853aba09e1");
         await nexusContract.approveImage("natpdev/nvidia-docker","ffa73e5696f90d9b0cb7e2d102bf572ac2bb023bedd46951f01675c780d76883");
-        await nexusContract.connect(worker1).regWORKER(process.env.WORKER_ENDPOINT || "http://localhost");
+        await nexusContract.connect(worker1).regWORKER(process.env.WORKER_ENDPOINT || "https://dapp-workers-api.liquidapps.io");
         await nexusContract.setWorkers([worker1.address]);
         // await nexusContract.connect(consumer1).setWorkers([worker1.address]);
         // await nexusContract.connect(consumer2).setWorkers([worker1.address]);
