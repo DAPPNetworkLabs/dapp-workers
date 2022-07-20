@@ -14,7 +14,6 @@ const paymentPremiumPPB = 200000000;
 const stalenessSeconds = 86400;
 const fallbackGasPrice = 200000000000;
 const gasCeilingMultiplier = 2;
-let globalPort = 9000;
 
 const delay = s => new Promise(res => setTimeout(res, s * 1000));
 
@@ -516,9 +515,9 @@ describe("Nexus", function(done) {
     
     await runEvent("ServiceRunning",nexusContract);
     
-    const port = await nexusContract.getPortForWORKER(id1,worker1.address);
+    // const port = await nexusContract.getPortForWORKER(id1,worker1.address);
   
-    expect(port).to.equal(globalPort++);
+    // expect(port).to.equal(globalPort++);
 
     const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
@@ -574,9 +573,9 @@ describe("Nexus", function(done) {
   
     await nexusContract.removeAllListeners("ServiceRunning");
     
-    const port = await nexusContract.getPortForWORKER(id1,worker1.address);
+    // const port = await nexusContract.getPortForWORKER(id1,worker1.address);
 
-    expect(port).to.equal(globalPort++);
+    // expect(port).to.equal(globalPort++);
 
     const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
     
@@ -611,9 +610,9 @@ describe("Nexus", function(done) {
     
     await runEvent("ServiceRunning",nexusContract);
 
-    const port = await nexusContract.getPortForWORKER(id1,worker1.address);
+    // const port = await nexusContract.getPortForWORKER(id1,worker1.address);
 
-    expect(port).to.equal(globalPort++);
+    // expect(port).to.equal(globalPort++);
 
     const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
@@ -936,7 +935,7 @@ describe("Nexus", function(done) {
     
     expect(postWorkerBal).is.above(preWorkerBal);
 
-    const port = await nexusContract.getPortForWORKER(id2,worker1.address);
+    // const port = await nexusContract.getPortForWORKER(id2,worker1.address);
 
     const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
 
@@ -986,11 +985,11 @@ describe("Nexus", function(done) {
     expect(approved).to.equal(false);
   });
 
-  it("Get worker port", async function() {
-    const port = await nexusContract.getPortForWORKER(6,worker1.address);
+  // it("Get worker port", async function() {
+  //   const port = await nexusContract.getPortForWORKER(6,worker1.address);
 
-    expect(port).to.equal(9000);
-  });
+  //   expect(port).to.equal(9000);
+  // });
 
   it("Get worker endpoint", async function() {
     const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);

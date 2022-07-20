@@ -188,7 +188,7 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
     clearTimeout(timeout);
     
     // remove
-    return { port:port++ }
+    return { port }
   } else {
     const docker = new Docker();
     args = [...args,port]
@@ -235,6 +235,6 @@ export async function dispatchService(id, dockerImage, ipfsInput, args): Promise
     clearTimeout(timeout);
     console.log('end dispatch service');
     
-    return { port:port++ }
+    return { port }
   }
 }
