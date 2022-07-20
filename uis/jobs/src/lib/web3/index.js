@@ -142,21 +142,19 @@ const fetchServices = async (thisObject, stateSpecifier) => {
                 }
                 let endpoints = [];
                 for(const el of selectedWorkers) {
-                    const port = await contract.methods.getPortForWORKER(i,el).call();
                     const endpoint = await contract.methods.getWORKEREndpoint(
                         el
                     ).call();
                     endpoints.push({
                         worker: el,
-                        endpoint: `${endpoint}:${port}`
-                    })
+                        endpoint
+                    });
                 }
                 services.push({
                     ...service,
                     endpoints,
                     id:i
                 });
-                console.log(services)
             }
         }
         thisObject.setState({
@@ -185,15 +183,6 @@ const fetchIsImageApprovedForWORKER = async (thisObject) => {
     ).call();
     console.log(approvedImage);
     thisObject.setState({approvedImage});
-}
-
-const fetchPortForWORKER = async (thisObject) => {
-    const port = await contract.methods.getPortForWORKER(
-        thisObject.state.getPortForWORKER.jobID,
-        thisObject.state.getPortForWORKER.worker
-    ).call();
-    console.log(port);
-    thisObject.setState({port});
 }
 
 const fetchEndpointForWORKER = async (thisObject) => {
@@ -635,7 +624,6 @@ export default {
     fetchServices,
     // fetchJobImage,
     fetchIsImageApprovedForWORKER,
-    fetchPortForWORKER,
     fetchEndpointForWORKER,
     fetchWorkerInfo,
     fetchWorkerData,

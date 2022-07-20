@@ -7,7 +7,6 @@ const Services = (props) => {
     let services;
     if(props.services) {
         services = props.services.map((el,i) => {
-            if(el.endpoints) el.endpoints[1] = el.endpoints[0]
             const workers = el.endpoints.map((worker,index) => {
                 if(worker && !props.isWorker) {
                     return (
