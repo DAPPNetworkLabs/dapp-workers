@@ -63,10 +63,9 @@ app.post('/dapp-workers', async function(req, res, next) {
     }
 });
 
-// for testing
-// app.get('/', function(req, res) {
-//   res.send('Hello World!')
-// });
+app.get('/health', function(req, res) {
+  res.send('alive')
+});
 
 app.listen(port, function() {
   console.log(`DAPP Workers Usage/Servie API running on ${port}!`)
