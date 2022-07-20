@@ -16,15 +16,6 @@ const returnAbi = (func) => {
     return NexusJSON.abi.find(el => el.name == func && el.type == "function");
 }
 
-const uniq = (arr) =>  {
-    let jsonObject = arr.map(JSON.stringify);
-      
-    console.log(jsonObject);
-
-    let uniqueSet = new Set(jsonObject);
-    return Array.from(uniqueSet).map(JSON.parse);
-}
-
 const fetchJobDapps = async (thisObject,stateSpecifier) => {
     let sufficientGas = true, totalDapps = 0;
     const workers = await fetchWorkers();
@@ -93,7 +84,6 @@ const fetchWorkerStats = async (thisObject,stateSpecifier) => {
 
 const fetchLastJob = async () => {
     const id = await contract.methods.lastJobID().call();
-    console.log(id);
     return id;
 }
 
@@ -168,20 +158,11 @@ const fetchServices = async (thisObject, stateSpecifier) => {
     }
 }
 
-// const fetchJobImage = async (thisObject) => {
-//     const imageName = await contract.methods.getDockerImage(
-//         thisObject.state.getDockerImage.imageName
-//     ).call();
-//     console.log(imageName);
-//     thisObject.setState({image: imageName});
-// }
-
 const fetchIsImageApprovedForWORKER = async (thisObject) => {
     const approvedImage = await contract.methods.isImageApprovedForWORKER(
         thisObject.state.isImageApprovedForWORKER.worker,
         thisObject.state.isImageApprovedForWORKER.imageName
     ).call();
-    console.log(approvedImage);
     thisObject.setState({approvedImage});
 }
 
@@ -189,7 +170,6 @@ const fetchEndpointForWORKER = async (thisObject) => {
     const endpoint = await contract.methods.getWORKEREndpoint(
         thisObject.state.getWORKEREndpoint.worker
     ).call();
-    console.log(endpoint);
     thisObject.setState({endpoint});
 }
 
@@ -241,7 +221,6 @@ const fetchWorkerInfo = async (thisObject) => {
     const workerInfo = await contract.methods.registeredWORKERs(
         thisObject.state.registeredWORKERs.worker
     ).call()
-    console.log(workerInfo);
     thisObject.setState({workerInfo});
 }
 
@@ -349,17 +328,8 @@ const fetchWorkerData = async (thisObject) => {
         thisObject.state.workerDataForm.account,
         thisObject.state.workerDataForm.worker
     ).call();
-    console.log(workerData);
     thisObject.setState({workerData});
 }
-
-// const fetchConsumerData = async (thisObject) => {
-//     const consumerData = await contract.methods.consumerData(
-//         thisObject.state.consumerDataForm.consumer
-//     ).call();
-//     console.log(consumerData);
-//     thisObject.setState({consumerData});
-// }
 
 const fetchJobServiceCompleted = async (thisObject) => {
     const jobServiceCompleted = await contract.methods.jobServiceCompleted(
@@ -367,7 +337,6 @@ const fetchJobServiceCompleted = async (thisObject) => {
         thisObject.state.jobServiceCompleted.worker,
         thisObject.state.jobServiceCompleted.isJob
     ).call();
-    console.log(jobServiceCompleted);
     thisObject.setState({jobServiceCompleted});
 }
 
@@ -377,7 +346,6 @@ const fetchGetMinBalance = async (thisObject) => {
         thisObject.state.getMinBalance.jobType,
         thisObject.state.getMinBalance.worker
     ).call();
-    console.log(getMinBalance);
     thisObject.setState({getMinBalance});
 }
 
@@ -385,7 +353,6 @@ const fetchIsServiceDone = async (thisObject) => {
     const isServiceDone = await contract.methods.isServiceDone(
         thisObject.state.isServiceDone.id
     ).call();
-    console.log(isServiceDone);
     thisObject.setState({isServiceDone});
 }
 
@@ -395,19 +362,16 @@ const fetchGetMaxPaymentForGas = async (thisObject) => {
         thisObject.state.getMaxPaymentForGas.imageName,
         thisObject.state.getMaxPaymentForGas.worker,
     ).call();
-    console.log(getMaxPaymentForGas);
     thisObject.setState({getMaxPaymentForGas});
 }
 
 const fetchGetConfig = async (thisObject) => {
     const getConfig = await contract.methods.getConfig().call();
-    console.log(getConfig);
     thisObject.setState({getConfig});
 }
 
 const fetchGetWorkerAddresses = async (thisObject) => {
     const getWorkerAddresses = await contract.methods.getWorkerAddresses().call();
-    console.log(getWorkerAddresses);
     thisObject.setState({getWorkerAddresses});
 }
 
@@ -416,7 +380,6 @@ const fetchGetWORKERDataLimits = async (thisObject) => {
         thisObject.state.getWORKERDataLimits.id,
         thisObject.state.getWORKERDataLimits.worker,
     ).call();
-    console.log(getWORKERDataLimits);
     thisObject.setState({getWORKERDataLimits});
 }
 
@@ -622,12 +585,10 @@ export default {
     fetchAllWorkers,
     fetchJobs,
     fetchServices,
-    // fetchJobImage,
     fetchIsImageApprovedForWORKER,
     fetchEndpointForWORKER,
     fetchWorkerInfo,
     fetchWorkerData,
-    // fetchConsumerData,
     setDockerImage,
     unapproveDockerImage,
     deprecateWORKER,
