@@ -60,6 +60,13 @@ spec:
               value: '/dapp-workers/nexus/artifacts/contracts/Nexus.sol/Nexus.json'
             - name: IPFS_HOST
               value: $IPFS_HOST
+            # - name: WORKER_AWS_KMS_ACCESS_KEY_ID
+            # - name: WORKER_AWS_KMS_ADDRESS
+            #   value: 0x9d8e2c06e418e6c61785a7e4c65dd447ddc25aa0
+            # - name: WORKER_AWS_KMS_ENABLED
+            # - name: WORKER_AWS_KMS_KEY_ID
+            # - name: WORKER_AWS_KMS_REGION
+            # - name: WORKER_AWS_KMS_SECRET_ACCESS_KEY
           image: natpdev/orchestrator
           # imagePullPolicy: Never
           name: orchestrator
