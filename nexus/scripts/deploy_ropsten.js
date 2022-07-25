@@ -21,9 +21,7 @@ async function main() {
     const nexusTokenFactory = await hre.ethers.getContractFactory("Nexus", deploymentAddress);
     const dappTokenFactory = await hre.ethers.getContractFactory("DappToken", deploymentAddress);
 
-    console.log('before');
     const dappTokenContract = await dappTokenFactory.deploy();
-    console.log('after');
 
     const nexusProxyContract = await upgrades.deployProxy(nexusTokenFactory, 
       [
@@ -52,6 +50,8 @@ async function main() {
     
     console.log("nexus proxy:", nexusProxyContract.address);
     console.log(`nexus proxy admin contract: ${await upgrades.erc1967.getAdminAddress(nexusProxyContract.address)}`);
+    
+    await delay(10);
     
     const nexusContract = await upgrades.erc1967.getImplementationAddress(nexusProxyContract.address);
     
