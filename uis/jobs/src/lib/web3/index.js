@@ -4,7 +4,7 @@ import NexusJSON from '../../abi/Nexus.json';
 // const provider = new Web3.providers.WebsocketProvider(process.env.REACT_APP_ETH_ADDR || 'ws://dapp-workers.liquidapps.io');
 // const web3 = new Web3(provider);
 const web3 = new Web3(process.env.REACT_APP_ETH_ADDR || 'http://dapp-workers.liquidapps.io');
-const contractAddress = process.env.REACT_APP_ADDRESS || '0x2751cAA3ECfbd0AAC09f60420f7A51F6233fcDB5';
+const contractAddress = process.env.REACT_APP_ADDRESS || '0x6379FF4c8135aF996609a57bb48b54fE8b368f9a';
 const contract = new web3.eth.Contract(NexusJSON.abi,contractAddress);
 const ethereum = window.ethereum;
 
