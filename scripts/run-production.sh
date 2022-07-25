@@ -1,1 +1,0 @@
-docker-compose -f production_compose.yaml up --build
