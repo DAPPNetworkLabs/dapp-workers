@@ -33,8 +33,8 @@ spec:
             - "0.0.0.0"
             - --ws.api
             - "eth,net,web3"
-            - --syncmode
-            - "light"
+              #            - --syncmode
+              #- "light"
           name: eth
           image: ethereum/client-go
           ports:
