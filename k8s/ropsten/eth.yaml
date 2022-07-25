@@ -35,7 +35,6 @@ spec:
             - "eth,net,web3"
             - --syncmode
             - "light"
-            - --fast
           name: eth
           image: ethereum/client-go
           ports:
