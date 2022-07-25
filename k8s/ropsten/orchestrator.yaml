@@ -85,7 +85,7 @@ spec:
             path: /k8s/var/run/docker.sock
         - name: orchestrator-claim1
           hostPath:
-            path: /k8s/home/ubuntu/environment/dapp-workers
+            path: /k8s/home/ubuntu/dapp-workers
             type: Directory
 ---
 apiVersion: v1
