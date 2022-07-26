@@ -2,28 +2,28 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: ipfs0
-  name: ipfs0
+    app: ipfs
+  name: ipfs
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ipfs0
+      app: ipfs
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: ipfs0
+        app: ipfs
         product: dapp-workers
     spec:
       containers:
         - image: ipfs/go-ipfs:latest
-          name: ipfs0
+          name: ipfs
           ports:
             - containerPort: 4001
+            - containerPort: 5001
             - containerPort: 8080
-          resources: {}
           volumeMounts:
             - mountPath: /data/ipfs
               name: ipfs-data
@@ -32,15 +32,14 @@ spec:
         - name: ipfs-data
           persistentVolumeClaim:
             claimName: ipfs-data
-status: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: ipfs0
+    app: ipfs
     product: dapp-workers
-  name: ipfs0
+  name: ipfs
 spec:
   ports:
     - name: "4001"
@@ -49,14 +48,16 @@ spec:
     - name: "8080"
       port: 8080
       targetPort: 8080
+    - name: "5001"
+      port: 5001
+      targetPort: 5001
   selector:
-    app: ipfs0
+    app: ipfs
   type: LoadBalancer
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  creationTimestamp: null
   labels:
     app: ipfs-data
   name: ipfs-data
@@ -66,4 +67,3 @@ spec:
   resources:
     requests:
       storage: 100Mi
-status: {}
