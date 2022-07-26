@@ -6,8 +6,6 @@ $PWD/scripts/k8s/build_deploy.sh
 
 $PWD/scripts/deploy-roots.sh 
 
-sudo kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-
 for file in $PWD/k8s/local/* ; do
     envsubst < $file | sudo kubectl apply -f -
 done
