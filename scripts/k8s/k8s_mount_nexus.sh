@@ -1,1 +1,0 @@
-minikube start --memory='5000MB' --mount --mount-string='/:/k8s' --cpus='4'
