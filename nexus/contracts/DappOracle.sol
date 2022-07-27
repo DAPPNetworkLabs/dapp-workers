@@ -6,14 +6,17 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract DappOracle is Ownable {
     uint public lastDappUsdPrice;
     uint public lastDappEthPrice;
+    uint public lastGasPriceWei;
 
-    constructor(uint _lastDappUsdPrice, uint _lastDappEthPrice) {
+    constructor(uint _lastDappUsdPrice, uint _lastDappEthPrice, uint _lastGasPriceWei) {
         lastDappUsdPrice = _lastDappUsdPrice;
         lastDappEthPrice = _lastDappEthPrice;
+        lastGasPriceWei = _lastGasPriceWei;
     }
 
-    function updatePrice(uint _lastDappUsdPrice, uint _lastDappEthPrice) external onlyOwner {
+    function updatePrice(uint _lastDappUsdPrice, uint _lastDappEthPrice, uint _lastGasPriceWei) external onlyOwner {
         lastDappUsdPrice = _lastDappUsdPrice;
         lastDappEthPrice = _lastDappEthPrice;
+        lastGasPriceWei = _lastGasPriceWei;
     }
 }

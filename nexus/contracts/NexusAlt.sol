@@ -136,8 +136,7 @@ contract NexusAlt is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     
     event ConfigSet(
         uint32 paymentPremiumPPB,
-        uint16 gasCeilingMultiplier,
-        uint fallbackGasPrice
+        uint16 gasCeilingMultiplier
     );
     
     event UpdateWorkers(
@@ -232,7 +231,6 @@ contract NexusAlt is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint32 _paymentPremiumPPB;
         uint16 _gasCeilingMultiplier;
         uint256 _usdtPrecision;
-        uint256 _fallbackGasPrice;
     }
 
     mapping(address => RegisteredWORKER) public registeredWORKERs;
@@ -269,8 +267,7 @@ contract NexusAlt is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         setConfig(
             args._paymentPremiumPPB,
-            args._gasCeilingMultiplier,
-            args._fallbackGasPrice
+            args._gasCeilingMultiplier
         );
     }
       
@@ -279,20 +276,17 @@ contract NexusAlt is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     */
     function setConfig(
         uint32 paymentPremiumPPB,
-        uint16 gasCeilingMultiplier,
-        uint fallbackGasPrice
+        uint16 gasCeilingMultiplier
     ) public onlyOwner {
         s_config = Config({
             paymentPremiumPPB: paymentPremiumPPB,
-            gasCeilingMultiplier: gasCeilingMultiplier,
-            fallbackGasPrice: fallbackGasPrice
+            gasCeilingMultiplier: gasCeilingMultiplier
         });
 
 
         emit ConfigSet(
             paymentPremiumPPB,
-            gasCeilingMultiplier,
-            fallbackGasPrice
+            gasCeilingMultiplier
         );
     }
 
@@ -575,7 +569,8 @@ contract NexusAlt is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         emit ServiceRunning(
             _consumer, 
-            msg.sender
+            msg.sender, 
+            serviceId
         );
     }
     
@@ -1031,14 +1026,11 @@ contract NexusAlt is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
 
     /**
-    * @dev retrieves feed data for fast gas/eth and link/eth prices. if the feed
-    * data is stale it uses the configured fallback price. Once a price is picked
-    * for gas it takes the min of gas price in the transaction or the fast gas
-    * price in order to reduce costs for the upkeep clients.
+    * @dev returns gas price of transaction from oracle
     */
     function getFeedData() private view returns (uint) {
-        Config memory config = s_config;
-        return config.fallbackGasPrice;
+        // return tx.gasprice;
+        return dappOracle.lastGasPriceWei();
     }
 
     /**
@@ -1049,16 +1041,14 @@ contract NexusAlt is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         view
         returns (
             uint32 paymentPremiumPPB,
-            uint16 gasCeilingMultiplier,
-            uint fallbackGasPrice
+            uint16 gasCeilingMultiplier
         )
     {
         Config memory config = s_config;
 
         return (
             config.paymentPremiumPPB,
-            config.gasCeilingMultiplier,
-            config.fallbackGasPrice
+            config.gasCeilingMultiplier
         );
     }
     
