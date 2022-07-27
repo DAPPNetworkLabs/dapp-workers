@@ -109,7 +109,7 @@ const runEvent = async (event, nexusContract) => {
 }
 
 describe("NexusAlt", function(done) {
-  this.timeout(100000);
+  this.timeout(200000);
   let owner, addr1, addr2, addr3, worker1, worker2, addrs, consumer1, consumer2, consumer3;
   let dappTokenContract, nexusContract, consumerContract, dappOracleContract;
 
@@ -122,11 +122,13 @@ describe("NexusAlt", function(done) {
     const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
 
     dappTokenContract = await dappTokenFactory.deploy();
+    await delay(1);
     dappOracleContract = await dappOracleFactory.deploy(
       3055756,
       1117780327745,
       36000000000
     );
+    await delay(1);
     nexusContract = await upgrades.deployProxy(nexusTokenFactory, 
       [
         [
@@ -140,7 +142,7 @@ describe("NexusAlt", function(done) {
     );
     await delay(1);
     
-    // console.log(`proxy address: ${nexusContract.address}\n nexus address: ${await upgrades.erc1967.getImplementationAddress(nexusContract.address)}`);
+    console.log(`proxy address: ${nexusContract.address}\n nexus address: ${await upgrades.erc1967.getImplementationAddress(nexusContract.address)}`);
     
     consumerContract = await consumerTokenFactory.deploy(nexusContract.address, "hash");
 
