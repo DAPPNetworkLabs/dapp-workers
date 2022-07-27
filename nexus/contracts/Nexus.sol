@@ -847,7 +847,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         string calldata imageName,
         uint jobFee,
         uint baseFee
-    ) external {
+    ) public {
         address owner = msg.sender;
 
         require(bytes(approvedImages[imageName]).length != 0, "image not approved");
