@@ -398,7 +398,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function sellGas(
         uint _amountToSell,
         address _worker
-    ) public nonReentrant {
+    ) external nonReentrant {
         address _consumer = msg.sender;
 
         require(!(_amountToSell > workerData[_consumer][_worker].amount),"overdrawn");
@@ -441,7 +441,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev queue job
      */
-    function queueJob(queueJobArgs calldata args) public {
+    function queueJob(queueJobArgs calldata args) external {
         validateConsumer(msg.sender);
 
         address[] storage workers = providers[args.owner];
@@ -483,7 +483,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev queue service
      */
-    function queueService(queueServiceArgs calldata args) public {
+    function queueService(queueServiceArgs calldata args) external {
         validateConsumer(msg.sender);
 
         address[] storage workers = providers[args.owner];
@@ -517,7 +517,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev worker run job, determines data hash consistency and performs optional callback
      */
-    function jobCallback(jobCallbackArgs calldata args) public {
+    function jobCallback(jobCallbackArgs calldata args) external {
         JobData storage jd = jobs[args.jobID];
 
         address[] storage workers = providers[jd.owner];
@@ -583,7 +583,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev worker run service
      */
     // add check for not conflicting with WORKER frontend default ports
-    function serviceCallback(uint serviceId) public {
+    function serviceCallback(uint serviceId) external {
         ServiceData storage sd = services[serviceId];
 
         address[] storage workers = providers[sd.owner];
@@ -624,7 +624,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint jobID,
         string calldata  stdErr,
         string calldata outputFS
-    ) public {
+    ) external {
         JobData storage jd = jobs[jobID];
 
         address[] storage workers = providers[jd.owner];
@@ -650,7 +650,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev handle service error
      */
-    function serviceError(serviceErrorArgs calldata args) public {
+    function serviceError(serviceErrorArgs calldata args) external {
         ServiceData storage sd = services[args.jobID];
 
         address[] storage workers = providers[sd.owner];
@@ -695,7 +695,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev complete service
      */
-    function serviceComplete(serviceCompleteArgs calldata args) public {
+    function serviceComplete(serviceCompleteArgs calldata args) external {
         ServiceData storage sd = services[args.jobID];
 
         require(sd.started == true, "not started");
@@ -809,7 +809,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev active and set endpoint for worker
      */
-    function regWORKER(string calldata endpoint) public {
+    function regWORKER(string calldata endpoint) external {
         require(bytes(endpoint).length != 0, "invalid endpoint");
 
         address _worker = msg.sender;
@@ -827,7 +827,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev deprecate worker
      */
-    function deprecateWORKER() public {
+    function deprecateWORKER() external {
         address _worker = msg.sender;
 
         if(bytes(registeredWORKERs[_worker].endpoint).length == 0) {
@@ -847,7 +847,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         string calldata imageName,
         uint jobFee,
         uint baseFee
-    ) public {
+    ) external {
         address owner = msg.sender;
 
         require(bytes(approvedImages[imageName]).length != 0, "image not approved");
@@ -895,7 +895,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev unapprove docker image for worker
      */
-    function unapproveDockerForWORKER(string calldata imageName) public  {
+    function unapproveDockerForWORKER(string calldata imageName) external  {
         address _worker = msg.sender;
 
         delete workerApprovedImages[_worker][imageName];
@@ -1132,7 +1132,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev return worker addresses
      */
-    function getWorkerAddresses() public view returns (address[] memory) {
+    function getWorkerAddresses() external view returns (address[] memory) {
         address[] memory addresses = new address[](totalWorkers);
 
         for(uint i=0; i<totalWorkers; i++) {
@@ -1145,7 +1145,7 @@ contract Nexus is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev returns worker endpoint
      */
-    function getWORKEREndpoint(address worker) public view returns (string memory) {
+    function getWORKEREndpoint(address worker) external view returns (string memory) {
         return registeredWORKERs[worker].endpoint;
     }
     
