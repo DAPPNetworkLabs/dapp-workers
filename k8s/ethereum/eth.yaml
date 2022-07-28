@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: eth
+  name: eth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eth
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: eth
+        # product: dapp-workers
+    spec:
+      containers:
+        - args:
+            - --http
+            - --http.addr
+            - "0.0.0.0"
+            - --http.api
+            - "personal,eth,net,web3"
+            - --http.corsdomain
+            - "*"
+            - --http.vhosts
+            - "*"
+            - --ws
+            - --ws.addr
+            - "0.0.0.0"
+            - --ws.api
+            - "eth,net,web3"
+          name: eth
+          image: ethereum/client-go
+          ports:
+            - containerPort: 8545
+          resources: {}
+      restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: eth
+    # product: dapp-workers
+  name: eth
+spec:
+  ports:
+    - name: "8545"
+      port: 8545
+      targetPort: 8545
+    - name: "8546"
+      port: 8546
+      targetPort: 8546
+  selector:
+    app: eth
+  type: LoadBalancer

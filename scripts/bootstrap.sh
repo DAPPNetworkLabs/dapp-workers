@@ -1,5 +1,5 @@
 #! /bin/bash
-read -p 'Which version to run? (local, test, test_alt, ropsten, production): ' option
+read -p 'Which version to run? (local, test, test_alt, ropsten, rinkeby, ethereum, polygon, mumbai, bsc, bsctest): ' option
 
 $PWD/scripts/k8s/k8s_stop.sh
 
