@@ -30,6 +30,18 @@ module.exports = {
       },
       allowUnlimitedContractSize: true
     },
+    polygon: {
+      forking: {
+        url: `https://polygon-mainnet.g.alchemy.com/v2/${config.alchemyKey}`
+      },
+      allowUnlimitedContractSize: true
+    },
+    bsc: {
+      forking: {
+        url: `https://eth-mainnet.alchemyapi.io/v2/${config.alchemyKey}`
+      },
+      allowUnlimitedContractSize: true
+    },
     tests: {
       url: `${'http://eth:8545'}`,
       accounts: {
