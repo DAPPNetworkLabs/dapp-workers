@@ -7,7 +7,9 @@ docker image prune -f
 
 minikube start --memory='8000MB' --mount --mount-string='/:/k8s' --cpus='4'
 
-envsubst < ./k8s/$option/ipfs.yaml | sudo kubectl apply -f -
+for file in $PWD/k8s/common/$option/* ; do
+    envsubst < $file | sudo kubectl apply -f -
+done
 
 minikube tunnel > /dev/null 2>&1 &
 
