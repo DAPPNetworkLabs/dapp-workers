@@ -117,7 +117,7 @@ describe("NexusPrivate", function(done) {
     [owner, addr1, addr2, addr3, worker1, worker2, ...addrs] = await ethers.getSigners();
 
     const dappTokenFactory = await ethers.getContractFactory("DappToken", addr1);
-    const dappOracleFactory = await ethers.getContractFactory("DappOracle", addr1);
+    const dappOracleFactory = await ethers.getContractFactory("DappOracleDapp", addr1);
     const nexusTokenFactory = await ethers.getContractFactory("NexusPrivate", addr1);
     const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
 
@@ -125,8 +125,7 @@ describe("NexusPrivate", function(done) {
     await delay(1);
     dappOracleContract = await dappOracleFactory.deploy(
       3861000,
-      1117780327745,
-      36000000000
+      1117780327745
     );
     await delay(1);
     nexusContract = await upgrades.deployProxy(nexusTokenFactory, 
