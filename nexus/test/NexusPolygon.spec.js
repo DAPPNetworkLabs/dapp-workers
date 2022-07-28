@@ -6,8 +6,13 @@ const fetch =require('node-fetch');
 
 const fs = require('fs');
 const path = require('path');
+const { hexValue } = require("ethers/lib/utils");
 
-const paymentPremiumPPB = 2000000;
+const bancorNetwork = "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0";
+const fastGasFeed = "0x169e633a2d1e6c10dd91238ba11c4a708dfef37c";
+const paymentPremiumPPB = 200000000;
+const stalenessSeconds = 86400;
+const fallbackGasPrice = 200000000000;
 const gasCeilingMultiplier = 2;
 
 const delay = s => new Promise(res => setTimeout(res, s * 1000));
@@ -108,41 +113,48 @@ const runEvent = async (event, nexusContract) => {
   };
 }
 
-describe("NexusPrivate", function(done) {
+describe("NexusPolygon", function(done) {
   this.timeout(200000);
   let owner, addr1, addr2, addr3, worker1, worker2, addrs, consumer1, consumer2, consumer3;
-  let dappTokenContract, nexusContract, consumerContract, dappOracleContract;
+  let dappTokenContract, nexusContract, consumerContract;
 
   before(async function() {
     [owner, addr1, addr2, addr3, worker1, worker2, ...addrs] = await ethers.getSigners();
 
     const dappTokenFactory = await ethers.getContractFactory("DappToken", addr1);
-    const dappOracleFactory = await ethers.getContractFactory("DappOracle", addr1);
-    const nexusTokenFactory = await ethers.getContractFactory("NexusPrivate", addr1);
+    console.log("addr1",addr1.address);
+    // console.log("addr2",addr2.address);
+    const nexusTokenFactory = await ethers.getContractFactory("NexusPolygon", addr1);
     const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
 
-    dappTokenContract = await dappTokenFactory.deploy();
     await delay(1);
-    dappOracleContract = await dappOracleFactory.deploy(
-      3861000,
-      1117780327745,
-      36000000000
-    );
+    dappTokenContract = await dappTokenFactory.deploy();
     await delay(1);
     nexusContract = await upgrades.deployProxy(nexusTokenFactory, 
       [
         [
           dappTokenContract.address,
-          dappOracleContract.address,
+          bancorNetwork,
+          fastGasFeed,
           paymentPremiumPPB,
+          stalenessSeconds,
+          fallbackGasPrice,
           gasCeilingMultiplier,
-          1e6
+          "0x939B462ee3311f8926c047D2B576C389092b1649",
+          "0x33A23d447De16a8Ff802c9Fcc917465Df01A3977",
+          "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+          "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
+          "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+          100,
+          1e6,
+          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306"
         ]
       ]
     );
     await delay(1);
     
-    console.log(`proxy address: ${nexusContract.address}\n nexus address: ${await upgrades.erc1967.getImplementationAddress(nexusContract.address)}`);
+    // console.log(`proxy address: ${nexusContract.address}\n nexus address: ${await upgrades.erc1967.getImplementationAddress(nexusContract.address)}`);
     
     consumerContract = await consumerTokenFactory.deploy(nexusContract.address, "hash");
 
@@ -224,13 +236,17 @@ describe("NexusPrivate", function(done) {
   it("Set get config", async function() {
     await nexusContract.setConfig(
       paymentPremiumPPB,
-      gasCeilingMultiplier
+      gasCeilingMultiplier,
+      fallbackGasPrice,
+      stalenessSeconds
     );
 
     const config = await nexusContract.connect(worker1).getConfig();
 
     expect(config.paymentPremiumPPB).to.equal(paymentPremiumPPB);
+    expect(config.stalenessSeconds).to.equal(stalenessSeconds);
     expect(config.gasCeilingMultiplier).to.equal(gasCeilingMultiplier);
+    expect(config.fallbackGasPrice).to.equal(config.fallbackGasPrice);
   });
 
   it("Deprecate WORKER", async function() {
@@ -603,8 +619,8 @@ describe("NexusPrivate", function(done) {
   it("Min job balance", async function() {
     const min = await nexusContract.getMinBalance(2,"job",worker1.address);
 
-    console.log('job',min.toString());
-    // 34,852.7872 DAPP * 0.00259 $/DAPP = $90
+    // console.log(min.toString());
+    // 76,349.8769 * 0.00730 $/DAPP = $557.35
     
     expect(min).is.above(200000000);
   });
@@ -612,8 +628,8 @@ describe("NexusPrivate", function(done) {
   it("Min job balance with callback", async function() {
     const min = await nexusContract.getMinBalance(3,"job",worker1.address);
 
-    console.log('job callback',min.toString());
-    // 34,852.7872 DAPP * 0.00259 $/DAPP = $90
+    // console.log(min.toString());
+    // 76,349.8769 * 0.00730 $/DAPP = $557.35
     
     expect(min).is.above(200000000);
   });
@@ -621,8 +637,8 @@ describe("NexusPrivate", function(done) {
   it("Min service balance", async function() {
     const min = await nexusContract.getMinBalance(6,"service",worker1.address);
 
-    console.log('service',min.toString());
-    // 22,001.4432 DAPP * 0.00259 $/DAPP = $56.98
+    // console.log(min.toString());
+    // 9,315.0201 * 0.00730 $/DAPP = $68.00
 
     expect(min).is.above(50000000);
   });
