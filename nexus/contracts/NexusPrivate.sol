@@ -4,7 +4,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./SafeERC20Upgradeable.sol";
 import "./ReentrancyGuardUpgradeable.sol";
 
-import "./interfaces/IDappOracle.sol";
+import "./interfaces/IDappOracleDapp.sol";
 
 // import "hardhat/console.sol";
 
@@ -12,7 +12,7 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     
     IERC20Upgradeable public token;
-    IDappOracle public dappOracle;
+    IDappOracleDapp public dappOracle;
 
     uint public usdtPrecision;
 
@@ -261,7 +261,7 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         __Ownable_init();
         __ReentrancyGuard_init();
         token = IERC20Upgradeable(args._tokenContract);
-        dappOracle = IDappOracle(args._dappOracleContract);
+        dappOracle = IDappOracleDapp(args._dappOracleContract);
     
         usdtPrecision = args._usdtPrecision;
 
@@ -1029,8 +1029,7 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     * @dev returns gas price of transaction from oracle
     */
     function getFeedData() private view returns (uint) {
-        // return tx.gasprice;
-        return dappOracle.lastGasPriceWei();
+        return tx.gasprice;
     }
 
     /**
