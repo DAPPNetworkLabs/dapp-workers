@@ -26,7 +26,7 @@ spec:
             - --network
             - tests
             - test
-            - test/NexusAlt.spec.js
+            - test/NexusPrivate.spec.js
           env:
             - name: ETH_ADDR
               value: ws://eth:8545

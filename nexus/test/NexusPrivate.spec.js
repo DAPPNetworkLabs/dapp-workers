@@ -108,7 +108,7 @@ const runEvent = async (event, nexusContract) => {
   };
 }
 
-describe("NexusAlt", function(done) {
+describe("NexusPrivate", function(done) {
   this.timeout(200000);
   let owner, addr1, addr2, addr3, worker1, worker2, addrs, consumer1, consumer2, consumer3;
   let dappTokenContract, nexusContract, consumerContract, dappOracleContract;

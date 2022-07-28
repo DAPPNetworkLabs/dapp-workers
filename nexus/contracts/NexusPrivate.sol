@@ -8,7 +8,7 @@ import "./interfaces/IDappOracle.sol";
 
 // import "hardhat/console.sol";
 
-contract NexusAlt is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     
     IERC20Upgradeable public token;
