@@ -36,11 +36,17 @@ module.exports = {
       },
       allowUnlimitedContractSize: true
     },
+    bsc_test: {
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      chainId: 97,
+      gasPrice: 20000000000,
+      mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
+    },
     bsc: {
-      forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${config.alchemyKey}`
-      },
-      allowUnlimitedContractSize: true
+      url: "https://bsc-dataseed.binance.org/",
+      chainId: 56,
+      gasPrice: 20000000000,
+      mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
     },
     tests: {
       url: `${'http://eth:8545'}`,
