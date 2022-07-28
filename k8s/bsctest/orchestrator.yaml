@@ -57,7 +57,7 @@ spec:
             - name: DAPP_WORKERS_K8S
               value: "true"
             - name: NEXUS_PATH
-              value: '/dapp-workers/nexus/artifacts/contracts/Nexus.sol/Nexus.json'
+              value: '/dapp-workers/nexus/artifacts/contracts/NexusTestnet.sol/NexusTestnet.json'
             - name: IPFS_HOST
               value: $IPFS_HOST
             # - name: WORKER_AWS_KMS_ACCESS_KEY_ID
