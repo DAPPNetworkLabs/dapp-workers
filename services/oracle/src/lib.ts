@@ -30,6 +30,10 @@ const fetchGasWei = async () => {
 
     } else if(process.env.DAPP_WORKERS_CHAIN === 'goerli') {
 
+    } else if(process.env.DAPP_WORKERS_CHAIN === 'ropsten') {
+
+    } else if(process.env.DAPP_WORKERS_CHAIN === 'rinkeby') {
+
     }
 }
 
@@ -76,7 +80,9 @@ export const oracleInterval = async () => {
 
     } else if(process.env.DAPP_WORKERS_CHAIN === 'mumbai' || 
         process.env.DAPP_WORKERS_CHAIN === 'bsctest' ||
-        process.env.DAPP_WORKERS_CHAIN === 'goerli'
+        process.env.DAPP_WORKERS_CHAIN === 'goerli' ||
+        process.env.DAPP_WORKERS_CHAIN === 'ropsten' ||
+        process.env.DAPP_WORKERS_CHAIN === 'rinkeby'
     ) {
         if(await checkUpdateOracleDappUsd()) await updateOracleDappUsd();
         if(await checkUpdateOracleDappEth()) await updateOracleDappEth();
