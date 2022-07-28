@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app: nexus
+    product: dapp-workers
+  name: nexus
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: nexus
+        product: dapp-workers
+    spec:
+      restartPolicy: Never
+      containers:
+        - args:
+            - /bin/bash
+            - /app/nexus/wait-for-it.sh
+            - --timeout=15
+            - eth:8545
+            - --
+            - npx
+            - hardhat
+            - --network
+            - bsc
+            - test
+            - test/NexusBSC.spec.js
+          env:
+            - name: ETH_ADDR
+              value: ws://eth:8545
+            - name: PRIVATE_KEY
+              value: 0x278c2ff8b0fa8bbe04c430a66c828f8b2386a0e9c075b8923d257c3be30c697d
+            - name: SEED
+              value: cruel rebel frown short month love belt weather sense hood cage pact
+          image: natpdev/nexus
+          name: nexus
+          resources: {}
+          volumeMounts:
+            - mountPath: /services/orchestrator
+              name: nexus-claim0
+              readOnly: true
+      volumes:
+        - name: nexus-claim0
+          hostPath:
+            # path: /dapp-workers/services/orchestrator
+            path: /k8s/home/ubuntu/environment/dapp-workers/services/orchestrator
+            # type: Directory
+status: {}
