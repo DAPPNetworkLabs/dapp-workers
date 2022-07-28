@@ -7,12 +7,12 @@ contract DappOracleDapp is Ownable {
     uint public lastDappUsdPrice;
     uint public lastDappEthPrice;
 
-    constructor(uint _lastDappUsdPrice, uint _lastDappEthPrice, uint _lastGasPriceWei) {
+    constructor(uint _lastDappUsdPrice, uint _lastDappEthPrice) {
         lastDappUsdPrice = _lastDappUsdPrice;
         lastDappEthPrice = _lastDappEthPrice;
     }
 
-    function updatePrice(uint _lastDappUsdPrice, uint _lastDappEthPrice, uint _lastGasPriceWei) external onlyOwner {
+    function updatePrice(uint _lastDappUsdPrice, uint _lastDappEthPrice) external onlyOwner {
         lastDappUsdPrice = _lastDappUsdPrice;
         lastDappEthPrice = _lastDappEthPrice;
     }
