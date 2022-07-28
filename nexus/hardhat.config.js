@@ -31,6 +31,7 @@ module.exports = {
       allowUnlimitedContractSize: true
     },
     polygon: {
+      url:  `https://polygon-mainnet.g.alchemy.com/v2/${config.alchemyKey}`,
       forking: {
         url: `https://polygon-mainnet.g.alchemy.com/v2/${config.alchemyKey}`
       },
