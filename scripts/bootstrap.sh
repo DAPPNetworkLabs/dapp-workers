@@ -7,7 +7,7 @@ docker image prune -f
 
 minikube start --memory='8000MB' --mount --mount-string='/:/k8s' --cpus='4'
 
-for file in $PWD/k8s/common/$option/* ; do
+for file in $PWD/k8s/common/* ; do
     envsubst < $file | sudo kubectl apply -f -
 done
 
