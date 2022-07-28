@@ -124,7 +124,7 @@ describe("NexusAlt", function(done) {
     dappTokenContract = await dappTokenFactory.deploy();
     await delay(1);
     dappOracleContract = await dappOracleFactory.deploy(
-      3055756,
+      3861000,
       1117780327745,
       36000000000
     );
@@ -603,8 +603,8 @@ describe("NexusAlt", function(done) {
   it("Min job balance", async function() {
     const min = await nexusContract.getMinBalance(2,"job",worker1.address);
 
-    // console.log(min.toString());
-    // 76,349.8769 * 0.00730 $/DAPP = $557.35
+    console.log('job',min.toString());
+    // 34,852.7872 DAPP * 0.00259 $/DAPP = $90
     
     expect(min).is.above(200000000);
   });
@@ -612,8 +612,8 @@ describe("NexusAlt", function(done) {
   it("Min job balance with callback", async function() {
     const min = await nexusContract.getMinBalance(3,"job",worker1.address);
 
-    // console.log(min.toString());
-    // 76,349.8769 * 0.00730 $/DAPP = $557.35
+    console.log('job callback',min.toString());
+    // 34,852.7872 DAPP * 0.00259 $/DAPP = $90
     
     expect(min).is.above(200000000);
   });
@@ -621,8 +621,8 @@ describe("NexusAlt", function(done) {
   it("Min service balance", async function() {
     const min = await nexusContract.getMinBalance(6,"service",worker1.address);
 
-    // console.log(min.toString());
-    // 9,315.0201 * 0.00730 $/DAPP = $68.00
+    console.log('service',min.toString());
+    // 22,001.4432 DAPP * 0.00259 $/DAPP = $56.98
 
     expect(min).is.above(50000000);
   });
