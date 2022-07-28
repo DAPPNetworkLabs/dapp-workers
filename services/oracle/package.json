@@ -1,0 +1,40 @@
+{
+  "name": "oracle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run clean && npm run lint && tsc -p tsconfig.json && npm run uglify && npm run browserify"
+  },
+  "nyc": {
+    "include": [
+      "src/*.ts",
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules",
+      "typings",
+      "src/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "json",
+      "html",
+      "text"
+    ],
+    "all": true
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.31",
+    "nyc": "^15.1.0"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "web3": "^1.7.0"
+  }
+}
