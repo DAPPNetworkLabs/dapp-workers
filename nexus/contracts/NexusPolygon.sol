@@ -14,7 +14,7 @@ contract NexusPolygon is OwnableUpgradeable {
     IERC20Upgradeable public token;
     IDappOraclePolygon public dappOracle;
     
-    AggregatorV3Interface internal constant dappEthLinkFeed = AggregatorV3Interface(0xF9680D99D6C9589e2a93a78A04A279e509205945);
+    AggregatorV3Interface internal constant ethUsdLinkFeed = AggregatorV3Interface(0xF9680D99D6C9589e2a93a78A04A279e509205945);
     AggregatorV3Interface internal constant FAST_GAS_FEED = AggregatorV3Interface(0xf824eA79774E8698E6C6D156c60ab054794C9B18);
 
     uint public usdtPrecision;
@@ -1053,15 +1053,14 @@ contract NexusPolygon is OwnableUpgradeable {
      * @dev return oracle rate dapp eth
      */
     function getDappEth() private view returns (uint) {
-        // 0xF9680D99D6C9589e2a93a78A04A279e509205945
-        // latestAnswer -> price of ETH -> 128045006107 / 1e8 = 1280.45006107
+        // 128574000000 / 111000 = 1158324.32432 DAPP / ETH | 1158324.32432*0.00111 = 1285.74
         (
             /*uint80 roundID*/,
             int price,
             /*uint startedAt*/,
             /*uint timeStamp*/,
             /*uint80 answeredInRound*/
-        ) = dappEthLinkFeed.latestRoundData();
+        ) = ethUsdLinkFeed.latestRoundData();
         if(price < 0) return 0;
         uint256(price) / dappOracle.lastDappUsdPrice();
     }
