@@ -4,7 +4,8 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./SafeERC20Upgradeable.sol";
 import "./ReentrancyGuardUpgradeable.sol";
 
-import "./interfaces/IDappOracleUsdGas.sol";
+import "./interfaces/IDappOraclePolygon.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 // import "hardhat/console.sol";
 
@@ -12,7 +13,10 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     
     IERC20Upgradeable public token;
-    IDappOracleUsdGas public dappOracle;
+    IDappOraclePolygon public dappOracle;
+    
+    AggregatorV3Interface internal constant dappEthLinkFeed = AggregatorV3Interface(0xF9680D99D6C9589e2a93a78A04A279e509205945);
+    AggregatorV3Interface internal constant FAST_GAS_FEED = AggregatorV3Interface(0xf824eA79774E8698E6C6D156c60ab054794C9B18);
 
     uint public usdtPrecision;
 
@@ -136,7 +140,9 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     
     event ConfigSet(
         uint32 paymentPremiumPPB,
-        uint16 gasCeilingMultiplier
+        uint16 gasCeilingMultiplier,
+        uint fallbackGasPrice,
+        uint24 stalenessSeconds
     );
     
     event UpdateWorkers(
@@ -217,6 +223,7 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     struct Config {
         uint32 paymentPremiumPPB;
         uint16 gasCeilingMultiplier;
+        uint24 stalenessSeconds;
     }
 
     struct jobCallbackArgs {
@@ -231,6 +238,8 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint32 _paymentPremiumPPB;
         uint16 _gasCeilingMultiplier;
         uint256 _usdtPrecision;
+        uint256 _fallbackGasPrice;
+        uint24 _stalenessSeconds;
     }
 
     mapping(address => RegisteredWORKER) public registeredWORKERs;
@@ -254,6 +263,7 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     mapping(uint => address) public workerList;
 
     Config private s_config;  
+    uint256 private s_fallbackGasPrice; // not in config object for gas savings
 
     function initialize(
         initArgs memory args
@@ -261,13 +271,15 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         __Ownable_init();
         __ReentrancyGuard_init();
         token = IERC20Upgradeable(args._tokenContract);
-        dappOracle = IDappOracleUsdGas(args._dappOracleContract);
+        dappOracle = IDappOraclePolygon(args._dappOracleContract);
     
         usdtPrecision = args._usdtPrecision;
 
         setConfig(
             args._paymentPremiumPPB,
-            args._gasCeilingMultiplier
+            args._gasCeilingMultiplier,
+            args._fallbackGasPrice,
+            args._stalenessSeconds
         );
     }
       
@@ -276,17 +288,23 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     */
     function setConfig(
         uint32 paymentPremiumPPB,
-        uint16 gasCeilingMultiplier
+        uint16 gasCeilingMultiplier,
+        uint256 fallbackGasPrice,
+        uint24 stalenessSeconds
     ) public onlyOwner {
         s_config = Config({
             paymentPremiumPPB: paymentPremiumPPB,
-            gasCeilingMultiplier: gasCeilingMultiplier
+            gasCeilingMultiplier: gasCeilingMultiplier,
+            stalenessSeconds: stalenessSeconds
         });
 
+        s_fallbackGasPrice = fallbackGasPrice;
 
         emit ConfigSet(
             paymentPremiumPPB,
-            gasCeilingMultiplier
+            gasCeilingMultiplier,
+            fallbackGasPrice,
+            stalenessSeconds
         );
     }
 
@@ -915,6 +933,27 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
 
     /**
+    * @dev retrieves feed data for fast gas/eth and link/eth prices. if the feed
+    * data is stale it uses the configured fallback price. Once a price is picked
+    * for gas it takes the min of gas price in the transaction or the fast gas
+    * price in order to reduce costs for the upkeep clients.
+    */
+    function getFeedData() private view returns (uint) {
+        uint32 stalenessSeconds = s_config.stalenessSeconds;
+        bool staleFallback = stalenessSeconds > 0;
+        uint256 timestamp;
+        int256 feedValue; // = 99000000000 / 1e9 = 99 gwei
+
+        (, feedValue, , timestamp, ) = FAST_GAS_FEED.latestRoundData();
+        
+        if ((staleFallback && stalenessSeconds < block.timestamp - timestamp) || feedValue <= 0) {
+            return s_fallbackGasPrice;
+        } else {
+            return uint256(feedValue);
+        }
+    }
+
+    /**
      * @dev calculate job fee
      */
     function calcJobDapps(string memory imageName, address worker) private view returns (uint) {
@@ -1014,9 +1053,18 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev return oracle rate dapp eth
      */
-    function getDappEth() private view returns (uint256) {
-        // update to using on chain ETH price
-        // return dappOracle.lastDappEthPrice();
+    function getDappEth() private view returns (uint) {
+        // 0xF9680D99D6C9589e2a93a78A04A279e509205945
+        // latestAnswer -> price of ETH -> 128045006107 / 1e8 = 1280.45006107
+        (
+            /*uint80 roundID*/,
+            int price,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = dappEthLinkFeed.latestRoundData();
+        if(price < 0) return 0;
+        uint256(price) / dappOracle.lastDappUsdPrice();
     }
 
     /**
@@ -1024,13 +1072,6 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      */
     function getDappUsd() private view returns (uint256) {
         return dappOracle.lastDappUsdPrice();
-    }
-
-    /**
-    * @dev returns gas price of transaction from oracle
-    */
-    function getFeedData() private view returns (uint) {
-        return dappOracle.lastGasPriceWei();
     }
 
     /**
