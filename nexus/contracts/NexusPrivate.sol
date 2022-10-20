@@ -6,7 +6,7 @@ import "./ReentrancyGuardUpgradeable.sol";
 
 import "./interfaces/IDappOracleDapp.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -902,6 +902,8 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint jobDapps = calcJobDapps(imageName,worker);
         uint gasWei = getFeedData();
         uint dappEth = getDappEth();
+        console.log("dappEth");
+        console.log(dappEth);
         
         gas += JOB_GAS_OVERHEAD;
         
@@ -1029,7 +1031,10 @@ contract NexusPrivate is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     * @dev returns gas price of transaction from oracle
     */
     function getFeedData() private view returns (uint) {
-        return tx.gasprice;
+        console.log("tx.gasprice");
+        console.log(tx.gasprice);
+        return 37000000000;
+        // return tx.gasprice;
     }
 
     /**
