@@ -238,8 +238,8 @@ contract NexusPolygon is OwnableUpgradeable {
         uint16 _gasCeilingMultiplier;
         uint256 _usdtPrecision;
         address _fastGasFeed;
-        uint24 _stalenessSeconds;
         uint256 _fallbackGasPrice;
+        uint24 _stalenessSeconds;
     }
 
     mapping(address => RegisteredWORKER) public registeredWORKERs;
