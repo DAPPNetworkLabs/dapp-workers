@@ -2,14 +2,13 @@
 pragma solidity >=0.8.0;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./SafeERC20Upgradeable.sol";
-import "./ReentrancyGuardUpgradeable.sol";
 
 import "./interfaces/IDappOraclePolygon.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 // import "hardhat/console.sol";
 
-contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract NexusPolygon is OwnableUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     
     IERC20Upgradeable public token;
@@ -238,8 +237,9 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint32 _paymentPremiumPPB;
         uint16 _gasCeilingMultiplier;
         uint256 _usdtPrecision;
-        uint256 _fallbackGasPrice;
+        address _fastGasFeed;
         uint24 _stalenessSeconds;
+        uint256 _fallbackGasPrice;
     }
 
     mapping(address => RegisteredWORKER) public registeredWORKERs;
@@ -269,7 +269,6 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         initArgs memory args
     ) external initializer {
         __Ownable_init();
-        __ReentrancyGuard_init();
         token = IERC20Upgradeable(args._tokenContract);
         dappOracle = IDappOraclePolygon(args._dappOracleContract);
     
@@ -357,7 +356,7 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint _amount,
         address _consumer,
         address _worker
-    ) public nonReentrant {
+    ) public {
         require(registeredWORKERs[_worker].active,"inactive");
 
         token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -373,7 +372,7 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function sellGas(
         uint _amountToSell,
         address _worker
-    ) external nonReentrant {
+    ) external {
         address _consumer = msg.sender;
 
         require(!(_amountToSell > workerData[_consumer][_worker].amount),"overdrawn");
@@ -388,7 +387,7 @@ contract NexusPolygon is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev allows worker to claim for consumer
      */
-    function claim() external nonReentrant {
+    function claim() external {
         uint claimableAmount = registeredWORKERs[msg.sender].claimableDapp;
 
         require(claimableAmount != 0,"req pos bal");
