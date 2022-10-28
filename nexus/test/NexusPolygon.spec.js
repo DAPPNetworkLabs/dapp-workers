@@ -332,12 +332,7 @@ describe("NexusPolygon", function(done) {
     const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
     await nexusContract.approveImage("natpdev/rust-compiler","febdd389458f9ea76d1b1b1324bcf86f8eaab1f5c97ac64fbacbc4bacbc06303");
     await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,100000);
-    console.log(1);
-    // workerData[msg.sender][workers[i]].amount 
-    // getMinBalance(uint256 id, "job", address worker)
-    // calculatePaymentAmount(jobs[lastJobID].gasLimit,jobs[lastJobID].imageName, workers[i])
-    // 8000000
-    console.log(await nexusContract.getMinBalance(1,"job",worker1.address));
+
     await nexusContract.queueJob({
       owner: addr1.address,
       imageName: "natpdev/rust-compiler",
@@ -347,7 +342,6 @@ describe("NexusPolygon", function(done) {
       requiresConsistent: false,
       args: []
     });
-    console.log(1);
     const {id} = await runEvent("JobResult",nexusContract);
 
     await nexusContract.queueJob({

@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/IDappOraclePolygon.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract NexusPolygon is OwnableUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -409,13 +409,10 @@ contract NexusPolygon is OwnableUpgradeable {
      */
     function queueJob(queueJobArgs calldata args) external {
         
-        console.log("before validateConsumer");
         validateConsumer(msg.sender);
 
         address[] storage workers = providers[args.owner];
         require(workers.length > 0,"no workers");
-        
-        console.log("before validateActiveWorkers");
         
         validateActiveWorkers(workers);
 
@@ -430,21 +427,7 @@ contract NexusPolygon is OwnableUpgradeable {
         jd.imageName = args.imageName;
         jd.gasLimit = args.gasLimit;
         
-        console.log("before for");
-        
-
         for(uint i=0;i<workers.length;i++) {
-            /*
-                revert(
-                    Strings.toString(
-                        calculatePaymentAmount(
-                            jobs[lastJobID].gasLimit,
-                            jobs[lastJobID].imageName, 
-                            workers[i]
-                        )
-                    )
-                );
-            */
             require(isImageApprovedForWORKER(workers[i], args.imageName), "not approved");
             require(
                 workerData[msg.sender][workers[i]].amount 
