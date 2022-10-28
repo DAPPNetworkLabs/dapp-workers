@@ -4,17 +4,22 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // import "hardhat/console.sol";
 
 contract DappOraclePolygon is Ownable {
-    uint public lastDappUsdPrice;
+    uint public lastUsdDappPrice;
+    uint public lastDappMaticPrice;
     uint lastUpdateTime;
 
-    constructor(uint _lastDappUsdPrice) {
-        lastDappUsdPrice = _lastDappUsdPrice;
+    constructor(uint _lastUsdDappPrice, uint _lastDappMaticPrice) {
+        // USD/DAPP means how much DAPP for 1 USD
+        lastUsdDappPrice = _lastUsdDappPrice;
+        // DAPP/MATIC means how much MATIC for 1 DAPP
+        lastDappMaticPrice = _lastDappMaticPrice;
         lastUpdateTime = block.timestamp;
     }
 
-    function updatePrice(uint _lastDappUsdPrice) external onlyOwner {
+    function updatePrice(uint _lastUsdDappPrice, uint _lastDappMaticPrice) external onlyOwner {
         require(block.timestamp >= lastUpdateTime + 1 days, "last call <24 hours");
-        lastDappUsdPrice = (lastDappUsdPrice * 13 + _lastDappUsdPrice) / 14; // TWAP
+        lastUsdDappPrice = (lastUsdDappPrice * 13 + _lastUsdDappPrice) / 14; // TWAP
+        lastDappMaticPrice = (lastDappMaticPrice * 13 + _lastDappMaticPrice) / 14; // TWAP
         lastUpdateTime = block.timestamp;
     }
 }

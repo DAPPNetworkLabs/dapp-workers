@@ -29,7 +29,7 @@ spec:
             - ./dist/index.js
           env:
             - name: ADDRESS
-              value: TBD
+              value: 0x1607d3411FA887F7A0ec23aCC6FF195d169e3Cb9
             - name: DATABASE_NODE_ENV
               value: "production"
             - name: DATABASE_TIMEOUT
@@ -37,7 +37,7 @@ spec:
             - name: DATABASE_URL
               value: postgres://user:password@postgres:5432/orchestrator
             - name: ETH_ADDR
-              value: ws://eth:8546
+              value: ws://eth:8545
             - name: FROM_BLOCK
               value: "0"
             - name: NODE_OPTIONS
@@ -85,7 +85,7 @@ spec:
             path: /k8s/var/run/docker.sock
         - name: orchestrator-claim1
           hostPath:
-            path: /k8s/home/ubuntu/dapp-workers
+            path: /k8s/home/ubuntu/environment/dapp-workers
             type: Directory
 ---
 apiVersion: v1

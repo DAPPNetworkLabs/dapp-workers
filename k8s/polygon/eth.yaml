@@ -1,6 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
   labels:
     app: eth
   name: eth
@@ -12,28 +16,22 @@ spec:
   strategy: {}
   template:
     metadata:
+      annotations:
+        kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
       labels:
         app: eth
         # product: dapp-workers
     spec:
       containers:
-        - args:
-            - --http
-            - --http.addr
-            - "0.0.0.0"
-            - --http.api
-            - "personal,eth,net,web3"
-            - --http.corsdomain
-            - "*"
-            - --http.vhosts
-            - "*"
-            - --ws
-            - --ws.addr
-            - "0.0.0.0"
-            - --ws.api
-            - "eth,net,web3"
+        - env:
+            - name: ETH_ADDR
+              value: http://0.0.0.0:8545
+            - name: SEED
+              value: cruel rebel frown short month love belt weather sense hood cage pact
+          image: natpdev/polygon
           name: eth
-          image: ethereum/client-go
           ports:
             - containerPort: 8545
           resources: {}
@@ -43,6 +41,10 @@ status: {}
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    kompose.cmd: kompose convert -f test_compose.yaml -o ./k8s/test/
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
   labels:
     app: eth
     # product: dapp-workers
@@ -52,9 +54,6 @@ spec:
     - name: "8545"
       port: 8545
       targetPort: 8545
-    - name: "8546"
-      port: 8546
-      targetPort: 8546
   selector:
     app: eth
   type: LoadBalancer

@@ -7,8 +7,9 @@ const fetch =require('node-fetch');
 const fs = require('fs');
 const path = require('path');
 
-const paymentPremiumPPB = 2000000;
-const gasCeilingMultiplier = 2;
+const paymentPremiumPPB = 700000000;
+const fallbackGasPrice = 1000000000000;
+const stalenessSeconds = 86400;
 
 const delay = s => new Promise(res => setTimeout(res, s * 1000));
 
@@ -117,15 +118,16 @@ describe("NexusPolygon", function(done) {
     [owner, addr1, addr2, addr3, worker1, worker2, ...addrs] = await ethers.getSigners();
 
     const dappTokenFactory = await ethers.getContractFactory("DappToken", addr1);
-    const dappOracleFactory = await ethers.getContractFactory("DappOracleGasUsd", addr1);
+    const dappOracleFactory = await ethers.getContractFactory("DappOraclePolygon", addr1);
     const nexusTokenFactory = await ethers.getContractFactory("NexusPolygon", addr1);
     const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
 
     dappTokenContract = await dappTokenFactory.deploy();
     await delay(1);
     dappOracleContract = await dappOracleFactory.deploy(
-      3861000,
-      36000000000
+      9009009, // 1 / $0.00111
+      1186277653093940 // (0.00111 / 0.9357) * 1e18 -> (1186277653093940 / 1e18) * .92 = 0.00109137544085
+      
     );
     await delay(1);
     nexusContract = await upgrades.deployProxy(nexusTokenFactory, 
@@ -134,8 +136,9 @@ describe("NexusPolygon", function(done) {
           dappTokenContract.address,
           dappOracleContract.address,
           paymentPremiumPPB,
-          gasCeilingMultiplier,
-          1e6
+          1e6,
+          fallbackGasPrice,
+          stalenessSeconds
         ]
       ]
     );
@@ -223,13 +226,23 @@ describe("NexusPolygon", function(done) {
   it("Set get config", async function() {
     await nexusContract.setConfig(
       paymentPremiumPPB,
-      gasCeilingMultiplier
+      fallbackGasPrice,
+      stalenessSeconds
     );
+    
+    console.log(`set config: ${
+      {
+        paymentPremiumPPB,
+        fallbackGasPrice,
+        stalenessSeconds
+      }
+    }`)
 
     const config = await nexusContract.connect(worker1).getConfig();
 
     expect(config.paymentPremiumPPB).to.equal(paymentPremiumPPB);
-    expect(config.gasCeilingMultiplier).to.equal(gasCeilingMultiplier);
+    expect(config.fallbackGasPrice).to.equal(fallbackGasPrice);
+    expect(config.stalenessSeconds).to.equal(stalenessSeconds);
   });
 
   it("Deprecate WORKER", async function() {
@@ -319,7 +332,12 @@ describe("NexusPolygon", function(done) {
     const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
     await nexusContract.approveImage("natpdev/rust-compiler","febdd389458f9ea76d1b1b1324bcf86f8eaab1f5c97ac64fbacbc4bacbc06303");
     await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,100000);
-    
+    console.log(1);
+    // workerData[msg.sender][workers[i]].amount 
+    // getMinBalance(uint256 id, "job", address worker)
+    // calculatePaymentAmount(jobs[lastJobID].gasLimit,jobs[lastJobID].imageName, workers[i])
+    // 8000000
+    console.log(await nexusContract.getMinBalance(1,"job",worker1.address));
     await nexusContract.queueJob({
       owner: addr1.address,
       imageName: "natpdev/rust-compiler",
@@ -329,7 +347,7 @@ describe("NexusPolygon", function(done) {
       requiresConsistent: false,
       args: []
     });
-    
+    console.log(1);
     const {id} = await runEvent("JobResult",nexusContract);
 
     await nexusContract.queueJob({
@@ -605,7 +623,7 @@ describe("NexusPolygon", function(done) {
     console.log('job',min.toString());
     // 34,852.7872 DAPP * 0.00259 $/DAPP = $90
     
-    expect(min).is.above(200000000);
+    expect(min).is.above(15000000);
   });
 
   it("Min job balance with callback", async function() {
@@ -614,7 +632,7 @@ describe("NexusPolygon", function(done) {
     console.log('job callback',min.toString());
     // 34,852.7872 DAPP * 0.00259 $/DAPP = $90
     
-    expect(min).is.above(200000000);
+    expect(min).is.above(15000000);
   });
 
   it("Min service balance", async function() {
@@ -749,25 +767,24 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Extend service same month", async function() {
-    const preWorkerEnDate = (await nexusContract.services(6)).endDate;
+    let failed = false;
+    try {
+      await nexusContract.extendService(
+        6,
+        "natpdev/wasi-service",
+        0
+      );
+    } catch(e) {
+      failed = true;
+    }
 
-    const dapps = ethers.utils.parseUnits("200000",4);
-    await dappTokenContract.approve(nexusContract.address, dapps);
-    await nexusContract.extendService(
-      6,
-      "natpdev/wasi-service",
-      0
-    );
-
-    const postWorkerEnDate = (await nexusContract.services(6)).endDate;
-    
-    expect(postWorkerEnDate).to.equal(preWorkerEnDate);
+    expect(failed).to.equal(true);
   });
 
   it("Get get max payment for gas", async function() {
     const data = await nexusContract.getMaxPaymentForGas("1000000","natpdev/runner",worker1.address);
     
-    expect(data).is.above(100000000);
+    expect(data).is.above(15000000);
   });
 
   it.skip("Queue job git-cloner", async function() {
@@ -921,7 +938,7 @@ describe("NexusPolygon", function(done) {
   it("Get get max payment for gas with fallback time", async function() {
     const data = await nexusContract.getMaxPaymentForGas("1000000","natpdev/runner",worker1.address);
     
-    expect(data).is.above(100000000);
+    expect(data).is.above(15000000);
   });
 
   it("Claim worker dapp", async function() {

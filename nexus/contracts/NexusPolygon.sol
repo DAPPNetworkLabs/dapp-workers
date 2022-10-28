@@ -3,10 +3,12 @@ pragma solidity >=0.8.0;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./SafeERC20Upgradeable.sol";
 
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 import "./interfaces/IDappOraclePolygon.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract NexusPolygon is OwnableUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -14,7 +16,6 @@ contract NexusPolygon is OwnableUpgradeable {
     IERC20Upgradeable public token;
     IDappOraclePolygon public dappOracle;
     
-    AggregatorV3Interface internal constant ethUsdLinkFeed = AggregatorV3Interface(0xF9680D99D6C9589e2a93a78A04A279e509205945);
     AggregatorV3Interface internal constant FAST_GAS_FEED = AggregatorV3Interface(0xf824eA79774E8698E6C6D156c60ab054794C9B18);
 
     uint public usdtPrecision;
@@ -139,7 +140,6 @@ contract NexusPolygon is OwnableUpgradeable {
     
     event ConfigSet(
         uint32 paymentPremiumPPB,
-        uint16 gasCeilingMultiplier,
         uint fallbackGasPrice,
         uint24 stalenessSeconds
     );
@@ -221,7 +221,6 @@ contract NexusPolygon is OwnableUpgradeable {
 
     struct Config {
         uint32 paymentPremiumPPB;
-        uint16 gasCeilingMultiplier;
         uint24 stalenessSeconds;
     }
 
@@ -235,9 +234,7 @@ contract NexusPolygon is OwnableUpgradeable {
         address _tokenContract;
         address _dappOracleContract;
         uint32 _paymentPremiumPPB;
-        uint16 _gasCeilingMultiplier;
         uint256 _usdtPrecision;
-        address _fastGasFeed;
         uint256 _fallbackGasPrice;
         uint24 _stalenessSeconds;
     }
@@ -276,7 +273,6 @@ contract NexusPolygon is OwnableUpgradeable {
 
         setConfig(
             args._paymentPremiumPPB,
-            args._gasCeilingMultiplier,
             args._fallbackGasPrice,
             args._stalenessSeconds
         );
@@ -287,13 +283,11 @@ contract NexusPolygon is OwnableUpgradeable {
     */
     function setConfig(
         uint32 paymentPremiumPPB,
-        uint16 gasCeilingMultiplier,
         uint256 fallbackGasPrice,
         uint24 stalenessSeconds
     ) public onlyOwner {
         s_config = Config({
             paymentPremiumPPB: paymentPremiumPPB,
-            gasCeilingMultiplier: gasCeilingMultiplier,
             stalenessSeconds: stalenessSeconds
         });
 
@@ -301,7 +295,6 @@ contract NexusPolygon is OwnableUpgradeable {
 
         emit ConfigSet(
             paymentPremiumPPB,
-            gasCeilingMultiplier,
             fallbackGasPrice,
             stalenessSeconds
         );
@@ -406,8 +399,7 @@ contract NexusPolygon is OwnableUpgradeable {
         } else if(compareStrings(jobType, "service")) {
             return calcServiceDapps(
                 services[id].imageName, 
-                worker, 
-                true
+                worker
             );
         }
     }
@@ -416,10 +408,14 @@ contract NexusPolygon is OwnableUpgradeable {
      * @dev queue job
      */
     function queueJob(queueJobArgs calldata args) external {
+        
+        console.log("before validateConsumer");
         validateConsumer(msg.sender);
 
         address[] storage workers = providers[args.owner];
         require(workers.length > 0,"no workers");
+        
+        console.log("before validateActiveWorkers");
         
         validateActiveWorkers(workers);
 
@@ -433,8 +429,22 @@ contract NexusPolygon is OwnableUpgradeable {
         jd.owner = args.owner;
         jd.imageName = args.imageName;
         jd.gasLimit = args.gasLimit;
+        
+        console.log("before for");
+        
 
         for(uint i=0;i<workers.length;i++) {
+            /*
+                revert(
+                    Strings.toString(
+                        calculatePaymentAmount(
+                            jobs[lastJobID].gasLimit,
+                            jobs[lastJobID].imageName, 
+                            workers[i]
+                        )
+                    )
+                );
+            */
             require(isImageApprovedForWORKER(workers[i], args.imageName), "not approved");
             require(
                 workerData[msg.sender][workers[i]].amount 
@@ -574,8 +584,7 @@ contract NexusPolygon is OwnableUpgradeable {
         
         uint dapps = calcServiceDapps(
             sd.imageName,
-            msg.sender,
-            true
+            msg.sender
         );
 
         useGas(
@@ -636,8 +645,7 @@ contract NexusPolygon is OwnableUpgradeable {
         
         uint dapps = calcServiceDapps(
             sd.imageName,
-            msg.sender,
-            true
+            msg.sender
         );
 
         useGas(
@@ -684,8 +692,7 @@ contract NexusPolygon is OwnableUpgradeable {
         
         uint dapps = calcServiceDapps(
             sd.imageName,
-            msg.sender,
-            true
+            msg.sender
         );
 
         useGas(
@@ -717,24 +724,20 @@ contract NexusPolygon is OwnableUpgradeable {
         ServiceData storage sd = services[serviceId];
 
         require(compareStrings(imageName, sd.imageName),"missmatch");
-        require(sd.endDate > block.timestamp, "time remaining");
+        require(sd.endDate > block.timestamp, "no time remaining");
+        require(months > 0, "months > 0");
 
         address[] storage workers = providers[msg.sender];
         require(workers.length > 0,"no workers");
 
         for(uint i=0;i<workers.length;i++) {
-            bool include_base = months == 0 ? false : true;
-            
             uint dapps = calcServiceDapps(
                 imageName,
-                workers[i],
-                include_base
+                workers[i]
             );
 
-            if(include_base) {
-                dapps *= months;
-                sd.endDate = sd.endDate + ( months * 30 days );
-            }
+            dapps *= months;
+            sd.endDate = sd.endDate + ( months * 30 days );
 
             buyGasFor(
                 dapps,
@@ -916,19 +919,11 @@ contract NexusPolygon is OwnableUpgradeable {
         string memory imageName,
         address worker
     ) private view returns (uint) {
-        uint jobDapps = calcJobDapps(imageName,worker);
-        uint gasWei = getFeedData();
-        uint dappEth = getDappEth();
-        
-        gas += JOB_GAS_OVERHEAD;
-        
-        uint weiForGas = gasWei * gas;
-        
-        uint total = weiForGas * 1e9 * (PPB_BASE + s_config.paymentPremiumPPB) / dappEth;
-        total /= 1e14;
-        total += jobDapps;
-        
-        return total;
+        uint weiForGas = getFeedData() * (gas + JOB_GAS_OVERHEAD);
+        uint premium = PPB_BASE + s_config.paymentPremiumPPB;
+        uint total = (weiForGas * 1e9 * premium) / getDappMatic();
+        total = total / 1e14;
+        return total + calcJobDapps(imageName,worker);
     }
 
     /**
@@ -946,33 +941,31 @@ contract NexusPolygon is OwnableUpgradeable {
         (, feedValue, , timestamp, ) = FAST_GAS_FEED.latestRoundData();
         
         if ((staleFallback && stalenessSeconds < block.timestamp - timestamp) || feedValue <= 0) {
-            return s_fallbackGasPrice;
+            return s_fallbackGasPrice; // 200 gwei
         } else {
             return uint256(feedValue);
         }
     }
 
     /**
-     * @dev calculate job fee
+     * @dev calculate job fee for job, gas fee added onto job fee e.g. 100000 = $0.1 per job
      */
     function calcJobDapps(string memory imageName, address worker) private view returns (uint) {
-        return getDappUsd() * ( workerApprovedImages[worker][imageName].jobFee / usdtPrecision );
+        return ( getUsdDapp() * workerApprovedImages[worker][imageName].jobFee ) / usdtPrecision;
     }
 
     /**
-     * @dev calculate service fee
+     * @dev calculate service fee, hourly rate, e.g. 100000 = $0.1 per hour for service
      */
     function calcServiceDapps(
         string memory imageName, 
-        address worker, 
-        bool include_base
+        address worker
     ) public view returns (uint) {
-        uint dappUsd = getDappUsd();
+        uint dappUsd = getUsdDapp();
 
         uint baseFee = workerApprovedImages[worker][imageName].baseFee;
-
-        baseFee = include_base ? baseFee * 24 * 30 * dappUsd : 0;
-        return ( baseFee ) / usdtPrecision;
+        
+        return ( baseFee * 24 * 30 * dappUsd ) / usdtPrecision;
     }
 
     /**
@@ -1050,26 +1043,17 @@ contract NexusPolygon is OwnableUpgradeable {
     }
 
     /**
-     * @dev return oracle rate dapp eth
+     * @dev return oracle rate of how much ETH per DAPP
      */
-    function getDappEth() private view returns (uint) {
-        // 128574000000 / 111000 = 1158324.32432 DAPP / ETH | 1158324.32432*0.00111 = 1285.74
-        (
-            /*uint80 roundID*/,
-            int price,
-            /*uint startedAt*/,
-            /*uint timeStamp*/,
-            /*uint80 answeredInRound*/
-        ) = ethUsdLinkFeed.latestRoundData();
-        if(price < 0) return 0;
-        uint256(price) / dappOracle.lastDappUsdPrice();
+    function getDappMatic() private view returns (uint) {
+        return dappOracle.lastDappMaticPrice();
     }
 
     /**
      * @dev return oracle rate dapp usd
      */
-    function getDappUsd() private view returns (uint256) {
-        return dappOracle.lastDappUsdPrice();
+    function getUsdDapp() private view returns (uint256) {
+        return dappOracle.lastUsdDappPrice();
     }
 
     /**
@@ -1080,14 +1064,16 @@ contract NexusPolygon is OwnableUpgradeable {
         view
         returns (
             uint32 paymentPremiumPPB,
-            uint16 gasCeilingMultiplier
+            uint24 stalenessSeconds,
+            uint256 fallbackGasPrice
         )
     {
         Config memory config = s_config;
 
         return (
             config.paymentPremiumPPB,
-            config.gasCeilingMultiplier
+            config.stalenessSeconds,
+            s_fallbackGasPrice
         );
     }
     
