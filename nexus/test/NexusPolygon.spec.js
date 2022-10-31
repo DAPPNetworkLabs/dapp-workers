@@ -7,7 +7,7 @@ const fetch =require('node-fetch');
 const fs = require('fs');
 const path = require('path');
 
-const paymentPremiumPPB = 700000000;
+const workerGasPremium = 700000000;
 const fallbackGasPrice = 1000000000000;
 const stalenessSeconds = 86400;
 
@@ -135,7 +135,7 @@ describe("NexusPolygon", function(done) {
         [
           dappTokenContract.address,
           dappOracleContract.address,
-          paymentPremiumPPB,
+          workerGasPremium,
           1e6,
           fallbackGasPrice,
           stalenessSeconds
@@ -225,7 +225,7 @@ describe("NexusPolygon", function(done) {
 
   it("Set get config", async function() {
     await nexusContract.setConfig(
-      paymentPremiumPPB,
+      workerGasPremium,
       fallbackGasPrice,
       stalenessSeconds,
       dappOracleContract.address
@@ -233,7 +233,7 @@ describe("NexusPolygon", function(done) {
     
     console.log(`set config: ${
       {
-        paymentPremiumPPB,
+        workerGasPremium,
         fallbackGasPrice,
         stalenessSeconds,
         address: dappOracleContract.address
@@ -242,7 +242,7 @@ describe("NexusPolygon", function(done) {
 
     const config = await nexusContract.connect(worker1).getConfig();
 
-    expect(config.paymentPremiumPPB).to.equal(paymentPremiumPPB);
+    expect(config.workerGasPremium).to.equal(workerGasPremium);
     expect(config.fallbackGasPrice).to.equal(fallbackGasPrice);
     expect(config.stalenessSeconds).to.equal(stalenessSeconds);
     expect(config.dappOracle).to.equal(dappOracleContract.address);
