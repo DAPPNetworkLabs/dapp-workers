@@ -20,12 +20,9 @@ contract NexusPolygon is OwnableUpgradeable {
 
     uint public usdtPrecision;
 
-    address private usdtToken;
-    address private usdtBntToken;
-
     uint256 private constant CUSHION = 5_000;
     uint256 private constant JOB_GAS_OVERHEAD = 80_000;
-    uint256 private constant PPB_BASE = 1_000_000_000;
+    uint256 private constant WORKER_GAS_BASE = 1_000_000_000;
 
     event BoughtGas(
         address indexed buyer,
@@ -99,12 +96,7 @@ contract NexusPolygon is OwnableUpgradeable {
         string[] args
     );
 
-    event Kill(
-        address indexed consumer,
-        uint id
-    );
-
-    event WORKERStatusChanged(
+    event WorkerStatusChanged(
         address indexed worker,
         bool active,
         string endpoint
@@ -139,9 +131,10 @@ contract NexusPolygon is OwnableUpgradeable {
     );
     
     event ConfigSet(
-        uint32 paymentPremiumPPB,
+        uint32 workerGasPremium,
         uint fallbackGasPrice,
-        uint24 stalenessSeconds
+        uint24 stalenessSeconds,
+        address dappOracle
     );
     
     event UpdateWorkers(
@@ -149,12 +142,12 @@ contract NexusPolygon is OwnableUpgradeable {
         address[] workers
     );
 
-    struct PerConsumerWORKEREntry {
+    struct PerConsumerWorkerEntry {
         uint amount;
         uint claimable;
     }
 
-    struct RegisteredWORKER {
+    struct RegisteredWorker {
         bool active;
         string endpoint;
         uint claimableDapp;
@@ -220,7 +213,7 @@ contract NexusPolygon is OwnableUpgradeable {
     }
 
     struct Config {
-        uint32 paymentPremiumPPB;
+        uint32 workerGasPremium;
         uint24 stalenessSeconds;
     }
 
@@ -233,14 +226,14 @@ contract NexusPolygon is OwnableUpgradeable {
     struct initArgs {
         address _tokenContract;
         address _dappOracleContract;
-        uint32 _paymentPremiumPPB;
+        uint32 _workerGasPremium;
         uint256 _usdtPrecision;
         uint256 _fallbackGasPrice;
         uint24 _stalenessSeconds;
     }
 
-    mapping(address => RegisteredWORKER) public registeredWORKERs;
-    mapping(address => mapping(address => PerConsumerWORKEREntry)) public workerData;
+    mapping(address => RegisteredWorker) public registeredWorkers;
+    mapping(address => mapping(address => PerConsumerWorkerEntry)) public workerData;
 
     mapping(address => address[]) public providers;
 
@@ -267,14 +260,14 @@ contract NexusPolygon is OwnableUpgradeable {
     ) external initializer {
         __Ownable_init();
         token = IERC20Upgradeable(args._tokenContract);
-        dappOracle = IDappOraclePolygon(args._dappOracleContract);
     
         usdtPrecision = args._usdtPrecision;
 
         setConfig(
-            args._paymentPremiumPPB,
+            args._workerGasPremium,
             args._fallbackGasPrice,
-            args._stalenessSeconds
+            args._stalenessSeconds,
+            args._dappOracleContract
         );
     }
       
@@ -282,28 +275,32 @@ contract NexusPolygon is OwnableUpgradeable {
     * @notice set the current configuration of the nexus
     */
     function setConfig(
-        uint32 paymentPremiumPPB,
+        uint32 workerGasPremium,
         uint256 fallbackGasPrice,
-        uint24 stalenessSeconds
+        uint24 stalenessSeconds,
+        address dappOracleContract
     ) public onlyOwner {
         s_config = Config({
-            paymentPremiumPPB: paymentPremiumPPB,
+            workerGasPremium: workerGasPremium,
             stalenessSeconds: stalenessSeconds
         });
 
         s_fallbackGasPrice = fallbackGasPrice;
 
+        dappOracle = IDappOraclePolygon(dappOracleContract);
+
         emit ConfigSet(
-            paymentPremiumPPB,
+            workerGasPremium,
             fallbackGasPrice,
-            stalenessSeconds
+            stalenessSeconds,
+            dappOracleContract
         );
     }
 
     function jobServiceCompleted(uint id, address worker, bool isJob) external view returns (bool) {
         if(isJob) {
             JobData storage jd = jobs[id];
-            address[] storage workers = providers[jd.owner];
+            address[] memory workers = providers[jd.owner];
             int founds = validateWorkerCaller(workers, worker, false);
 
             if(founds == -1) return false;
@@ -311,7 +308,7 @@ contract NexusPolygon is OwnableUpgradeable {
             return jd.done[uint(founds)];
         } else {
             ServiceData storage sd = services[id];
-            address[] storage workers = providers[sd.owner];
+            address[] memory workers = providers[sd.owner];
             int founds = validateWorkerCaller(workers, worker, false);
 
             if(founds == -1) return false;
@@ -350,11 +347,14 @@ contract NexusPolygon is OwnableUpgradeable {
         address _consumer,
         address _worker
     ) public {
-        require(registeredWORKERs[_worker].active,"inactive");
+        require(registeredWorkers[_worker].active,"inactive");
+        require(_amount > 0,"non 0");
 
         token.safeTransferFrom(msg.sender, address(this), _amount);
         
-        workerData[_consumer][_worker].amount += _amount;
+        unchecked {
+            workerData[_consumer][_worker].amount += _amount; // assumes non-infinite mint
+        }
         
         emit BoughtGas(msg.sender, _consumer, _worker, _amount);
     }
@@ -368,9 +368,10 @@ contract NexusPolygon is OwnableUpgradeable {
     ) external {
         address _consumer = msg.sender;
 
-        require(!(_amountToSell > workerData[_consumer][_worker].amount),"overdrawn");
+        require(_amountToSell <= workerData[_consumer][_worker].amount,"overdrawn");
+        require(_amountToSell > 0,"non 0");
         
-        workerData[_consumer][_worker].amount -= _amountToSell;
+        workerData[_consumer][_worker].amount = workerData[_consumer][_worker].amount - _amountToSell;
 
         token.safeTransfer(_consumer, _amountToSell);
         
@@ -378,25 +379,48 @@ contract NexusPolygon is OwnableUpgradeable {
     }
     
     /**
+     * @dev use DAPP gas, vroom @HERE
+     */
+    function useGas(
+        address _consumer,
+        uint _amountToUse,
+        address _worker
+    ) internal {
+        require(_amountToUse <= workerData[_consumer][_worker].amount, "insuficient gas");
+        require(_amountToUse > 0, "zero gas");
+
+        workerData[_consumer][_worker].amount -= _amountToUse;
+        registeredWorkers[_worker].claimableDapp += _amountToUse;
+
+        totalDappGasPaid += _amountToUse;
+
+        emit UsedGas(_consumer, _worker, _amountToUse);
+    }
+    
+    /**
      * @dev allows worker to claim for consumer
      */
     function claim() external {
-        uint claimableAmount = registeredWORKERs[msg.sender].claimableDapp;
+        uint claimableAmount = registeredWorkers[msg.sender].claimableDapp;
 
         require(claimableAmount != 0,"req pos bal");
+
+        unchecked {
+            registeredWorkers[msg.sender].claimableDapp = 0;
+        }
         
         token.safeTransfer(msg.sender, claimableAmount);
-        
+
         emit ClaimedGas(msg.sender, claimableAmount);
     }
 
     /**
     * @notice calculates the minimum balance required for an upkeep to remain eligible
     */
-    function getMinBalance(uint256 id, string memory jobType, address worker) external view returns (uint) {
-        if(compareStrings(jobType, "job")) {
+    function getMinBalance(uint256 id, bool isJob, address worker) external view returns (uint) {
+        if(isJob) {
             return calculatePaymentAmount(jobs[id].gasLimit,jobs[id].imageName, worker);
-        } else if(compareStrings(jobType, "service")) {
+        } else {
             return calcServiceDapps(
                 services[id].imageName, 
                 worker
@@ -408,15 +432,25 @@ contract NexusPolygon is OwnableUpgradeable {
      * @dev queue job
      */
     function queueJob(queueJobArgs calldata args) external {
-        
         validateConsumer(msg.sender);
 
-        address[] storage workers = providers[args.owner];
+        address[] memory workers = providers[args.owner];
         require(workers.length > 0,"no workers");
         
         validateActiveWorkers(workers);
 
-        lastJobID = lastJobID + 1;
+        unchecked {
+            for(uint i=0;i<workers.length;i++) {
+                require(isImageApprovedForWorker(workers[i], args.imageName), "not approved");
+                require(
+                    workerData[msg.sender][workers[i]].amount 
+                    >= 
+                    calculatePaymentAmount(jobs[lastJobID].gasLimit,jobs[lastJobID].imageName, workers[i])
+                    ,"bal not met"
+                );
+            }
+            lastJobID = lastJobID + 1;
+        }
 
         JobData storage jd = jobs[lastJobID];
 
@@ -426,16 +460,6 @@ contract NexusPolygon is OwnableUpgradeable {
         jd.owner = args.owner;
         jd.imageName = args.imageName;
         jd.gasLimit = args.gasLimit;
-        
-        for(uint i=0;i<workers.length;i++) {
-            require(isImageApprovedForWORKER(workers[i], args.imageName), "not approved");
-            require(
-                workerData[msg.sender][workers[i]].amount 
-                >= 
-                calculatePaymentAmount(jobs[lastJobID].gasLimit,jobs[lastJobID].imageName, workers[i])
-                ,"bal not met"
-            );
-        }
         
         emit QueueJob(
             msg.sender,
@@ -453,16 +477,18 @@ contract NexusPolygon is OwnableUpgradeable {
     function queueService(queueServiceArgs calldata args) external {
         validateConsumer(msg.sender);
 
-        address[] storage workers = providers[args.owner];
+        address[] memory workers = providers[args.owner];
         require(workers.length > 0,"no workers");
 
         validateActiveWorkers(workers);
 
-        for(uint i=0;i<workers.length;i++) {
-            require(isImageApprovedForWORKER(workers[i], args.imageName), "not approved");
+        unchecked {
+            for(uint i=0;i<workers.length;i++) {
+                require(isImageApprovedForWorker(workers[i], args.imageName), "not approved");
+            }
+            lastJobID = lastJobID + 1;
         }
 
-        lastJobID = lastJobID + 1;
 
         ServiceData storage sd = services[lastJobID];
 
@@ -487,7 +513,7 @@ contract NexusPolygon is OwnableUpgradeable {
     function jobCallback(jobCallbackArgs calldata args) external {
         JobData storage jd = jobs[args.jobID];
 
-        address[] storage workers = providers[jd.owner];
+        address[] memory workers = providers[jd.owner];
         require(workers.length > 0,"no workers");
         
         require(!jd.done[uint(validateWorkerCaller(workers,msg.sender,true))], "completed");
@@ -512,7 +538,9 @@ contract NexusPolygon is OwnableUpgradeable {
                 args.outputFS,
                 args.outputHash
             ));
-            gasUsed = gasUsed - gasleft();
+            unchecked {
+                gasUsed = gasUsed - gasleft();
+            }
         }
 
         // calc gas usage and deduct from quota as DAPPs (using Bancor) or as eth
@@ -549,11 +577,11 @@ contract NexusPolygon is OwnableUpgradeable {
     /**
      * @dev worker run service
      */
-    // add check for not conflicting with WORKER frontend default ports
+    // add check for not conflicting with Worker frontend default ports
     function serviceCallback(uint serviceId) external {
         ServiceData storage sd = services[serviceId];
 
-        address[] storage workers = providers[sd.owner];
+        address[] memory workers = providers[sd.owner];
         require(workers.length > 0,"no workers");
 
         validateWorkerCaller(workers,msg.sender,true);
@@ -561,7 +589,9 @@ contract NexusPolygon is OwnableUpgradeable {
         require(sd.started == false, "started");
 
         sd.started = true;
-        sd.endDate = block.timestamp + ( sd.months * 30 days );
+        unchecked {
+            sd.endDate = block.timestamp + ( sd.months * 30 days );
+        }
         
         address _consumer = sd.consumer;
         
@@ -593,7 +623,7 @@ contract NexusPolygon is OwnableUpgradeable {
     ) external {
         JobData storage jd = jobs[jobID];
 
-        address[] storage workers = providers[jd.owner];
+        address[] memory workers = providers[jd.owner];
         require(workers.length > 0,"no workers");
 
         uint founds = uint(validateWorkerCaller(workers,msg.sender,true));
@@ -619,7 +649,7 @@ contract NexusPolygon is OwnableUpgradeable {
     function serviceError(serviceErrorArgs calldata args) external {
         ServiceData storage sd = services[args.jobID];
 
-        address[] storage workers = providers[sd.owner];
+        address[] memory workers = providers[sd.owner];
         require(workers.length > 0,"no workers");
         
         uint founds = uint(validateWorkerCaller(workers,msg.sender,true));
@@ -666,7 +696,7 @@ contract NexusPolygon is OwnableUpgradeable {
         require(sd.started == true, "not started");
         require(sd.endDate < block.timestamp, "time remaining");
 
-        address[] storage workers = providers[sd.owner];
+        address[] memory workers = providers[sd.owner];
         require(workers.length > 0,"no workers");
         
         uint founds = uint(validateWorkerCaller(workers,msg.sender,true));
@@ -710,7 +740,7 @@ contract NexusPolygon is OwnableUpgradeable {
         require(sd.endDate > block.timestamp, "no time remaining");
         require(months > 0, "months > 0");
 
-        address[] storage workers = providers[msg.sender];
+        address[] memory workers = providers[msg.sender];
         require(workers.length > 0,"no workers");
 
         for(uint i=0;i<workers.length;i++) {
@@ -769,35 +799,42 @@ contract NexusPolygon is OwnableUpgradeable {
     /**
      * @dev active and set endpoint for worker
      */
-    function regWORKER(string calldata endpoint) external {
+    function regWorker(string calldata endpoint) external {
         require(bytes(endpoint).length != 0, "invalid endpoint");
 
         address _worker = msg.sender;
 
-        if(bytes(registeredWORKERs[_worker].endpoint).length == 0) {
-            workerList[totalWorkers++] = _worker;
+        if(bytes(registeredWorkers[_worker].endpoint).length == 0) {
+            unchecked {
+                workerList[totalWorkers] = _worker;
+                totalWorkers = totalWorkers + 1;
+            }
         }
 
-        registeredWORKERs[_worker].active = true;
-        registeredWORKERs[_worker].endpoint = endpoint;
+        registeredWorkers[_worker].active = true;
+        registeredWorkers[_worker].endpoint = endpoint;
         
-        emit WORKERStatusChanged(_worker, true, endpoint);
+        emit WorkerStatusChanged(_worker, true, endpoint);
     }
     
     /**
      * @dev deprecate worker
      */
-    function deprecateWORKER() external {
+    function deprecateWorker() external {
         address _worker = msg.sender;
 
-        if(bytes(registeredWORKERs[_worker].endpoint).length == 0) {
-            workerList[totalWorkers++] = _worker;
+        // why is this needed?
+        if(bytes(registeredWorkers[_worker].endpoint).length == 0) {
+            unchecked {
+                workerList[totalWorkers] = _worker;
+                totalWorkers = totalWorkers + 1;
+            }
         }
 
-        registeredWORKERs[_worker].active = false;
-        registeredWORKERs[_worker].endpoint = "deprecated";
+        registeredWorkers[_worker].active = false;
+        registeredWorkers[_worker].endpoint = "deprecated";
 
-        emit WORKERStatusChanged(_worker, false,"deprecated");
+        emit WorkerStatusChanged(_worker, false,"deprecated");
     }
     
     /**
@@ -848,14 +885,14 @@ contract NexusPolygon is OwnableUpgradeable {
     /**
      * @dev returns approval status of image for worker
      */
-    function isImageApprovedForWORKER(address worker, string calldata imageName) public view returns (bool) {
+    function isImageApprovedForWorker(address worker, string calldata imageName) public view returns (bool) {
         return workerApprovedImages[worker][imageName].jobFee > 0;
     }
     
     /**
      * @dev unapprove docker image for worker
      */
-    function unapproveDockerForWORKER(string calldata imageName) external  {
+    function unapproveDockerForWorker(string calldata imageName) external  {
         address _worker = msg.sender;
 
         delete workerApprovedImages[_worker][imageName];
@@ -888,7 +925,9 @@ contract NexusPolygon is OwnableUpgradeable {
         require(!jd.done[uint(founds)], "completed");
 
         jd.done[uint(founds)] = true;
-        jd.resultsCount++;
+        unchecked {
+            jd.resultsCount = jd.resultsCount + 1;
+        }
         jd.dataHash[uint(founds)] = dataHash;
 
         return inconsistent;
@@ -903,9 +942,10 @@ contract NexusPolygon is OwnableUpgradeable {
         address worker
     ) private view returns (uint) {
         uint weiForGas = getFeedData() * (gas + JOB_GAS_OVERHEAD);
-        uint premium = PPB_BASE + s_config.paymentPremiumPPB;
+        uint premium = WORKER_GAS_BASE + s_config.workerGasPremium;
         uint total = (weiForGas * 1e9 * premium) / getDappMatic();
         total = total / 1e14;
+        require(total < 1e9 * 1e4); // require total is less than MAX DAPP in case of faulty oracle update 1B DAPP @ 4 decimal 
         return total + calcJobDapps(imageName,worker);
     }
 
@@ -1020,8 +1060,10 @@ contract NexusPolygon is OwnableUpgradeable {
      */
     function validateActiveWorkers(address[] memory workers) public view {
         require(workers.length > 0, "no workers");
-        for (uint i=0; i<workers.length; i++) {
-            require(registeredWORKERs[workers[i]].active, "not active");
+        unchecked {
+            for (uint i=0; i < workers.length; i++) {
+                require(registeredWorkers[workers[i]].active, "not active");
+            }
         }
     }
 
@@ -1046,7 +1088,7 @@ contract NexusPolygon is OwnableUpgradeable {
         external
         view
         returns (
-            uint32 paymentPremiumPPB,
+            uint32 workerGasPremium,
             uint24 stalenessSeconds,
             uint256 fallbackGasPrice
         )
@@ -1054,7 +1096,7 @@ contract NexusPolygon is OwnableUpgradeable {
         Config memory config = s_config;
 
         return (
-            config.paymentPremiumPPB,
+            config.workerGasPremium,
             config.stalenessSeconds,
             s_fallbackGasPrice
         );
@@ -1076,33 +1118,15 @@ contract NexusPolygon is OwnableUpgradeable {
     /**
      * @dev returns worker endpoint
      */
-    function getWORKEREndpoint(address worker) external view returns (string memory) {
-        return registeredWORKERs[worker].endpoint;
+    function getWorkerEndpoint(address worker) external view returns (string memory) {
+        return registeredWorkers[worker].endpoint;
     }
     
     /**
      * @dev returns worker amount
      */
-    function getWORKERAmount(address account, address worker) external view returns (uint) {
+    function getWorkerAmount(address account, address worker) external view returns (uint) {
         return workerData[account][worker].amount;
-    }
-    
-    /**
-     * @dev use DAPP gas, vroom
-     */
-    function useGas(
-        address _consumer,
-        uint _amountToUse,
-        address _worker
-    ) internal {
-        require(_amountToUse <= workerData[_consumer][_worker].amount, "insuficient gas");
-
-        workerData[_consumer][_worker].amount -= _amountToUse;
-        registeredWORKERs[_worker].claimableDapp += _amountToUse;
-
-        totalDappGasPaid += _amountToUse;
-
-        emit UsedGas(_consumer, _worker, _amountToUse);
     }
     
     /**

@@ -183,7 +183,7 @@ describe("NexusPolygon", function(done) {
         await nexusContract.approveImage("natpdev/monte-carlo","d4bf9a42ed0a0a875d4583dc2c64a0e5f4d523fe01ba5c1b3686b6aa5865074a");
         await nexusContract.approveImage("natpdev/poa-evm","19d02f7c0973314e871a403910382f82f531d32e6d606facb560edcdfe4b9924");
         await nexusContract.approveImage("natpdev/nvidia-docker","535fe08b1f0b6b8be4b2b3fac19a9fa77b4d9808b09654ac3bf679a80736bbc4");
-        await nexusContract.connect(worker1).regWORKER(process.env.WORKER_ENDPOINT || "https://dapp-workers-api.liquidapps.io");
+        await nexusContract.connect(worker1).regWorker(process.env.Worker_ENDPOINT || "https://dapp-workers-api.liquidapps.io");
         await nexusContract.setWorkers([worker1.address]);
         // await nexusContract.connect(consumer1).setWorkers([worker1.address]);
         // await nexusContract.connect(consumer2).setWorkers([worker1.address]);
@@ -227,14 +227,16 @@ describe("NexusPolygon", function(done) {
     await nexusContract.setConfig(
       paymentPremiumPPB,
       fallbackGasPrice,
-      stalenessSeconds
+      stalenessSeconds,
+      dappOracleContract.address
     );
     
     console.log(`set config: ${
       {
         paymentPremiumPPB,
         fallbackGasPrice,
-        stalenessSeconds
+        stalenessSeconds,
+        address: dappOracleContract.address
       }
     }`)
 
@@ -243,25 +245,26 @@ describe("NexusPolygon", function(done) {
     expect(config.paymentPremiumPPB).to.equal(paymentPremiumPPB);
     expect(config.fallbackGasPrice).to.equal(fallbackGasPrice);
     expect(config.stalenessSeconds).to.equal(stalenessSeconds);
+    expect(config.dappOracle).to.equal(dappOracleContract.address);
   });
 
-  it("Deprecate WORKER", async function() {
-    await nexusContract.connect(worker1).deprecateWORKER();
+  it("Deprecate Worker", async function() {
+    await nexusContract.connect(worker1).deprecateWorker();
 
-    const registeredWORKERs = await nexusContract.registeredWORKERs(worker1.address);
+    const registeredWorkers = await nexusContract.registeredWorkers(worker1.address);
 
-    expect(registeredWORKERs.active).to.equal(false);
-    expect(registeredWORKERs.endpoint).to.equal("deprecated");
+    expect(registeredWorkers.active).to.equal(false);
+    expect(registeredWorkers.endpoint).to.equal("deprecated");
   });
 
-  it("Register WORKER", async function() {
-    await nexusContract.connect(worker1).regWORKER("http://api:80/dapp-workers");
+  it("Register Worker", async function() {
+    await nexusContract.connect(worker1).regWorker("http://api:80/dapp-workers");
 
-    const registeredWORKERs = await nexusContract.registeredWORKERs(worker1.address);
+    const registeredWorkers = await nexusContract.registeredWorkers(worker1.address);
 
-    expect(registeredWORKERs.active).to.equal(true);
-    expect(registeredWORKERs.endpoint).to.equal("http://api:80/dapp-workers");
-    expect(registeredWORKERs.claimableDapp.toString()).to.equal('0');
+    expect(registeredWorkers.active).to.equal(true);
+    expect(registeredWorkers.endpoint).to.equal("http://api:80/dapp-workers");
+    expect(registeredWorkers.claimableDapp.toString()).to.equal('0');
   });
 
   it("Buy dapp gas", async function() {
@@ -510,7 +513,7 @@ describe("NexusPolygon", function(done) {
     
     await runEvent("ServiceRunning",nexusContract);
 
-    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
+    const endpoint = await nexusContract.getWorkerEndpoint(worker1.address);
 
     expect(endpoint).to.equal(`${endpoint}`);
     
@@ -528,7 +531,7 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Queue service - poa-evm", async function() {
-    // await nexusContract.connect(worker1).regWORKER("http://api:80/dapp-workers");
+    // await nexusContract.connect(worker1).regWorker("http://api:80/dapp-workers");
     await nexusContract.approveImage("natpdev/poa-evm","19d02f7c0973314e871a403910382f82f531d32e6d606facb560edcdfe4b9924");
     await nexusContract.connect(worker1).setDockerImage("natpdev/poa-evm",100000,100000);
     
@@ -564,7 +567,7 @@ describe("NexusPolygon", function(done) {
   
     await nexusContract.removeAllListeners("ServiceRunning");
 
-    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
+    const endpoint = await nexusContract.getWorkerEndpoint(worker1.address);
     
     // console.log('endpoint',`${endpoint}?id=${id1}&image=poa-evm`);
 
@@ -597,7 +600,7 @@ describe("NexusPolygon", function(done) {
     
     await runEvent("ServiceRunning",nexusContract);
 
-    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
+    const endpoint = await nexusContract.getWorkerEndpoint(worker1.address);
 
     expect(endpoint).to.equal(`${endpoint}`);
     
@@ -612,7 +615,7 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Min job balance", async function() {
-    const min = await nexusContract.getMinBalance(2,"job",worker1.address);
+    const min = await nexusContract.getMinBalance(2,true,worker1.address);
 
     console.log('job',min.toString());
     // 34,852.7872 DAPP * 0.00259 $/DAPP = $90
@@ -621,7 +624,7 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Min job balance with callback", async function() {
-    const min = await nexusContract.getMinBalance(3,"job",worker1.address);
+    const min = await nexusContract.getMinBalance(3,true,worker1.address);
 
     console.log('job callback',min.toString());
     // 34,852.7872 DAPP * 0.00259 $/DAPP = $90
@@ -630,7 +633,7 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Min service balance", async function() {
-    const min = await nexusContract.getMinBalance(6,"service",worker1.address);
+    const min = await nexusContract.getMinBalance(6,false,worker1.address);
 
     console.log('service',min.toString());
     // 22,001.4432 DAPP * 0.00259 $/DAPP = $56.98
@@ -639,7 +642,7 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Set workers", async function() {
-    await nexusContract.connect(worker2).regWORKER("endpoint");
+    await nexusContract.connect(worker2).regWorker("endpoint");
 
     const dapps = ethers.utils.parseUnits("800000",4);
     await dappTokenContract.mint(addr1.address, dapps);
@@ -653,7 +656,7 @@ describe("NexusPolygon", function(done) {
     expect(JSON.stringify(workers)).to.equal(JSON.stringify([worker1.address,worker2.address]));
     
     await nexusContract.setWorkers([worker1.address]);
-    await nexusContract.connect(worker2).deprecateWORKER();
+    await nexusContract.connect(worker2).deprecateWorker();
   });
 
   it("Run is job complete", async function() {
@@ -675,7 +678,7 @@ describe("NexusPolygon", function(done) {
   });
   
   it("Run job - error", async function() {
-    const preWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
+    const preWorkerBal = (await nexusContract.registeredWorkers(worker1.address)).claimableDapp;
 
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -691,7 +694,7 @@ describe("NexusPolygon", function(done) {
     
     await runEvent("JobError",nexusContract);
 
-    const postWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
+    const postWorkerBal = (await nexusContract.registeredWorkers(worker1.address)).claimableDapp;
     
     // ensure get base payment for job
     expect(postWorkerBal).is.above(preWorkerBal);
@@ -702,7 +705,7 @@ describe("NexusPolygon", function(done) {
   });
 
   it.skip("Run service - error", async function() {
-    const preWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
+    const preWorkerBal = (await nexusContract.registeredWorkers(worker1.address)).claimableDapp;
 
     await nexusContract.queueService({
       owner: addr1.address,
@@ -734,7 +737,7 @@ describe("NexusPolygon", function(done) {
   
     await nexusContract.removeAllListeners("ServiceError");
 
-    const postWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
+    const postWorkerBal = (await nexusContract.registeredWorkers(worker1.address)).claimableDapp;
     
     // ensure get base payment for job
     expect(postWorkerBal).is.above(preWorkerBal);
@@ -882,7 +885,7 @@ describe("NexusPolygon", function(done) {
     
     await runEvent("JobResult",nexusContract);
     
-    const preWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
+    const preWorkerBal = (await nexusContract.registeredWorkers(worker1.address)).claimableDapp;
 
     await nexusContract.queueService({
       owner: addr1.address,
@@ -913,11 +916,11 @@ describe("NexusPolygon", function(done) {
     
     await runEvent("ServiceComplete",nexusContract);
 
-    const postWorkerBal = (await nexusContract.registeredWORKERs(worker1.address)).claimableDapp;
+    const postWorkerBal = (await nexusContract.registeredWorkers(worker1.address)).claimableDapp;
     
     expect(postWorkerBal).is.above(preWorkerBal);
 
-    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
+    const endpoint = await nexusContract.getWorkerEndpoint(worker1.address);
 
     const res = await fetch(`${endpoint}?id=${id2}&image=wasi-service&text=true`, {method: 'GET'});
 
@@ -946,27 +949,27 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Get worker amount", async function() {
-    const amount = await nexusContract.getWORKERAmount(addr1.address,worker1.address);
+    const amount = await nexusContract.getWorkerAmount(addr1.address,worker1.address);
     
     expect(amount).is.above(0);
   });
 
   it("Get image approved for worker", async function() {
-    const approved = await nexusContract.isImageApprovedForWORKER(worker1.address,"natpdev/runner");
+    const approved = await nexusContract.isImageApprovedForWorker(worker1.address,"natpdev/runner");
     
     expect(approved).to.equal(true);
   });
 
   it("Unapprove image for worker", async function() {
-    await nexusContract.connect(worker1).unapproveDockerForWORKER("natpdev/runner");
+    await nexusContract.connect(worker1).unapproveDockerForWorker("natpdev/runner");
 
-    const approved = await nexusContract.isImageApprovedForWORKER(worker1.address,"natpdev/runner");
+    const approved = await nexusContract.isImageApprovedForWorker(worker1.address,"natpdev/runner");
     
     expect(approved).to.equal(false);
   });
 
   it("Get worker endpoint", async function() {
-    const endpoint = await nexusContract.getWORKEREndpoint(worker1.address);
+    const endpoint = await nexusContract.getWorkerEndpoint(worker1.address);
 
     expect(endpoint).to.equal("http://api:80/dapp-workers");
   });
@@ -984,7 +987,7 @@ describe("NexusPolygon", function(done) {
 
     let workerData = [];
     for(let i=0; i<workers.length; i++) {
-      workerData.push(await nexusContract.registeredWORKERs(workers[i]));
+      workerData.push(await nexusContract.registeredWorkers(workers[i]));
     }
 
     expect(workerData[0].endpoint).to.equal('http://api:80/dapp-workers');
