@@ -297,6 +297,29 @@ contract NexusPolygon is OwnableUpgradeable {
         );
     }
 
+    /**
+    * @notice read the current configuration of the nexus
+    */
+    function getConfig()
+        external
+        view
+        returns (
+            uint32 workerGasPremium,
+            uint24 stalenessSeconds,
+            uint256 fallbackGasPrice,
+            address dappOracle
+        )
+    {
+        Config memory config = s_config;
+
+        return (
+            config.workerGasPremium,
+            config.stalenessSeconds,
+            s_fallbackGasPrice,
+            address(dappOracle)
+        );
+    }
+
     function jobServiceCompleted(uint id, address worker, bool isJob) external view returns (bool) {
         if(isJob) {
             JobData storage jd = jobs[id];
@@ -1079,29 +1102,6 @@ contract NexusPolygon is OwnableUpgradeable {
      */
     function getUsdDapp() private view returns (uint256) {
         return dappOracle.lastUsdDappPrice();
-    }
-
-    /**
-    * @notice read the current configuration of the nexus
-    */
-    function getConfig()
-        external
-        view
-        returns (
-            uint32 workerGasPremium,
-            uint24 stalenessSeconds,
-            uint256 fallbackGasPrice,
-            address dappOracle
-        )
-    {
-        Config memory config = s_config;
-
-        return (
-            config.workerGasPremium,
-            config.stalenessSeconds,
-            s_fallbackGasPrice,
-            address(dappOracle)
-        );
     }
     
     /**
