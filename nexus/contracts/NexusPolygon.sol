@@ -1090,7 +1090,8 @@ contract NexusPolygon is OwnableUpgradeable {
         returns (
             uint32 workerGasPremium,
             uint24 stalenessSeconds,
-            uint256 fallbackGasPrice
+            uint256 fallbackGasPrice,
+            address dappOracle
         )
     {
         Config memory config = s_config;
@@ -1098,7 +1099,8 @@ contract NexusPolygon is OwnableUpgradeable {
         return (
             config.workerGasPremium,
             config.stalenessSeconds,
-            s_fallbackGasPrice
+            s_fallbackGasPrice,
+            address(dappOracle)
         );
     }
     
