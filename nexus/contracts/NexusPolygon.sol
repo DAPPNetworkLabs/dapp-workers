@@ -16,7 +16,7 @@ contract NexusPolygon is OwnableUpgradeable {
     IERC20Upgradeable public token;
     IDappOraclePolygon public dappOracle;
     
-    AggregatorV3Interface internal constant FAST_GAS_FEED = AggregatorV3Interface(0xf824eA79774E8698E6C6D156c60ab054794C9B18);
+    AggregatorV3Interface private constant FAST_GAS_FEED = AggregatorV3Interface(0xf824eA79774E8698E6C6D156c60ab054794C9B18);
 
     uint public usdtPrecision;
 
@@ -408,7 +408,7 @@ contract NexusPolygon is OwnableUpgradeable {
         address _consumer,
         uint _amountToUse,
         address _worker
-    ) internal {
+    ) private {
         require(_amountToUse <= workerData[_consumer][_worker].amount, "insuficient gas");
         require(_amountToUse > 0, "zero gas");
 
@@ -1134,35 +1134,35 @@ contract NexusPolygon is OwnableUpgradeable {
     /**
      * @dev compare strings by hash
      */
-    function compareStrings(string memory a, string memory b) internal pure returns (bool) {
+    function compareStrings(string memory a, string memory b) private pure returns (bool) {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
     }
     
     /**
      * @dev convert address type to string
      */
-    function toString(address account) internal pure returns(string memory) {
+    function toString(address account) private pure returns(string memory) {
         return toString(abi.encodePacked(account));
     }
     
     /**
      * @dev converts uint to string
      */
-    function toString(uint value) internal pure returns(string memory) {
+    function toString(uint value) private pure returns(string memory) {
         return toString(abi.encodePacked(value));
     }
     
     /**
      * @dev converts bytes32 value to string
      */
-    function toString(bytes32 value) internal pure returns(string memory) {
+    function toString(bytes32 value) private pure returns(string memory) {
         return toString(abi.encodePacked(value));
     }
     
     /**
      * @dev converts bytes value to string
      */
-    function toString(bytes memory data) internal pure returns(string memory) {
+    function toString(bytes memory data) private pure returns(string memory) {
         bytes memory alphabet = "0123456789abcdef";
         bytes memory str = new bytes(2 + data.length * 2);
         str[0] = "0";
