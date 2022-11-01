@@ -245,7 +245,7 @@ describe("NexusPolygon", function(done) {
     expect(config.workerGasPremium).to.equal(workerGasPremium);
     expect(config.fallbackGasPrice).to.equal(fallbackGasPrice);
     expect(config.stalenessSeconds).to.equal(stalenessSeconds);
-    expect(config.dappOracle).to.equal(dappOracleContract.address);
+    expect(config.dappOracleAddress).to.equal(dappOracleContract.address);
   });
 
   it("Deprecate Worker", async function() {
