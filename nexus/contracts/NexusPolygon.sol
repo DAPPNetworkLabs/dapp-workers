@@ -173,7 +173,7 @@ contract NexusPolygon is OwnableUpgradeable {
         string imageName;
         bool started;
         uint endDate;
-        uint months;
+        uint secs;
         mapping(address => bytes32) dataHash;
         mapping(uint => bool) done;
     }
@@ -198,7 +198,7 @@ contract NexusPolygon is OwnableUpgradeable {
         string imageName;
         string inputFS;
         string[] args;
-        uint months;
+        uint secs;
     }
 
     struct serviceErrorArgs {
@@ -518,7 +518,7 @@ contract NexusPolygon is OwnableUpgradeable {
         sd.consumer = msg.sender;
         sd.owner = args.owner;
         sd.imageName = args.imageName;
-        sd.months = args.months;
+        sd.secs = args.secs;
 
         emit QueueService(
             msg.sender,
@@ -613,7 +613,7 @@ contract NexusPolygon is OwnableUpgradeable {
 
         sd.started = true;
         unchecked {
-            sd.endDate = block.timestamp + ( sd.months * 30 days );
+            sd.endDate = block.timestamp + sd.secs;
         }
         
         address _consumer = sd.consumer;
@@ -753,7 +753,7 @@ contract NexusPolygon is OwnableUpgradeable {
     function extendService(
         uint serviceId, 
         string calldata imageName, 
-        uint months
+        uint secs
     ) external {
         validateConsumer(msg.sender);
         
@@ -761,7 +761,7 @@ contract NexusPolygon is OwnableUpgradeable {
 
         require(compareStrings(imageName, sd.imageName),"missmatch");
         require(sd.endDate > block.timestamp, "no time remaining");
-        require(months > 0, "months > 0");
+        require(secs > 0, "secs > 0");
 
         address[] memory workers = providers[msg.sender];
         require(workers.length > 0,"no workers");
@@ -772,8 +772,8 @@ contract NexusPolygon is OwnableUpgradeable {
                 workers[i]
             );
 
-            dapps *= months;
-            sd.endDate = sd.endDate + ( months * 30 days );
+            dapps *= secs;
+            sd.endDate = sd.endDate + secs;
 
             buyGasFor(
                 dapps,
@@ -1001,7 +1001,9 @@ contract NexusPolygon is OwnableUpgradeable {
     }
 
     /**
-     * @dev calculate service fee, hourly rate, e.g. 100000 = $0.1 per hour for service
+     * @dev calculate service fee, rate per second, 
+     * e.g. 1 = $0.000001 per second for service or $0.00006 per hour
+     * or $0.00144 per day minimum
      */
     function calcServiceDapps(
         string memory imageName, 
@@ -1011,7 +1013,7 @@ contract NexusPolygon is OwnableUpgradeable {
 
         uint baseFee = workerApprovedImages[worker][imageName].baseFee;
         
-        return ( baseFee * 24 * 30 * dappUsd ) / usdtPrecision;
+        return ( baseFee * dappUsd ) / usdtPrecision;
     }
 
     /**

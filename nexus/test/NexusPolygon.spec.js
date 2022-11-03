@@ -501,7 +501,7 @@ describe("NexusPolygon", function(done) {
       inputFS: outputFSRes,
       // inputFS: "QmPDKw5a5THGW4PDKcddQ6r2Tq3uNwfyKmzX62ovC6dKqx",
       args: ["target/wasm32-wasi/release/test"],
-      months: 1
+      seconds: 2629800 // 1 month * 30 days * 24 hours * 60 min * 60 sec = 2592000 or 2,629,746 Seconds (A month is 1/12th of a year. In the Gregorian calendar, an average month has exactly 30.436875 days)
     });
     
     const id1 = await nexusContract.lastJobID();
@@ -540,7 +540,7 @@ describe("NexusPolygon", function(done) {
       imageName: "natpdev/poa-evm",
       inputFS: "",
       args: ["a6a0d343688a862cf30ccb478f77986a5e1789b2"],
-      months: 1
+      seconds: 2629800
     });
     
     const id1 = await nexusContract.lastJobID();
@@ -712,7 +712,7 @@ describe("NexusPolygon", function(done) {
       imageName: "natpdev/wasi-service",
       inputFS: "",
       args: ["target/wasm32-wasi/release/test"],
-      months: 1
+      seconds: 2629800
     });
     
     const id = await nexusContract.lastJobID();
@@ -892,7 +892,7 @@ describe("NexusPolygon", function(done) {
       imageName: "natpdev/wasi-service",
       inputFS: outputFSRes,
       args: ["target/wasm32-wasi/release/test"],
-      months: 1
+      seconds: 2629800
     });
     
     const { id } = await runEvent("ServiceRunning",nexusContract);
