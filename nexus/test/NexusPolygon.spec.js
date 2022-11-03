@@ -195,12 +195,12 @@ describe("NexusPolygon", function(done) {
         // await nexusContract.connect(consumer1).buyGasFor(dapps, consumer1.address, worker1.address);
         // await nexusContract.connect(consumer2).buyGasFor(dapps, consumer2.address, worker1.address);
         // await nexusContract.connect(consumer3).buyGasFor(dapps, consumer3.address, worker1.address);
-        await nexusContract.connect(worker1).setDockerImage("natpdev/runner",100000,100000);
-        await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,100000);
-        await nexusContract.connect(worker1).setDockerImage("natpdev/wasi-service",100000,100000);
-        await nexusContract.connect(worker1).setDockerImage("natpdev/git-cloner",100000,100000);
-        await nexusContract.connect(worker1).setDockerImage("natpdev/sol-runner",100000,100000);
-        await nexusContract.connect(worker1).setDockerImage("natpdev/monte-carlo",100000,100000);
+        await nexusContract.connect(worker1).setDockerImage("natpdev/runner",100000,277);
+        await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,277);
+        await nexusContract.connect(worker1).setDockerImage("natpdev/wasi-service",100000,277);
+        await nexusContract.connect(worker1).setDockerImage("natpdev/git-cloner",100000,277);
+        await nexusContract.connect(worker1).setDockerImage("natpdev/sol-runner",100000,277);
+        await nexusContract.connect(worker1).setDockerImage("natpdev/monte-carlo",100000,277);
         await dappTokenContract.approve(nexusContract.address, ethers.utils.parseUnits("80000000",4));
 	      console.log('ran local');
       }
@@ -298,21 +298,21 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Register image", async function() {
-    await nexusContract.connect(worker1).setDockerImage("natpdev/runner",200000,200000);
+    await nexusContract.connect(worker1).setDockerImage("natpdev/runner",200000,555);
 
     const dockerImage = await nexusContract.workerApprovedImages(worker1.address,"natpdev/runner");
 
     expect(dockerImage.jobFee.toString()).to.equal('200000');
-    expect(dockerImage.baseFee.toString()).to.equal('200000');
+    expect(dockerImage.baseFee.toString()).to.equal('555');
   });
 
   it("Update image", async function() {
-    await nexusContract.connect(worker1).updateDockerImage("natpdev/runner",100000,100000);
+    await nexusContract.connect(worker1).updateDockerImage("natpdev/runner",100000,277);
 
     const dockerImage = await nexusContract.workerApprovedImages(worker1.address,"natpdev/runner");
 
     expect(dockerImage.jobFee.toString()).to.equal('100000');
-    expect(dockerImage.baseFee.toString()).to.equal('100000');
+    expect(dockerImage.baseFee.toString()).to.equal('277');
   });
 
   it("Set consumer", async function() {
@@ -334,7 +334,7 @@ describe("NexusPolygon", function(done) {
   it("Queue job", async function() {
     const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
     await nexusContract.approveImage("natpdev/rust-compiler","febdd389458f9ea76d1b1b1324bcf86f8eaab1f5c97ac64fbacbc4bacbc06303");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,100000);
+    await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,277);
 
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -381,7 +381,7 @@ describe("NexusPolygon", function(done) {
   it.skip("Queue job - nvidia-docker", async function() {
     const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
     await nexusContract.approveImage("natpdev/nvidia-docker","535fe08b1f0b6b8be4b2b3fac19a9fa77b4d9808b09654ac3bf679a80736bbc4");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/nvidia-docker",100000,100000);
+    await nexusContract.connect(worker1).setDockerImage("natpdev/nvidia-docker",100000,277);
     
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -479,9 +479,9 @@ describe("NexusPolygon", function(done) {
   
   it("Queue service", async function() {
     await nexusContract.approveImage("natpdev/rust-compiler","febdd389458f9ea76d1b1b1324bcf86f8eaab1f5c97ac64fbacbc4bacbc06303");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,100000);
+    await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,277);
     await nexusContract.approveImage("natpdev/wasi-service","89ed49bed157948ac1192fc5d7ae4922689cfab00271be5998bdfb50a1fdbd42");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/wasi-service",100000,100000);
+    await nexusContract.connect(worker1).setDockerImage("natpdev/wasi-service",100000,277);
     
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -533,7 +533,7 @@ describe("NexusPolygon", function(done) {
   it("Queue service - poa-evm", async function() {
     // await nexusContract.connect(worker1).regWorker("http://api:80/dapp-workers");
     await nexusContract.approveImage("natpdev/poa-evm","19d02f7c0973314e871a403910382f82f531d32e6d606facb560edcdfe4b9924");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/poa-evm",100000,100000);
+    await nexusContract.connect(worker1).setDockerImage("natpdev/poa-evm",100000,277);
     
     await nexusContract.queueService({
       owner: addr1.address,
@@ -786,7 +786,7 @@ describe("NexusPolygon", function(done) {
 
   it.skip("Queue job git-cloner", async function() {
     await nexusContract.approveImage("natpdev/git-cloner","eb92996be3dc34050f1d2c2c2ebb52d6993ab9e079a6e68435ef3a117b523a09");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/git-cloner",100000,100000);
+    await nexusContract.connect(worker1).setDockerImage("natpdev/git-cloner",100000,277);
     
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -811,7 +811,7 @@ describe("NexusPolygon", function(done) {
 
   it.skip("Queue job sol-runner", async function() {
     await nexusContract.approveImage("natpdev/sol-runner","ae8133b1ed18ab8549a27f5211a096747221cf23ff279f67b539502f2dbccce5");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/sol-runner",100000,100000);
+    await nexusContract.connect(worker1).setDockerImage("natpdev/sol-runner",100000,277);
     
     await nexusContract.queueJob({
       owner: addr1.address,
@@ -835,10 +835,10 @@ describe("NexusPolygon", function(done) {
 
   it.skip("Queue job monte-carlo", async function() {
     await nexusContract.approveImage("natpdev/git-cloner","eb92996be3dc34050f1d2c2c2ebb52d6993ab9e079a6e68435ef3a117b523a09");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/git-cloner",100000,100000);
+    await nexusContract.connect(worker1).setDockerImage("natpdev/git-cloner",100000,277);
     
     await nexusContract.approveImage("natpdev/monte-carlo","d4bf9a42ed0a0a875d4583dc2c64a0e5f4d523fe01ba5c1b3686b6aa5865074a");
-    await nexusContract.connect(worker1).setDockerImage("natpdev/monte-carlo",100000,100000);
+    await nexusContract.connect(worker1).setDockerImage("natpdev/monte-carlo",100000,277);
     
     await nexusContract.queueJob({
       owner: addr1.address,
