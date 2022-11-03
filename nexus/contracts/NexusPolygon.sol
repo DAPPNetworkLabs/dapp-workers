@@ -173,7 +173,6 @@ contract NexusPolygon is OwnableUpgradeable {
         string imageName;
         bool started;
         uint endDate;
-        uint secs;
         mapping(address => bytes32) dataHash;
         mapping(uint => bool) done;
     }
@@ -438,17 +437,20 @@ contract NexusPolygon is OwnableUpgradeable {
     }
 
     /**
-    * @notice calculates the minimum balance required for an upkeep to remain eligible
+    * @notice calculates the minimum balance required for job
     */
-    function getMinBalance(uint256 id, bool isJob, address worker) external view returns (uint) {
-        if(isJob) {
-            return calculatePaymentAmount(jobs[id].gasLimit,jobs[id].imageName, worker);
-        } else {
-            return calcServiceDapps(
-                services[id].imageName, 
-                worker
-            );
-        }
+    function getMinBalanceJob(uint256 id, address worker) external view returns (uint) {
+        return calculatePaymentAmount(jobs[id].gasLimit,jobs[id].imageName, worker);
+    }
+
+    /**
+    * @notice calculates the minimum balance required for service
+    */
+    function getMinBalanceService(uint256 id, address worker, uint secs) external view returns (uint) {
+        return secs * calcServiceDapps(
+            services[id].imageName, 
+            worker
+        );
     }
     
     /**
@@ -518,7 +520,7 @@ contract NexusPolygon is OwnableUpgradeable {
         sd.consumer = msg.sender;
         sd.owner = args.owner;
         sd.imageName = args.imageName;
-        sd.secs = args.secs;
+        sd.endDate = args.secs + block.timestamp;
 
         emit QueueService(
             msg.sender,
@@ -612,9 +614,6 @@ contract NexusPolygon is OwnableUpgradeable {
         require(sd.started == false, "started");
 
         sd.started = true;
-        unchecked {
-            sd.endDate = block.timestamp + sd.secs;
-        }
         
         address _consumer = sd.consumer;
         
@@ -622,6 +621,8 @@ contract NexusPolygon is OwnableUpgradeable {
             sd.imageName,
             msg.sender
         );
+
+        dapps = dapps * ( sd.endDate - block.timestamp );
 
         useGas(
             _consumer,
@@ -684,6 +685,8 @@ contract NexusPolygon is OwnableUpgradeable {
             msg.sender
         );
 
+        dapps = dapps * ( sd.endDate - block.timestamp );
+
         useGas(
             sd.consumer,
             dapps,
@@ -731,6 +734,8 @@ contract NexusPolygon is OwnableUpgradeable {
             msg.sender
         );
 
+        dapps = dapps * ( sd.endDate - block.timestamp );
+
         useGas(
             sd.consumer,
             dapps,
@@ -772,7 +777,7 @@ contract NexusPolygon is OwnableUpgradeable {
                 workers[i]
             );
 
-            dapps *= secs;
+            dapps = dapps * secs;
             sd.endDate = sd.endDate + secs;
 
             buyGasFor(

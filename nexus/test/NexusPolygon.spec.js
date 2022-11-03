@@ -615,7 +615,7 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Min job balance", async function() {
-    const min = await nexusContract.getMinBalance(2,true,worker1.address);
+    const min = await nexusContract.getMinBalanceJob(2,worker1.address);
 
     console.log('job',min.toString());
     // 34,852.7872 DAPP * 0.00259 $/DAPP = $90
@@ -624,7 +624,7 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Min job balance with callback", async function() {
-    const min = await nexusContract.getMinBalance(3,true,worker1.address);
+    const min = await nexusContract.getMinBalanceJob(3,worker1.address);
 
     console.log('job callback',min.toString());
     // 34,852.7872 DAPP * 0.00259 $/DAPP = $90
@@ -633,7 +633,7 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Min service balance", async function() {
-    const min = await nexusContract.getMinBalance(6,false,worker1.address);
+    const min = await nexusContract.getMinBalanceService(6,worker1.address,2629800);
 
     console.log('service',min.toString());
     // 22,001.4432 DAPP * 0.00259 $/DAPP = $56.98
