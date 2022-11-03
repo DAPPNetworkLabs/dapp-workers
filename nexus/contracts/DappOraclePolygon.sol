@@ -18,6 +18,7 @@ contract DappOraclePolygon is Ownable {
 
     function updatePrice(uint _lastUsdDappPrice, uint _lastDappMaticPrice) external onlyOwner {
         require(block.timestamp >= lastUpdateTime + 1 days, "last call <24 hours");
+        require(_lastUsdDappPrice > 0 && _lastDappMaticPrice > 0, "> 0");
         lastUsdDappPrice = (lastUsdDappPrice * 13 + _lastUsdDappPrice) / 14; // TWAP
         lastDappMaticPrice = (lastDappMaticPrice * 13 + _lastDappMaticPrice) / 14; // TWAP
         lastUpdateTime = block.timestamp;
