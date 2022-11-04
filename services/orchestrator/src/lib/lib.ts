@@ -97,6 +97,7 @@ export async function validateServiceBalance(consumer, serviceId: number, worker
     console.log(`seconds: ${seconds}`)
     if(seconds < 0) return false;
     const requiredAmount = await theContract.methods.getMinBalanceService(serviceId, workerAccount.address, seconds).call({ from: workerAccount.address });
+    console.log(`getMinBalanceService: ${requiredAmount}`)
 
     if (Number(workerData.amount) >= Number(requiredAmount)) {
         return true;
