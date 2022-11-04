@@ -92,7 +92,9 @@ export async function validateJobBalance(consumer:string, gasLimit:string, image
 
 export async function validateServiceBalance(consumer, serviceId: number, workerAccount: { address: string, privateKey: string }) {
     const workerData = await theContract.methods.workerData(consumer, workerAccount.address).call({ from: workerAccount.address });
+    console.log(`before seconds`)
     const seconds = (await getInfo(serviceId, "service", workerAccount)).endDate - ( Number(new Date()) / 1000 );
+    console.log(`seconds: ${seconds}`)
     if(seconds < 0) return false;
     const requiredAmount = await theContract.methods.getMinBalanceService(serviceId, workerAccount.address, seconds).call({ from: workerAccount.address });
 
