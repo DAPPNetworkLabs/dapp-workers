@@ -22,17 +22,7 @@ const fetchDappEth = async () => {
 const fetchGasWei = async () => {
     if(process.env.DAPP_WORKERS_CHAIN === 'polygon') {
 
-    } else if(process.env.DAPP_WORKERS_CHAIN === 'bsc') {
-
     } else if(process.env.DAPP_WORKERS_CHAIN === 'mumbai') {
-
-    } else if(process.env.DAPP_WORKERS_CHAIN === 'bsctest') {
-
-    } else if(process.env.DAPP_WORKERS_CHAIN === 'goerli') {
-
-    } else if(process.env.DAPP_WORKERS_CHAIN === 'ropsten') {
-
-    } else if(process.env.DAPP_WORKERS_CHAIN === 'rinkeby') {
 
     }
 }
@@ -71,18 +61,11 @@ const updateOracleGasWei = async () => {
 
 */
 export const oracleInterval = async () => {
-    if(process.env.DAPP_WORKERS_CHAIN === 'polygon' || 
-        process.env.DAPP_WORKERS_CHAIN === 'bsc'
+    if(process.env.DAPP_WORKERS_CHAIN === 'polygon'
     ) {
         if(await checkUpdateOracleDappUsd()) await updateOracleDappUsd();
         if(await checkUpdateOracleGasWei()) await updateOracleGasWei();
-    } else if(process.env.DAPP_WORKERS_CHAIN === 'ethereum') {
-
-    } else if(process.env.DAPP_WORKERS_CHAIN === 'mumbai' || 
-        process.env.DAPP_WORKERS_CHAIN === 'bsctest' ||
-        process.env.DAPP_WORKERS_CHAIN === 'goerli' ||
-        process.env.DAPP_WORKERS_CHAIN === 'ropsten' ||
-        process.env.DAPP_WORKERS_CHAIN === 'rinkeby'
+    } else if(process.env.DAPP_WORKERS_CHAIN === 'mumbai'
     ) {
         if(await checkUpdateOracleDappUsd()) await updateOracleDappUsd();
         if(await checkUpdateOracleDappEth()) await updateOracleDappEth();

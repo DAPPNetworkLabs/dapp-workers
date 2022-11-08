@@ -37,18 +37,6 @@ module.exports = {
       },
       allowUnlimitedContractSize: true
     },
-    bsc_test: {
-      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
-      chainId: 97,
-      gasPrice: 20000000000,
-      mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
-    },
-    bsc: {
-      url: "https://bsc-dataseed.binance.org/",
-      chainId: 56,
-      gasPrice: 20000000000,
-      mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
-    },
     tests: {
       url: `${'http://eth:8545'}`,
       accounts: {
@@ -69,11 +57,6 @@ module.exports = {
         mnemonic: `cruel rebel frown short month love belt weather sense hood cage pact`
       },
       timeout: 120000
-    },
-    ropsten: {
-      url: `https://eth-ropsten.alchemyapi.io/v2/${config.alchemyKey}`,
-      accounts: config.keys,
-      blockGasLimit: 12e6
     }
   },
   etherscan: {

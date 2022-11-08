@@ -245,7 +245,6 @@ contract NexusPolygon is OwnableUpgradeable {
     mapping(address => mapping(string => WorkerDockerImage)) public workerApprovedImages;
 
     uint public totalWorkers;
-    uint public totalDappGasPaid;
 
     uint public lastJobID;
 
@@ -413,8 +412,6 @@ contract NexusPolygon is OwnableUpgradeable {
 
         workerData[_consumer][_worker].amount -= _amountToUse;
         registeredWorkers[_worker].claimableDapp += _amountToUse;
-
-        totalDappGasPaid += _amountToUse;
 
         emit UsedGas(_consumer, _worker, _amountToUse);
     }
