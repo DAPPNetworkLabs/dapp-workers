@@ -5,7 +5,7 @@ import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 
-contract DAPP is ERC20, Ownable, ERC20Permit {
+contract DAPPToken is ERC20, Ownable, ERC20Permit {
     
     address public minter;
    
