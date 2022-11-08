@@ -1,5 +1,5 @@
 #! /bin/bash
-read -p 'Which version to run? (local, test, test_private, test_polygon, polygon, mumbai): ' option
+read -p 'Which version to run? (local, test, test_polygon, polygon, mumbai): ' option
 
 $PWD/scripts/k8s/k8s_stop.sh
 
