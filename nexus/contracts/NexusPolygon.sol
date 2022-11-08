@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "./SafeERC20Upgradeable.sol";
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -11,9 +11,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 // import "hardhat/console.sol";
 
 contract NexusPolygon is OwnableUpgradeable {
-    using SafeERC20Upgradeable for IERC20Upgradeable;
-    
-    IERC20Upgradeable public token;
+    IERC20 public token;
     IDappOraclePolygon public dappOracle;
     
     AggregatorV3Interface private constant FAST_GAS_FEED = AggregatorV3Interface(0xf824eA79774E8698E6C6D156c60ab054794C9B18);
@@ -257,7 +255,7 @@ contract NexusPolygon is OwnableUpgradeable {
         initArgs memory args
     ) external initializer {
         __Ownable_init();
-        token = IERC20Upgradeable(args._tokenContract);
+        token = IERC20(args._tokenContract);
     
         usdtPrecision = args._usdtPrecision;
 
@@ -367,11 +365,11 @@ contract NexusPolygon is OwnableUpgradeable {
         uint _amount,
         address _consumer,
         address _worker
-    ) public {
+    ) external {
         require(registeredWorkers[_worker].active,"inactive");
         require(_amount > 0,"non 0");
 
-        token.safeTransferFrom(msg.sender, address(this), _amount);
+        require(token.transferFrom(msg.sender, address(this), _amount));
         
         unchecked {
             workerData[_consumer][_worker].amount += _amount; // assumes non-infinite mint
@@ -394,7 +392,7 @@ contract NexusPolygon is OwnableUpgradeable {
         
         workerData[_consumer][_worker].amount = workerData[_consumer][_worker].amount - _amountToSell;
 
-        token.safeTransfer(_consumer, _amountToSell);
+        require(token.transfer(_consumer, _amountToSell));
         
         emit SoldGas(_consumer, _worker, _amountToSell);
     }
@@ -428,7 +426,7 @@ contract NexusPolygon is OwnableUpgradeable {
             registeredWorkers[msg.sender].claimableDapp = 0;
         }
         
-        token.safeTransfer(msg.sender, claimableAmount);
+        require(token.transfer(msg.sender, claimableAmount));
 
         emit ClaimedGas(msg.sender, claimableAmount);
     }
@@ -551,7 +549,7 @@ contract NexusPolygon is OwnableUpgradeable {
             require(inconsistent,"inconsistent");
         }
         
-        uint gasUsed;
+        uint gasUsed = 0;
 
         if(jd.callback){
             gasUsed = gasleft();
@@ -777,9 +775,9 @@ contract NexusPolygon is OwnableUpgradeable {
             dapps = dapps * secs;
             sd.endDate = sd.endDate + secs;
 
-            buyGasFor(
-                dapps,
+            useGas(
                 msg.sender,
+                dapps,
                 workers[i]
             );
 
@@ -870,7 +868,7 @@ contract NexusPolygon is OwnableUpgradeable {
         uint jobFee,
         uint baseFee
     ) public {
-        address owner = msg.sender;
+        address worker = msg.sender;
 
         require(bytes(approvedImages[imageName]).length != 0, "image not approved");
         require(
@@ -879,10 +877,10 @@ contract NexusPolygon is OwnableUpgradeable {
         , "invalid fee");
 
         // job related
-        workerApprovedImages[owner][imageName].jobFee = jobFee;
+        workerApprovedImages[worker][imageName].jobFee = jobFee;
 
         // service related
-        workerApprovedImages[owner][imageName].baseFee = baseFee;
+        workerApprovedImages[worker][imageName].baseFee = baseFee;
     }
     
     /**
@@ -1140,43 +1138,5 @@ contract NexusPolygon is OwnableUpgradeable {
      */
     function compareStrings(string memory a, string memory b) private pure returns (bool) {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
-    }
-    
-    /**
-     * @dev convert address type to string
-     */
-    function toString(address account) private pure returns(string memory) {
-        return toString(abi.encodePacked(account));
-    }
-    
-    /**
-     * @dev converts uint to string
-     */
-    function toString(uint value) private pure returns(string memory) {
-        return toString(abi.encodePacked(value));
-    }
-    
-    /**
-     * @dev converts bytes32 value to string
-     */
-    function toString(bytes32 value) private pure returns(string memory) {
-        return toString(abi.encodePacked(value));
-    }
-    
-    /**
-     * @dev converts bytes value to string
-     */
-    function toString(bytes memory data) private pure returns(string memory) {
-        bytes memory alphabet = "0123456789abcdef";
-        bytes memory str = new bytes(2 + data.length * 2);
-        str[0] = "0";
-        str[1] = "x";
-
-        for (uint i = 0; i < data.length; i++) {
-            str[2+i*2] = alphabet[uint(uint8(data[i] >> 4))];
-            str[3+i*2] = alphabet[uint(uint8(data[i] & 0x0f))];
-        }
-
-        return string(str);
     }
 }
