@@ -23,9 +23,6 @@ app.get('/dapp-workers', async function(req, res, next) {
     const port = req.query.port ? req.query.port : 80; 
     await preCheck(req.query.image,res);
     try {
-        // console.log(`url`,`http://${req.query.image}-${req.query.id}:${port}`);
-        // console.log(`req.body`,req.body);
-        // console.log(req.params);
         const response = await nodeFetch(`http://${req.query.image}-${req.query.id}:${port}`, {method: 'GET'});
                 
         res.send(await responseHandler(response,req.query.text));
@@ -38,8 +35,6 @@ app.post('/dapp-workers', async function(req, res, next) {
     const port = req.query.port ? req.query.port : 80; 
     await preCheck(req.query.image,res);
     try {
-        // console.log(`url`,`http://${req.query.image}-${req.query.id}:${port}`);
-        // console.log(`req.body`,req.body);
         const response = await nodeFetch(`http://${req.query.image}-${req.query.id}:${port}`, {
           method: 'POST', 
           body: req.body,
