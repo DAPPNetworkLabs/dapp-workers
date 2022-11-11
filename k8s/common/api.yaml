@@ -35,6 +35,13 @@ spec:
       - args:
           - node
           - ./dist/index.js
+        env:
+            - name: ADDRESS
+              value: $ADDRESS
+            - name: ETH_ADDR
+              value: $ETH_ADDR
+            - name: IPFS_HOST
+              value: $IPFS_HOST
         image: natpdev/api
         name: api
         ports:
