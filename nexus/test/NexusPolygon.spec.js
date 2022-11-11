@@ -123,7 +123,7 @@ describe("NexusPolygon", function(done) {
     const nexusTokenFactory = await ethers.getContractFactory("NexusPolygon", addr1);
     const consumerTokenFactory = await ethers.getContractFactory("Consumer", addr2);
 
-    dappTokenContract = await dappTokenFactory.deploy();
+    dappTokenContract = await dappTokenFactory.deploy(addr1.address);
     await delay(1);
     dappOracleContract = await dappOracleFactory.deploy(
       9009009, // 1 / $0.00111
