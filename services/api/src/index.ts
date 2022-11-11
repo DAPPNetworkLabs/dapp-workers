@@ -7,17 +7,6 @@ const cors = require('cors');
 const app = express();
 const port = 8050;
 
-const approvedServices = [
-    'git-cloner',
-    'monte-carlo',
-    'runner',
-    'rust-compiler',
-    'sol-runner',
-    'wasi-service',
-    'wasienv-compiler',
-    'poa-evm'
-];
-
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
@@ -32,7 +21,7 @@ const responseHandler = async (response, text) =>  {
 
 app.get('/dapp-workers', async function(req, res, next) {
     const port = req.query.port ? req.query.port : 80; 
-    preCheck(approvedServices,req.query.image,res);
+    await preCheck(req.query.image,res);
     try {
         // console.log(`url`,`http://${req.query.image}-${req.query.id}:${port}`);
         // console.log(`req.body`,req.body);
@@ -47,7 +36,7 @@ app.get('/dapp-workers', async function(req, res, next) {
 
 app.post('/dapp-workers', async function(req, res, next) {
     const port = req.query.port ? req.query.port : 80; 
-    preCheck(approvedServices,req.query.image,res);
+    await preCheck(req.query.image,res);
     try {
         // console.log(`url`,`http://${req.query.image}-${req.query.id}:${port}`);
         // console.log(`req.body`,req.body);
@@ -68,5 +57,8 @@ app.get('/health', function(req, res) {
 });
 
 app.listen(port, function() {
-  console.log(`DAPP Workers Usage/Servie API running on ${port}!`)
+  if(!process.env.IPFS_HOST) throw new Error('requires IPFS HOST');
+  if(!process.env.ETH_ADDR) throw new Error('requires EVM HOST');
+  if(!process.env.ADDRESS) throw new Error('requires Nexus ADDRESS');
+  console.log(`DAPP Workers Usage/Servie API running on ${port}!`);
 });
