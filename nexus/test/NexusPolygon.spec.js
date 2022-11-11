@@ -1,7 +1,5 @@
-const Web3 = require("web3");
 const { expect } = require("chai");
-const { network, ethers } = require("hardhat");
-const { BigNumber } = require("ethers");
+const { ethers } = require("hardhat");
 const fetch =require('node-fetch');
 
 const fs = require('fs');
