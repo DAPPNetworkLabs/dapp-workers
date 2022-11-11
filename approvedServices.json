@@ -1,0 +1,12 @@
+{
+    "approvedServices": [
+        "git-cloner",
+        "monte-carlo",
+        "runner",
+        "rust-compiler",
+        "sol-runner",
+        "wasi-service",
+        "wasienv-compiler",
+        "poa-evm"
+    ]
+}
