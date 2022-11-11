@@ -10,7 +10,7 @@ const path = require('path');
 const workerGasPremium = 700000000;
 const fallbackGasPrice = 1000000000000;
 const stalenessSeconds = 86400;
-const ipfsHash = "ipfshash";
+const ipfsHash = "QmPdhPDtAruFXZCzBZBhMeYfyMPGd4WPKRazbmKVcF3QWW";
 
 const delay = s => new Promise(res => setTimeout(res, s * 1000));
 
