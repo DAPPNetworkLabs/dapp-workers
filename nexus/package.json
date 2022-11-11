@@ -2,8 +2,7 @@
   "name": "hardhat-project",
   "scripts": {
     "test": "npx hardhat test --network hardhat",
-    "deploy": "npx hardhat run scripts/deploy.js --network mainnet",
-    "deploy ropsten": "npx hardhat run scripts/deploy_ropsten.js --network ropsten"
+    "deploy": "npx hardhat run scripts/deploy_mumbai.js --network mumbai"
   },
   "devDependencies": {
     "@chainlink/contracts": "^0.5.1",

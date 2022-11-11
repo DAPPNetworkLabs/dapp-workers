@@ -37,6 +37,13 @@ module.exports = {
       },
       allowUnlimitedContractSize: true
     },
+    mumbai: {
+      url:  `https://polygon-mumbai.g.alchemy.com/v2/${config.alchemyKey}`,
+      forking: {
+        url: `https://polygon-mumbai.g.alchemy.com/v2/${config.alchemyKey}`
+      },
+      allowUnlimitedContractSize: true
+    },
     tests: {
       url: `${'http://eth:8545'}`,
       accounts: {

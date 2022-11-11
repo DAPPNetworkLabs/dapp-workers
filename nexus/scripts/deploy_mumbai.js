@@ -1,4 +1,4 @@
-  const hre = require("hardhat");
+const hre = require("hardhat");
 const delay = s => new Promise(res => setTimeout(res, s*1000));
 
 const workerGasPremium = 700000000;
