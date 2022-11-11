@@ -35,6 +35,7 @@ module.exports = {
       forking: {
         url: `https://polygon-mainnet.g.alchemy.com/v2/${config.alchemyKey}`
       },
+      accounts: config.keys ?? [""],
       allowUnlimitedContractSize: true
     },
     mumbai: {
@@ -42,6 +43,7 @@ module.exports = {
       forking: {
         url: `https://polygon-mumbai.g.alchemy.com/v2/${config.alchemyKey}`
       },
+      accounts: config.keys ?? [""],
       allowUnlimitedContractSize: true
     },
     tests: {
