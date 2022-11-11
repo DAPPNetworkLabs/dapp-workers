@@ -4,7 +4,7 @@ const delay = s => new Promise(res => setTimeout(res, s*1000));
 const workerGasPremium = 700000000;
 const fallbackGasPrice = 1000000000000;
 const stalenessSeconds = 86400;
-const ipfsHash = "ipfshash";
+const ipfsHash = "QmPdhPDtAruFXZCzBZBhMeYfyMPGd4WPKRazbmKVcF3QWW";
 
 const deploymentAddress = "0x39396235081A7F3372C3D74b52C41fab90444E48";
 
@@ -15,7 +15,7 @@ async function main() {
     const dappTokenFactory = await hre.ethers.getContractFactory("DappToken", deploymentAddress);
     const oracleFactory = await hre.ethers.getContractFactory("DappOraclePolygon", deploymentAddress);
 
-    const dappTokenContract = await dappTokenFactory.deploy();
+    const dappTokenContract = await dappTokenFactory.deploy(deploymentAddress);
     const dappOracleContract = await oracleFactory.deploy(
       9009009, // 1 / $0.00111
       1186277653093940 // (0.00111 / 0.9357) * 1e18 -> (1186277653093940 / 1e18) * .92 = 0.00109137544085
