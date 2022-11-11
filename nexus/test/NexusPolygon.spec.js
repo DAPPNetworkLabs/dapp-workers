@@ -10,6 +10,7 @@ const path = require('path');
 const workerGasPremium = 700000000;
 const fallbackGasPrice = 1000000000000;
 const stalenessSeconds = 86400;
+const ipfsHash = "ipfshash";
 
 const delay = s => new Promise(res => setTimeout(res, s * 1000));
 
@@ -127,7 +128,6 @@ describe("NexusPolygon", function(done) {
     dappOracleContract = await dappOracleFactory.deploy(
       9009009, // 1 / $0.00111
       1186277653093940 // (0.00111 / 0.9357) * 1e18 -> (1186277653093940 / 1e18) * .92 = 0.00109137544085
-      
     );
     await delay(1);
     nexusContract = await upgrades.deployProxy(nexusTokenFactory, 
@@ -138,7 +138,8 @@ describe("NexusPolygon", function(done) {
           workerGasPremium,
           1e6,
           fallbackGasPrice,
-          stalenessSeconds
+          stalenessSeconds,
+          ipfsHash
         ]
       ]
     );
@@ -228,7 +229,8 @@ describe("NexusPolygon", function(done) {
       workerGasPremium,
       fallbackGasPrice,
       stalenessSeconds,
-      dappOracleContract.address
+      dappOracleContract.address,
+      ipfsHash
     );
     
     console.log(`set config: ${
@@ -236,7 +238,8 @@ describe("NexusPolygon", function(done) {
         workerGasPremium,
         fallbackGasPrice,
         stalenessSeconds,
-        address: dappOracleContract.address
+        address: dappOracleContract.address,
+        approvedImageIpfs: ipfsHash
       }
     }`)
 
@@ -246,6 +249,7 @@ describe("NexusPolygon", function(done) {
     expect(config.fallbackGasPrice).to.equal(fallbackGasPrice);
     expect(config.stalenessSeconds).to.equal(stalenessSeconds);
     expect(config.dappOracleAddress).to.equal(dappOracleContract.address);
+    expect(await nexusContract.connect(worker1).APPROVED_IMAGES_IPFS()).to.equal(ipfsHash);
   });
 
   it("Deprecate Worker", async function() {
@@ -332,7 +336,6 @@ describe("NexusPolygon", function(done) {
   });
 
   it("Queue job", async function() {
-    const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
     await nexusContract.approveImage("natpdev/rust-compiler","febdd389458f9ea76d1b1b1324bcf86f8eaab1f5c97ac64fbacbc4bacbc06303");
     await nexusContract.connect(worker1).setDockerImage("natpdev/rust-compiler",100000,277);
 
@@ -373,13 +376,9 @@ describe("NexusPolygon", function(done) {
     expect(job2.callback).to.equal(false);
     expect(job2.resultsCount.toString()).to.equal('0');
     expect(job2.imageName).to.equal("natpdev/runner");
-
-    const postTotalDappGasPaid = await nexusContract.totalDappGasPaid();
-    expect(postTotalDappGasPaid).is.above(prevTotalDappGasPaid);
   });
 
   it.skip("Queue job - nvidia-docker", async function() {
-    const prevTotalDappGasPaid = await nexusContract.totalDappGasPaid();
     await nexusContract.approveImage("natpdev/nvidia-docker","535fe08b1f0b6b8be4b2b3fac19a9fa77b4d9808b09654ac3bf679a80736bbc4");
     await nexusContract.connect(worker1).setDockerImage("natpdev/nvidia-docker",100000,277);
     

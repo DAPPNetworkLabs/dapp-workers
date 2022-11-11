@@ -21,6 +21,7 @@ contract NexusPolygon is OwnableUpgradeable {
     uint256 private constant CUSHION = 5_000;
     uint256 private constant JOB_GAS_OVERHEAD = 80_000;
     uint256 private constant WORKER_GAS_BASE = 1_000_000_000;
+    string public APPROVED_IMAGES_IPFS;
 
     event BoughtGas(
         address indexed buyer,
@@ -132,7 +133,8 @@ contract NexusPolygon is OwnableUpgradeable {
         uint32 workerGasPremium,
         uint fallbackGasPrice,
         uint24 stalenessSeconds,
-        address dappOracle
+        address dappOracle,
+        string approvedImageIpfs
     );
     
     event UpdateWorkers(
@@ -227,6 +229,7 @@ contract NexusPolygon is OwnableUpgradeable {
         uint256 _usdtPrecision;
         uint256 _fallbackGasPrice;
         uint24 _stalenessSeconds;
+        string _approvedImageIpfs;
     }
 
     mapping(address => RegisteredWorker) public registeredWorkers;
@@ -263,7 +266,8 @@ contract NexusPolygon is OwnableUpgradeable {
             args._workerGasPremium,
             args._fallbackGasPrice,
             args._stalenessSeconds,
-            args._dappOracleContract
+            args._dappOracleContract,
+            args._approvedImageIpfs
         );
     }
       
@@ -274,7 +278,8 @@ contract NexusPolygon is OwnableUpgradeable {
         uint32 workerGasPremium,
         uint256 fallbackGasPrice,
         uint24 stalenessSeconds,
-        address dappOracleContract
+        address dappOracleContract,
+        string memory approvedImageIpfs
     ) public onlyOwner {
         s_config = Config({
             workerGasPremium: workerGasPremium,
@@ -282,6 +287,7 @@ contract NexusPolygon is OwnableUpgradeable {
         });
 
         s_fallbackGasPrice = fallbackGasPrice;
+        APPROVED_IMAGES_IPFS = approvedImageIpfs;
 
         dappOracle = IDappOraclePolygon(dappOracleContract);
 
@@ -289,7 +295,8 @@ contract NexusPolygon is OwnableUpgradeable {
             workerGasPremium,
             fallbackGasPrice,
             stalenessSeconds,
-            dappOracleContract
+            dappOracleContract,
+            approvedImageIpfs
         );
     }
 
