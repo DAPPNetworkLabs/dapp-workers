@@ -15,6 +15,7 @@ contract NexusPolygon is OwnableUpgradeable {
     IDappOraclePolygon public dappOracle;
     
     AggregatorV3Interface private constant FAST_GAS_FEED = AggregatorV3Interface(0xf824eA79774E8698E6C6D156c60ab054794C9B18);
+    AggregatorV3Interface private constant MATIC_USD = AggregatorV3Interface(0xAB594600376Ec9fD91F8e885dADF0CE036862dE0);
 
     uint public usdtPrecision;
 
@@ -1100,10 +1101,19 @@ contract NexusPolygon is OwnableUpgradeable {
     }
 
     /**
-     * @dev return oracle rate of how much ETH per DAPP
+     * @dev return oracle rate of how much MATIC per 1 DAPP
      */
     function getDappMatic() private view returns (uint) {
-        return dappOracle.lastDappMaticPrice();
+        uint32 stalenessSeconds = s_config.stalenessSeconds;
+        bool staleFallback = stalenessSeconds > 0;
+        uint256 timestamp;
+        int256 lastMaticUsdPrice;
+
+        (, lastMaticUsdPrice, , timestamp, ) = MATIC_USD.latestRoundData();
+        require(staleFallback && stalenessSeconds < block.timestamp - timestamp,"feed stale");
+        require(lastMaticUsdPrice > 0,"feed <= 0");
+
+        return 1 / (uint256(lastMaticUsdPrice) * dappOracle.lastUsdDappPrice() * 1e6);
     }
 
     /**

@@ -125,7 +125,7 @@ describe("NexusPolygon", function(done) {
     await delay(1);
     dappOracleContract = await dappOracleFactory.deploy(
       9009009, // 1 / $0.00111
-      1186277653093940 // (0.00111 / 0.9357) * 1e18 -> (1186277653093940 / 1e18) * .92 = 0.00109137544085
+      // 1186277653093940 // (0.00111 / 0.9357) * 1e18 -> (1186277653093940 / 1e18) * .92 = 0.00109137544085
     );
     await delay(1);
     nexusContract = await upgrades.deployProxy(nexusTokenFactory, 
