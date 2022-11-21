@@ -5,7 +5,6 @@ const workerGasPremium = 700000000;
 const fallbackGasPrice = 1000000000000;
 const stalenessSeconds = 86400;
 const lastUsdDappPrice = 9009009;
-const lastDappMaticPrice = 1186277653093940;
 const ipfsHash = "QmPdhPDtAruFXZCzBZBhMeYfyMPGd4WPKRazbmKVcF3QWW";
 
 const deploymentAddress = "0x39396235081A7F3372C3D74b52C41fab90444E48";
@@ -20,7 +19,6 @@ async function main() {
     const dappTokenContract = await dappTokenFactory.deploy(deploymentAddress);
     const dappOracleContract = await oracleFactory.deploy(
       lastUsdDappPrice, // 1 / $0.00111
-      lastDappMaticPrice // (0.00111 / 0.9357) * 1e18 -> (1186277653093940 / 1e18) * .92 = 0.00109137544085
     );
 
     const nexusProxyContract = await upgrades.deployProxy(nexusTokenFactory, 
@@ -80,8 +78,7 @@ async function main() {
       await hre.run("verify:verify", {
           address: dappOracleContract.address,
           constructorArguments: [
-            lastUsdDappPrice,
-            lastDappMaticPrice
+            lastUsdDappPrice
           ]
       });
     } catch(e) {
