@@ -9,7 +9,6 @@ const WorkerStats = (props) => {
     return (
         <div className={className.join(' ')}>
             <span>DAPP WORKERS: {props.workers}</span>
-            <span>GAS PAID: {props.gasPaid/1e4} DAPP</span>
         </div>
     );
 };

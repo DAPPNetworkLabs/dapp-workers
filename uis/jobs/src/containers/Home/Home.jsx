@@ -32,8 +32,7 @@ class Home extends Component {
             chainId: null,
             // update
             [stateSelector]: {
-                workers:null,
-                gasPaid:null
+                workers:null
             },
             show: false
         }
@@ -86,7 +85,6 @@ class Home extends Component {
                         </div>
                         <WorkerStats
                             workers={this.state[stateSelector].workers}
-                            gasPaid={this.state[stateSelector].gasPaid}
                         ></WorkerStats>
                     </div>
                     <Footer
