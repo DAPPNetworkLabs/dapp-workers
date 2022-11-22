@@ -20,7 +20,7 @@ import * as helpers from '@helpers'
 
 const section = 'worker'; // update
 const page = 'deprecate'; // update
-const stateSelector = 'regWORKER'; // update
+const stateSelector = 'regWorker'; // update
 
 const ethereum = window.ethereum;
 

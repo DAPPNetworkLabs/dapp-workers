@@ -18,9 +18,8 @@ interface INexus {
       string imageName;
       string inputFS;
       string[] args;
-      uint months;
+      uint secs;
   }
   function queueService(queueServiceArgs calldata args) external;
   function setConsumerContract(address authorized_contract) external;
-  function setQuorum(address consumer, address[] calldata workers) external;
 }

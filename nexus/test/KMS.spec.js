@@ -99,7 +99,7 @@ describe("Nexus KMS", function(done) {
     
     const signer = new AwsKmsSigner(kmsCredentials);
     
-    let unsignedTx = await nexusContract.populateTransaction.regWORKER("http://wasi-service");
+    let unsignedTx = await nexusContract.populateTransaction.regWorker("http://wasi-service");
     await signKms(unsignedTx, nexusContract, signer);
     unsignedTx = await nexusContract.populateTransaction.setDockerImage("runner",100000,100000,100000,100000,100,100);
     await signKms(unsignedTx, nexusContract, signer);

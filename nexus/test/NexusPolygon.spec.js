@@ -182,7 +182,7 @@ describe("NexusPolygon", function(done) {
         await nexusContract.approveImage("natpdev/monte-carlo","d4bf9a42ed0a0a875d4583dc2c64a0e5f4d523fe01ba5c1b3686b6aa5865074a");
         await nexusContract.approveImage("natpdev/poa-evm","19d02f7c0973314e871a403910382f82f531d32e6d606facb560edcdfe4b9924");
         await nexusContract.approveImage("natpdev/nvidia-docker","535fe08b1f0b6b8be4b2b3fac19a9fa77b4d9808b09654ac3bf679a80736bbc4");
-        await nexusContract.connect(worker1).regWorker(process.env.Worker_ENDPOINT || "https://dapp-workers-api.liquidapps.io");
+        await nexusContract.connect(worker1).regWorker(process.env.WORKER_ENDPOINT || "https://dapp-workers-api.liquidapps.io");
         await nexusContract.setWorkers([worker1.address]);
         // await nexusContract.connect(consumer1).setWorkers([worker1.address]);
         // await nexusContract.connect(consumer2).setWorkers([worker1.address]);

@@ -20,7 +20,7 @@ import * as helpers from '@helpers'
 
 const section = 'worker'; // update
 const page = 'register'; // update
-const stateSelector = 'regWORKER'; // update
+const stateSelector = 'regWorker'; // update
 
 const ethereum = window.ethereum;
 
@@ -31,7 +31,7 @@ class Register extends Component {
             account: null,
             chainId: null,
             // update
-            regWORKER: {
+            regWorker: {
                 endpoint:'http://testing.com'
             },
             show: false
@@ -84,7 +84,7 @@ class Register extends Component {
     forms = [
         // update setWorkers
         {
-            onClick:()=>lib.web3.regWORKER(this),
+            onClick:()=>lib.web3.regWorker(this),
             buttonText:"Register WORKER Endpoint",
             stateSelector:stateSelector,
             inputs:[
@@ -106,7 +106,7 @@ class Register extends Component {
                     inputs={el.inputs}
                     previews={loc(`${section}.${page}.previews`,this.props.lang)}
                     isDayNight={this.props.isDayNight}
-                    previewValues={this.separateObject(this.state.regWORKER)} // update
+                    previewValues={this.separateObject(this.state.regWorker)} // update
                     isMobile={isMobile}
                     openClose={this.openClose}
                     show={this.state.show}

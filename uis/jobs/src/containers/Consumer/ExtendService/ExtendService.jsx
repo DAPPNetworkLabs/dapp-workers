@@ -33,7 +33,7 @@ class ExtendService extends Component {
             extendService: {
                 serviceId:null,
                 imageName:null,
-                months:null
+                secs:null
             },
             show: false
         }
@@ -85,7 +85,7 @@ class ExtendService extends Component {
             inputs:[
                 { name:"serviceId",placeholder: "uint serviceId"},
                 { name:"imageName",placeholder: "string calldata imageName"},
-                { name:"months",placeholder: "uint months"}
+                { name:"secs",placeholder: "uint secs"}
             ]
         },
     ]

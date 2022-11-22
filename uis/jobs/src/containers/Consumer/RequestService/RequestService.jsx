@@ -36,7 +36,7 @@ class RequestService extends Component {
                 imageName: 'natpdev/wasi-service',
                 inputFS: 'QmQSv2U14iRKDqBvJgJo1eixJWq6cTqRgY9QgAnBUe9fdM',
                 args: ["target/wasm32-wasi/release/test"],
-                months: 1,
+                secs: 2629800,
                 sufficientGas: true,
                 totalDapps: null
             },
@@ -97,7 +97,7 @@ class RequestService extends Component {
                 { name:"imageName",placeholder: "string imageName"},
                 { name:"inputFS",placeholder: "string inputFS"},
                 { name:"args",placeholder: "string[] args"},
-                { name:"months",placeholder: "uint months"},
+                { name:"secs",placeholder: "uint secs"},
             ]
         }
     ]
