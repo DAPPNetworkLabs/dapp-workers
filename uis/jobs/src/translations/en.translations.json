@@ -13,7 +13,7 @@
         "id":"ID of job or service.",
         "owner":"Owner of job or service. The owner pays DAPP Gas for the job or service.",
         "consumer":"Consumer of job or service. Consumer can be the same as the owner or the consumer can be a smart contract.  DAPP Gas paid for by owner.",
-        "months":"Months service has been paid for.",
+        "seconds":"Seconds service has been paid for.",
         "started":"Service has started or not.",
         "endDate":"End date of WORKER providing requested service.",
         "workerEndpointIoStorage":"WORKER address, WORKER endpoint.",
@@ -86,7 +86,7 @@
                 { "name":"IMAGE","type": "string","short":"Docker image service will use."},
                 { "name":"INPUT","type": "string","short":"Input command for docker image."},
                 { "name":"ARGUMENTS","type": "array","short":"Arguments to provide docker image comma separated."},
-                { "name":"MONTHS","type": "uint","short":"Months to provide service for, covers base cost."}
+                { "name":"SECONDS","type": "uint","short":"Seconds to provide service for, covers base cost."}
             ],
             "sufficientGas":"Insufficient DAPP Gas for one or more DAPP Workers",
             "dappGas":"Estimated DAPP Gas to be used"
@@ -98,7 +98,7 @@
             "previews":[
                 { "name":"SERVICE ID","type": "uint","short":"ID of service to extend."},
                 { "name":"IMAGE","type": "string","short":"Docker image service used."},
-                { "name":"MONTHS","type": "uint","short":"Months to extend service for, covers base cost."}
+                { "name":"SECONDS","type": "uint","short":"Seconds to extend service for, covers base cost."}
             ]
         },
         "jobs": {

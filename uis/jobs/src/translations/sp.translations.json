@@ -13,7 +13,7 @@
         "id":"ID del trabajo o servicio.",
         "owner":"Titular de obra o servicio. El propietario paga DAPP Gas por el trabajo o servicio.",
         "consumer":"Consumidor de trabajo o servicio. El consumidor puede ser el mismo que el propietario o el consumidor puede ser un contrato inteligente. DAPP Gas pagado por el propietario.",
-        "months":"Meses de servicio pagados",
+        "seconds":"Se ha pagado el segundo servicio.",
         "started":"El servicio ha comenzado o no.",
         "endDate":"Fecha de finalización del TRABAJADOR prestando el servicio solicitado.",
         "workerEndpointIoStorage":"Dirección WORKER, punto final WORKER.",
@@ -86,7 +86,7 @@
                 { "name":"IMAGE","type": "string","short":"Se utilizará el servicio de imágenes de Docker."},
                 { "name":"INPUT","type": "string","short":"Comando de entrada para la imagen de la ventana acoplable."},
                 { "name":"ARGUMENTS","type": "array","short":"Argumentos para proporcionar una imagen acoplable separada por comas."},
-                { "name":"MONTHS","type": "uint","short":"Meses para brindar el servicio, cubre el costo base."}
+                { "name":"SECONDS","type": "uint","short":"Segundos para brindar el servicio, cubre el costo base."}
             ],
             "sufficientGas":"Gas DAPP insuficiente para uno o más trabajadores DAPP",
             "dappGas":"Gas DAPP estimado a utilizar"
@@ -98,7 +98,7 @@
             "previews":[
                 { "name":"SERVICE ID","type": "uint","short":"ID del servicio a extender."},
                 { "name":"IMAGE","type": "string","short":"Servicio de imágenes de Docker utilizado."},
-                { "name":"MONTHS","type": "uint","short":"Meses para extender el servicio, cubre el costo base."}
+                { "name":"SECONDS","type": "uint","short":"Segundos para extender el servicio, cubre el costo base."}
             ]
         },
         "jobs": {

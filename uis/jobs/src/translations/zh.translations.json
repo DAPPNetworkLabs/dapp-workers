@@ -13,7 +13,7 @@
         "id":"工作或服务的 ID。",
         "owner":"工作或服务的所有者。 所有者为工作或服务支付 DAPP Gas。",
         "consumer":"工作或服务的消费者。 消费者可以与所有者相同，或者消费者可以是智能合约。 DAPP Gas 由所有者支付。",
-        "months":"已支付月服务费",
+        "seconds":"已支付秒服务费用。",
         "started":"服务是否已启动。",
         "endDate":"提供请求服务的工人的结束日期。",
         "workerEndpointIoStorage":"WORKER地址，WORKER端點",
@@ -86,7 +86,7 @@
                 { "name":"IMAGE","type": "string","short":"将使用 Docker 镜像服务。"},
                 { "name":"INPUT","type": "string","short":"docker 镜像的输入命令。"},
                 { "name":"ARGUMENTS","type": "array","short":"提供 docker image 逗号分隔的参数。"},
-                { "name":"MONTHS","type": "uint","short":"提供服務的月數，包括基本費用"}
+                { "name":"SECONDS","type": "uint","short":"提供服务的秒数，涵盖基本成本。"}
             ],
             "sufficientGas":"一个或多个 DAPP Worker 的 DAPP Gas 不足",
             "dappGas":"预计使用的 DAPP Gas"
@@ -98,7 +98,7 @@
             "previews":[
                 { "name":"SERVICE ID","type": "uint","short":"要扩展的服务 ID。"},
                 { "name":"IMAGE","type": "string","short":"使用 Docker 镜像服务。"},
-                { "name":"MONTHS","type": "uint","short":"提供服務的月數，包括基本費用"}
+                { "name":"SECONDS","type": "uint","short":"延长服务的秒数，涵盖基本成本。"}
             ]
         },
         "jobs": {

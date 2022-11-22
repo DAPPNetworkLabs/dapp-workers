@@ -13,7 +13,7 @@
         "id":"작업 또는 서비스의 ID입니다.",
         "owner":"직업이나 서비스의 소유자. 소유자는 작업 또는 서비스에 대해 DAPP Gas를 지불합니다.",
         "consumer":"직업이나 서비스의 소비자. 소비자는 소유자와 동일하거나 소비자가 스마트 계약일 수 있습니다. 소유자가 지불하는 DAPP Gas.",
-        "months":"월 서비스 비용이 지불되었습니다.",
+        "seconds":"초 서비스가 지불되었습니다.",
         "started":"서비스가 시작되었는지 여부.",
         "endDate":"요청한 서비스를 제공하는 WORKER의 종료 날짜입니다.",
         "workerEndpointIoStorage":"WORKER 주소, WORKER 끝점.",
@@ -86,7 +86,7 @@
                 { "name":"IMAGE","type": "string","short":"Docker 이미지 서비스가 사용됩니다."},
                 { "name":"INPUT","type": "string","short":"도커 이미지에 대한 입력 명령입니다."},
                 { "name":"ARGUMENTS","type": "array","short":"쉼표로 구분된 docker 이미지를 제공하는 인수입니다."},
-                { "name":"MONTHS","type": "uint","short":"서비스 제공 개월 수, 기본 비용 포함"}
+                { "name":"SECONDS","type": "uint","short":"서비스 제공 시간(초)에 기본 비용이 포함됩니다."}
             ],
             "sufficientGas":"한 명 이상의 DAPP 작업자에 대한 DAPP 가스 부족",
             "dappGas":"사용 예상 DAPP 가스"
@@ -98,7 +98,7 @@
             "previews":[
                 { "name":"SERVICE ID","type": "uint","short":"확장할 서비스의 ID입니다."},
                 { "name":"IMAGE","type": "string","short":"Docker 이미지 서비스가 사용되었습니다."},
-                { "name":"MONTHS","type": "uint","short":"서비스 제공 개월 수, 기본 비용 포함"}
+                { "name":"SECONDS","type": "uint","short":"서비스 연장 시간(초)에 기본 비용이 포함됩니다."}
             ]
         },
         "jobs": {
